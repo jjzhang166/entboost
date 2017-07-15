@@ -1,0 +1,252 @@
+#include "ebwidgetuserlist.h"
+#include <QTimer>
+#include <eblistwidgetitem.h>
+#include <iconhelper.h>
+
+const QSize const_user_image_size(28,28);
+EbWidgetUserList::EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget *parent) : QWidget(parent)
+  , m_callInfo(callInfo)
+  , m_contextMenu(0)
+{
+    assert( m_callInfo.get()!=0 );
+
+    m_listWidgetUsers = new QListWidget(this);
+    m_listWidgetUsers->setSortingEnabled(false);
+    m_listWidgetUsers->setMouseTracking(true);
+    m_listWidgetUsers->setObjectName("UserList");
+    m_listWidgetUsers->setIconSize(const_user_image_size);
+    connect( m_listWidgetUsers,SIGNAL(itemEntered(QListWidgetItem*)),SLOT(onItemEntered(QListWidgetItem*)) );
+
+    /// “打开会话”按钮
+    m_pushButtonCall = new QPushButton(this);
+    m_pushButtonCall->setParent( m_listWidgetUsers );
+    m_pushButtonCall->setVisible(false);
+    m_pushButtonCall->setObjectName("CallButton");
+    m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
+    connect( m_pushButtonCall, SIGNAL(clicked()),this,SLOT(onClickedPushButtonCall()) );
+    IconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
+    /// “修改我的名片”
+    m_pushButtonEdit = new QPushButton(this);
+    m_pushButtonEdit->setParent( m_listWidgetUsers );
+    m_pushButtonEdit->setVisible(false);
+    m_pushButtonEdit->setObjectName("CallButton");
+    m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );
+    connect( m_pushButtonEdit, SIGNAL(clicked()),this,SLOT(onClickedPushButtonEdit()) );
+    IconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
+
+    QTimer::singleShot( 1, this, SLOT(onLoadUserList()) );
+
+}
+
+void EbWidgetUserList::onEnterUser(eb::bigint nUserId, bool bSort)
+{
+    if (!m_pUserItem.exist(nUserId)) {
+        EB_MemberInfo pMemberInfo;
+        if (theApp->m_ebum.EB_GetMemberInfoByUserId(&pMemberInfo,this->m_callInfo->groupId(),nUserId)) {
+            onMemberInfo(&pMemberInfo,bSort);
+        }
+    }
+}
+
+void EbWidgetUserList::onExitUser(eb::bigint userId, bool exitGroup)
+{
+    if (!exitGroup) {
+        if (this->m_callInfo->isGroupCall()) {
+            return;
+        }
+    }
+    EbWidgetItemInfo::pointer itemInfo;
+    if (m_pUserItem.find(userId,itemInfo,true)) {
+        QListWidgetItem * item = m_listWidgetUsers->takeItem( m_listWidgetUsers->row(itemInfo->m_listItem) );
+        if (item!=0) {
+            delete item;
+        }
+        updateGroupMemberSize();
+    }
+}
+
+int EbWidgetUserList::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
+{
+    if (memberInfo==NULL) {
+        return -1;
+    }
+    int nResult = 0;
+    EbWidgetItemInfo::pointer itemInfo;
+    QString sText;
+    if (memberInfo->m_sJobTitle.empty()) {
+        sText = memberInfo->m_sUserName.c_str();
+    }
+    else {
+        sText = QString("%1-%2").arg(memberInfo->m_sUserName.c_str()).arg(memberInfo->m_sJobTitle.c_str());
+    }
+    if (!m_pUserItem.find(memberInfo->m_nMemberUserId,itemInfo)) {
+        nResult = 1;
+//        const tstring userHeadFile = theApp->memberHeadFilePath(memberInfo);
+//        const QIcon icon( QPixmap(userHeadFile.c_str()).scaled(const_user_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
+//        EbListWidgetItem * item = new EbListWidgetItem( icon, sText, m_listWidgetUsers );
+        EbListWidgetItem * item = new EbListWidgetItem( sText, m_listWidgetUsers );
+        itemInfo = EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE_MEMBER,item);
+        item->m_itemInfo = itemInfo;
+        m_listWidgetUsers->addItem(item);
+        m_pUserItem.insert(memberInfo->m_nMemberUserId,itemInfo);
+    }
+    else {
+        itemInfo->m_listItem->setText( sText );
+    }
+    itemInfo->updateMemberInfo(memberInfo);
+
+//    itemInfo->m_nUserId = memberInfo->m_nMemberUserId;
+//    itemInfo->m_sGroupCode = memberInfo->m_sGroupCode;
+//    itemInfo->m_sMemberCode = memberInfo->m_sMemberCode;
+//    itemInfo->m_sAccount = memberInfo->m_sMemberAccount;
+//    itemInfo->m_sName = memberInfo->m_sUserName;
+//    itemInfo->m_dwItemData = memberInfo->m_nLineState;
+//    itemInfo->m_nIndex = memberInfo->m_nDisplayIndex;
+//    if ((memberInfo->m_nManagerLevel&EB_LEVEL_FORBID_SPEECH)==0)
+//        itemInfo->m_nExtData &= ~EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
+//    else
+//        itemInfo->m_nExtData |= EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
+//    if (theApp->isEnterpriseCreateUserId(memberInfo->m_nMemberUserId))
+//        itemInfo->m_nSubType = 11;
+//    else if (theApp->m_ebum.EB_IsGroupCreator(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
+//        itemInfo->m_nSubType = 10;
+//    else if (theApp->m_ebum.EB_IsGroupAdminLevel(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
+//        itemInfo->m_nSubType = 9;
+//    else if (theApp->logonUserId()==memberInfo->m_nMemberUserId)
+//        itemInfo->m_nSubType = 1;
+//    else
+//        itemInfo->m_nSubType = 0;
+
+    if (bSort) {
+        m_listWidgetUsers->sortItems();
+    }
+    updateGroupMemberSize();
+    return nResult;
+}
+
+void EbWidgetUserList::onItemEntered(QListWidgetItem *item)
+{
+//    if (!m_listWidgetUsers->hasFocus()) {
+//        m_listWidgetUsers->setFocus();
+//    }
+    /// 滚动条能正常显示
+    const QRect rectItem = m_listWidgetUsers->visualItemRect(item);
+    const QPoint pointItem = m_listWidgetUsers->mapToParent(rectItem.topRight());
+    const int y = pointItem.y()-1;  /// -1 不保留 ITEM 边框
+    const int buttonSize = rectItem.height();
+    const EbListWidgetItem * itemEb = (EbListWidgetItem*)item;
+    if ( itemEb->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
+        m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y,buttonSize,buttonSize );
+        m_pushButtonEdit->setProperty("track-item",QVariant((quint64)item));
+        m_pushButtonEdit->setVisible(true);
+        m_pushButtonCall->hide();
+    }
+    else {
+        m_pushButtonCall->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
+        m_pushButtonCall->setProperty("track-item",QVariant((quint64)item));
+        m_pushButtonCall->setVisible(true);
+        m_pushButtonEdit->hide();
+    }
+}
+
+void EbWidgetUserList::onLoadUserList()
+{
+    m_pUserItem.clear();
+    m_listWidgetUsers->clear();
+
+    std::vector<eb::bigint> pCallMemberList;
+    theApp->m_ebum.EB_GetCallUserIdList( m_callInfo->callId(), pCallMemberList );
+    for (size_t i=0; i<pCallMemberList.size(); i++) {
+        const eb::bigint sAccount = pCallMemberList[i];
+        const bool bSort = (i+1)==pCallMemberList.size()?true:false;
+        onEnterUser(sAccount,bSort);
+    }
+    updateGroupMemberSize();
+}
+
+void EbWidgetUserList::onClickedPushButtonCall()
+{
+    onCallItem((QListWidgetItem*)m_pushButtonCall->property("track-item").toULongLong());
+    m_pushButtonCall->hide();
+    m_pushButtonCall->setProperty("track-item",QVariant((quint64)0));
+    m_listWidgetUsers->setFocus();
+}
+
+void EbWidgetUserList::onClickedPushButtonEdit()
+{
+    const EbWidgetItemInfo* item = (EbWidgetItemInfo*)m_pushButtonEdit->property("track-item").toULongLong();
+    if (item==0) {
+        return;
+    }
+    m_pushButtonEdit->hide();
+    m_pushButtonEdit->setProperty("track-item",QVariant((quint64)0));
+    m_listWidgetUsers->setFocus();
+    onEditItem((QListWidgetItem*)item);
+}
+
+void EbWidgetUserList::resizeEvent(QResizeEvent *event)
+{
+    m_listWidgetUsers->setGeometry( 0,0,width(),height() );
+
+    QWidget::resizeEvent(event);
+}
+
+void EbWidgetUserList::contextMenuEvent(QContextMenuEvent *e)
+{
+    const EbListWidgetItem* item = (EbListWidgetItem*)m_listWidgetUsers->itemAt(e->pos());
+    if (item==0) {
+        return;
+    }
+    const EbWidgetItemInfo::pointer itemInfo = item->m_itemInfo;
+    if (m_contextMenu==0) {
+        m_contextMenu = new EbContextMenu( EbContextMenu::UserList, this );
+    }
+    if (!m_contextMenu->updateMenuItem(itemInfo)) {
+        return;
+    }
+    m_contextMenu->exec( e->globalPos() );
+}
+
+void EbWidgetUserList::onCallItem(QListWidgetItem *aitem)
+{
+    if (aitem==0) return;
+    const EbListWidgetItem *item = (EbListWidgetItem*)aitem;
+    if (item->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
+//        theApp->m_pAutoCallFromUserIdList.remove(item->m_itemInfo->m_nUserId);
+        theApp->m_ebum.EB_CallMember(item->m_itemInfo->m_sMemberCode,0);
+    }
+//    else if (item->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_GROUP) {
+//        theApp->m_pAutoCallGroupIdList.remove(item->m_itemInfo->m_sGroupCode);
+//        theApp->m_ebum.EB_CallGroup(item->m_itemInfo->m_sGroupCode);
+    //    }
+}
+
+void EbWidgetUserList::onEditItem(QListWidgetItem *aitem)
+{
+    if (aitem==0) return;
+    const EbListWidgetItem* item = (EbListWidgetItem*)aitem;
+    EB_MemberInfo pMemberInfo;
+    if (theApp->m_ebum.EB_GetMemberInfoByUserId(&pMemberInfo,item->m_itemInfo->m_sGroupCode,item->m_itemInfo->m_nUserId)) {
+        theApp->editMemberInfo(&pMemberInfo);
+    }
+}
+
+void EbWidgetUserList::updateGroupMemberSize()
+{
+    if ( m_callInfo->isGroupCall() ) {
+        int memberSize = 0;
+        int onlineSize = 0;
+        theApp->m_ebum.EB_GetGroupMemberSize(m_callInfo->groupId(),1,memberSize,onlineSize);
+        //const int nMemberSize = theEBAppClient.EB_GetGroupMemberSize(m_pCallInfo.m_sGroupCode,1);
+        //const int nOnlineSize = theEBAppClient.EB_GetGroupOnlineSize(m_pCallInfo.m_sGroupCode,1);
+        emit memberOnlineSizeChange(memberSize,onlineSize);
+//        /// 群成员(%d/%d)
+//        /// 群成员(%d)
+//        QString text;
+//        if (onlineSize>=0)
+//            text = QString("%1(%2/%3)").arg(theLocales.getLocalText("user-list.title","User List")).arg(onlineSize).arg(memberSize);
+//        else
+//            text = QString("%1(%2)").arg(theLocales.getLocalText("user-list.title","User List")).arg(memberSize);
+//        setItemText(EbWorkItem::WORK_ITEM_USER_LIST,text);
+    }
+}
