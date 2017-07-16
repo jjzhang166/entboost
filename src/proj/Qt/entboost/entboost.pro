@@ -162,7 +162,8 @@ SOURCES += main.cpp\
     ebwidgetiteminfo.cpp \
     ebcontextmenu.cpp \
     ebwidgetfiletranlist.cpp \
-    ebwidgetfiletranitem.cpp
+    ebwidgetfiletranitem.cpp \
+    ebwidgetchatrecord.cpp
 
 HEADERS  += mainwindow.h \
     EbDialogBase.h \
@@ -222,7 +223,8 @@ HEADERS  += mainwindow.h \
     ebwidgetiteminfo.h \
     ebcontextmenu.h \
     ebwidgetfiletranlist.h \
-    ebwidgetfiletranitem.h
+    ebwidgetfiletranitem.h \
+    ebwidgetchatrecord.h
 
 FORMS    += mainwindow.ui \
     dialoglogin.ui \

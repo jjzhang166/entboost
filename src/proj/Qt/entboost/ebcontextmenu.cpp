@@ -252,7 +252,7 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
                 this->setMenuActionVisible( EB_COMMAND_MEMBER_DEL_FORBID_SPEECH,true );
             }
             else {
-                //                m_memberForbidSpeechAction->setVisible(true);
+                m_memberForbidSpeechAction->setVisible(true);
             }
         }
         else {
@@ -334,10 +334,14 @@ void EbContextMenu::onCallItem(const EbWidgetItemInfo::pointer &itemInfo)
 
 void EbContextMenu::onEditItem(const EbWidgetItemInfo::pointer &itemInfo)
 {
-    if (itemInfo.get()==0) return;
-    EB_MemberInfo memberInfo;
-    if (theApp->m_ebum.EB_GetMemberInfoByUserId(&memberInfo,itemInfo->m_sGroupCode,itemInfo->m_nUserId)) {
-        theApp->editMemberInfo(&memberInfo);
+    if (itemInfo.get()==0) {
+        return;
+    }
+    if (itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
+        EB_MemberInfo memberInfo;
+        if (theApp->m_ebum.EB_GetMemberInfoByUserId(&memberInfo,itemInfo->m_sGroupCode,itemInfo->m_nUserId)) {
+            theApp->editMemberInfo(&memberInfo);
+        }
     }
 }
 

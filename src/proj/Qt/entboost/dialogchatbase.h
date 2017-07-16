@@ -21,13 +21,14 @@ class DialogChatBase : public EbDialogBase
 
 public:
     explicit DialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget *parent = 0);
-    ~DialogChatBase();
+    virtual ~DialogChatBase();
     typedef boost::shared_ptr<DialogChatBase> pointer;
     static DialogChatBase::pointer create(const EbcCallInfo::pointer& pCallInfo,QWidget *parent = 0) {
         return DialogChatBase::pointer(new DialogChatBase(pCallInfo,parent));
     }
 
-    // 设置输入框 focus
+    void updateLocaleInfo(void);
+    /// 设置输入框 focus
     void setFocusInput(void);
     void scrollToEnd(void);
     void setCallInfo(const EbcCallInfo::pointer& pCallInfo);    /// 主要用于更新 CALLID
@@ -48,17 +49,19 @@ public:
     void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
     bool onMemberHeadChange(const EB_MemberInfo * pMemberInfo);
     bool onContactHeadChange(const EB_ContactInfo* pContactInfo);
+    void onGroupInfo(const EB_GroupInfo* pGroupInfo);
     void onRemoveGroup(mycp::bigint nGroupId);
     void onRemoveMember(mycp::bigint nGroupId, mycp::bigint nMemberId, mycp::bigint memberUserId);
     void onMsgReceipt(const CCrRichInfo * pCrMsgInfo,int nAckType);
     void updateMsgReceiptData(eb::bigint nMsgId, eb::bigint nFromUserId, int nAckType, EB_STATE_CODE nState);
 
     void onSendingFile(const CCrFileInfo * fileInfo);
-    bool onSentFile(const CCrFileInfo * fileInfo, EB_STATE_CODE nState);
+    bool onSentFile(const CCrFileInfo * fileInfo);
     void onCancelFile(const CCrFileInfo * fileInfo, bool bChangeP2PSending);
     void onReceivingFile(const CCrFileInfo * fileInfo,QString* sOutFirstMsg=0);
     void onReceivedFile(const CCrFileInfo * fileInfo);
     void onFilePercent(const CChatRoomFilePercent * pChatRoomFilePercent);
+    void onSave2Cloud(const CCrFileInfo * fileInfo);
 
     const QString & fromName(void) const {return m_sFromName;}
     const QString & fullName(void) const {return m_sFullName;}
@@ -74,6 +77,10 @@ public:
 
 public slots:
     void onClickedInputClose(void);
+    void onClickedInputMsgRecord(void);
+    void onClickedButtonSendFile(void);
+    void exitChat(bool hangup);
+    void onClickedButtonExitChat(void);
 
 signals:
     void clickedClose(void);
@@ -81,7 +88,7 @@ signals:
 protected:
     virtual bool onBeforeClickedPushButtonSysMin(void);
     virtual bool onBeforeClickedPushButtonSysMax(void);
-    bool beforeClose(void);
+    bool requestClose(bool checkOnly);
     virtual void reject(void);
 
     virtual void resizeEvent(QResizeEvent *);
@@ -90,7 +97,7 @@ protected:
 private:
     void updateSize(void);
     void processMsg(bool bReceive,const CCrRichInfo* pCrMsgInfo,EB_STATE_CODE nState,QString* sOutFirstMsg1=0,QString* sOutFirstMsg2=0);
-    bool processFile(bool bReceive,const CCrFileInfo * fileInfo,EB_STATE_CODE nState);
+    bool processFile(bool bReceive,const CCrFileInfo * fileInfo);
 
     void updateFromInfo(void);
 

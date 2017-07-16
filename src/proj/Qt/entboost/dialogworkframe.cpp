@@ -194,8 +194,7 @@ void DialogWorkFrame::addUrl(bool bSaveBrowseTitle, const QString &sAppUrl, cons
     EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_WEB_BROWSER);
     workItem->setAppUrl( bSaveBrowseTitle,sAppUrl,sPostData );
     workItem->setFunInfo( pFuncInfo,nOpenNewClose);
-    const int leftOffset = m_showedLeft?const_frame_tool:0;
-    addWorkItem( bSaveBrowseTitle,ui->widgetLine1->geometry().bottom()+1,leftOffset,workItem,nInsertOffset);
+    addWorkItem( bSaveBrowseTitle,workItem,nInsertOffset);
 }
 
 void DialogWorkFrame::onMoveEvent()
@@ -209,8 +208,7 @@ void DialogWorkFrame::onClickedButtonTop()
 {
     const QPushButton* leftButton = dynamic_cast<QPushButton*>( sender() );
     const QPoint pt = this->mapFromGlobal( cursor().pos() );
-    const int leftOffset = m_showedLeft?const_frame_tool:0;
-    EbWorkList::clickedTopButton( leftOffset,leftButton,pt );
+    EbWorkList::clickedTopButton( leftButton,pt );
     /// ???
 //    if (m_list.empty()) {
 //        this->hide();
@@ -315,10 +313,9 @@ void DialogWorkFrame::onClickedSubApp(const EB_SubscribeFuncInfo & subFuncInfo)
 
 void DialogWorkFrame::onCloseViewList()
 {
-    const int leftOffset = m_showedLeft?const_frame_tool:0;
     const EbWidgetWorkView* view = 0;
     while (m_listCloseView.front(view)) {
-        EbWorkList::closeItem( leftOffset,view );
+        EbWorkList::closeItem( view );
     }
 }
 
@@ -353,8 +350,10 @@ void DialogWorkFrame::moveSize()
     if (m_showAppBar) {
         ui->widgetLine3->setGeometry( leftOffset-1,y,1, height()-y );
     }
-    EbWorkList::onResize( geometry(),y,leftOffset );
-    int x  = EbWorkList::onResize( geometry(),y,leftOffset );
+    m_topHeight = y;
+    m_leftOffset = leftOffset;
+//    EbWorkList::onResize( geometry(),y,leftOffset );
+    int x  = EbWorkList::onResize( geometry() );
     onItemSizeChange( EbWorkItemNull,-1,x );
 
     if (m_widgetAppBar!=0) {

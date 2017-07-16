@@ -27,6 +27,7 @@ EbWidgetMyGroup::EbWidgetMyGroup(QWidget *parent) : QWidget(parent)
     connect( m_treeWidgetMyGroup,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
     m_treeWidgetMyGroup->setMouseTracking(true);
     connect( m_treeWidgetMyGroup,SIGNAL(itemEntered(QTreeWidgetItem*,int)),this,SLOT(onItemEntered(QTreeWidgetItem*,int)) );
+    connect( m_treeWidgetMyGroup,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this,SLOT(onItemDoubleClicked(QTreeWidgetItem*,int)) );
     //    connect( m_treeWidgetMyGroup,SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),this,SLOT(onCurrentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)) );
 
     /// “打开会话”按钮
@@ -91,19 +92,7 @@ void EbWidgetMyGroup::SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemI
         return;
     }
 
-    int nSubType = 0;
-    if (theApp->isEnterpriseCreateUserId(memberInfo->m_nMemberUserId))
-        nSubType = 11;
-    else if (theApp->m_ebum.EB_IsGroupCreator(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
-        nSubType = 10;
-    else if (theApp->m_ebum.EB_IsGroupManager(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
-        nSubType = 10;
-    else if (theApp->m_ebum.EB_IsGroupAdminLevel(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
-        nSubType = 9;
-    else if (theApp->m_ebum.EB_GetLogonUserId()==memberInfo->m_nMemberUserId)
-        nSubType = 1;
-    else
-        nSubType = 0;
+    const int nSubType = EbWidgetItemInfo::memberSubType(memberInfo);
 
     QString sText;
     if (memberInfo->m_sJobTitle.empty())
@@ -122,7 +111,7 @@ void EbWidgetMyGroup::SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemI
         }
     }
     else {
-        itemInfo->m_hItem->setText(1,sText);
+        itemInfo->m_hItem->setText(0,sText);
         if ( nSortItems==AUTO_SORT &&
              (memberInfo->m_nLineState!=(EB_USER_LINE_STATE)itemInfo->m_dwItemData ||
               itemInfo->m_nIndex!=memberInfo->m_nDisplayIndex ||
@@ -136,7 +125,7 @@ void EbWidgetMyGroup::SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemI
 
     /// ?? 这里要实现，状况改变
     if (nSortItems==FORCE_SORT) {
-        pGroupItemInfo->m_hItem->sortChildren( 1,Qt::AscendingOrder );
+        pGroupItemInfo->m_hItem->sortChildren( 0,Qt::AscendingOrder );
     }
 }
 
@@ -265,6 +254,15 @@ void EbWidgetMyGroup::deleteMemberInfo(const EB_GroupInfo *pGroupInfo, eb::bigin
     }
 }
 
+void EbWidgetMyGroup::onItemDoubleClicked(QTreeWidgetItem *item, int /*column*/)
+{
+    const EbTreeWidgetItem* ebitem = (EbTreeWidgetItem*)item;
+    if (ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
+        createMenuData();
+        m_contextMenu->onCallItem(ebitem->m_itemInfo);
+    }
+}
+
 //void EbWidgetMyGroup::deleteGroupInfo(const EB_GroupInfo *pGroupInfo)
 //{
 //    {
@@ -298,10 +296,9 @@ void EbWidgetMyGroup::timerEvent(QTimerEvent *event)
     if (m_timerIdCheckState!=0 && event->timerId()==m_timerIdCheckState) {
         if (m_pushButtonCall->isVisible()) {
             /// 实现定期自动判断当前鼠标位置，并刷新 call 按钮
-            const QRect& rectTreeWidget = m_treeWidgetMyGroup->geometry();
-            const QRect rectToDialog(m_treeWidgetMyGroup->pos(),rectTreeWidget.size());
+            const QRect& rect = m_treeWidgetMyGroup->geometry();
             const QPoint pointMouseToDialog = this->mapFromGlobal(this->cursor().pos());
-            if (!rectToDialog.contains(pointMouseToDialog)) {
+            if (!rect.contains(pointMouseToDialog)) {
                 m_pushButtonCall->setVisible(false);
             }
         }
@@ -497,19 +494,16 @@ void EbWidgetMyGroup::onClickedPushButtonCall(void)
 
 void EbWidgetMyGroup::onClickedPushButtonEdit()
 {
-//    const EbTreeWidgetItem* item = (EbTreeWidgetItem*)m_pushButtonEdit->property("track-item").toULongLong();
-//    if (item==0) {
-//        return;
-//    }
+    const EbTreeWidgetItem* item = (EbTreeWidgetItem*)m_pushButtonEdit->property("track-item").toULongLong();
+    if (item==0) {
+        return;
+    }
     m_pushButtonEdit->hide();
     m_pushButtonEdit->setProperty("track-item",QVariant((quint64)0));
     m_treeWidgetMyGroup->setFocus();
 //    onEditItem((QTreeWidgetItem*)item);
-    const EbTreeWidgetItem * item = (EbTreeWidgetItem*)m_pushButtonCall->property("track-item").toULongLong();
-    if (item!=0) {
-        createMenuData();
-        m_contextMenu->onEditItem(item->m_itemInfo);
-    }
+    createMenuData();
+    m_contextMenu->onEditItem(item->m_itemInfo);
 }
 
 //void EbWidgetMyGroup::onTriggeredActionNewGroup()

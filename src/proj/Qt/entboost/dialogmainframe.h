@@ -16,6 +16,8 @@ class DialogFrameList;
 class DialogMessageTip;
 class DialogMyCenter;
 class EbWidgetAppBar;
+class EbLineEdit;
+class EbWidgetSearchResult;
 
 //#define USES_EVENT_DATE_TIMER
 class DialogMainFrame : public EbDialogBase
@@ -51,6 +53,16 @@ public slots:
 
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 
+    void onSearchEditTextChange(const QString &text);
+    void onSearchEditKeyPressEsc(void);
+    void onSearchEditKeyPressEnter(const QString &text);
+    void onSearchEditKeyPressDown(void);
+
+    void onSearchFirst(const QString &url);
+    void onClickedSearchResultUrl(const QString &url);
+    void onListResultsKeyPressFirstItemUp(void);
+    void onListResultsKeyPressEsc(void);
+
 //    void onClickedPushButtonFileManager(void);
 
     void processDatas(void);
@@ -66,8 +78,8 @@ protected:
     virtual void mouseDoubleClickEvent(QMouseEvent *event);
     virtual void keyPressEvent(QKeyEvent *);
     virtual void contextMenuEvent(QContextMenuEvent *);
-    bool eventFilter(QObject *obj, QEvent *ev);
-    void timerEvent( QTimerEvent *event );
+    virtual bool eventFilter(QObject *obj, QEvent *ev);
+    virtual void timerEvent( QTimerEvent *event );
 
     void createMenuData(void);
     QSystemTrayIcon * m_trayIcon;
@@ -95,6 +107,7 @@ private:
     bool onReceivingFile(QEvent *e);
     void onReceivedFile(QEvent *e);
     void onFilePercent(QEvent *e);
+    void onSave2Cloud(QEvent *e);
     /// 聊天会话
     void CreateFrameList(bool bShow);
     DialogChatBase::pointer getDialogChatBase(const EbcCallInfo::pointer & pEbCallInfo,bool bShow=true,bool bOwnerCall=false);
@@ -152,6 +165,10 @@ private:
     DialogMessageTip * m_pDlgMsgTip;
     EbWidgetMyGroup*  m_widgetMyGroup;
     EbWidgetAppBar * m_widgetMainAppBar;
+    EbLineEdit * m_lineEditSearch;
+    EbWidgetSearchResult * m_widgetSearchResult;
+//    bool m_canSearch;
+    bool m_canUpdateSearchFirst;
 #ifdef USES_EVENT_DATE_TIMER
     int m_checkEventData;
     CLockListPtr<QEvent*> m_eventList;

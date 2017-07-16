@@ -159,7 +159,7 @@ void EbWidgetFileTranItem::setFilePercent(const CChatRoomFilePercent *pChatRoomF
 //        sprintf( status, "%.2f%% %.2fKB/S", pChatRoomFilePercent->m_percent,pChatRoomFilePercent->m_nCurSpeed/1024.0);
     }
     const QString format = QString("%p% %1").arg(status);
-    m_progressBar->setValue( pChatRoomFilePercent->m_percent*100 );
+    m_progressBar->setValue( (int)(pChatRoomFilePercent->m_percent) );
     m_progressBar->setFormat( format );
 }
 
@@ -217,8 +217,8 @@ void EbWidgetFileTranItem::onButtonSaveas()
     theApp->m_ebum.EB_AcceptFile( m_fileInfo.GetCallId(),m_fileInfo.m_nMsgId, newPath.toStdString().c_str() );
     /// ? P2P等开始传统文件再hide
     m_buttonSave2Cloud->setVisible(false);
-    m_buttonSaveas->setVisible(false);      /// enable false
-    m_buttonSave->setVisible(false);        /// enable false
+    m_buttonSaveas->setEnabled(false);
+    m_buttonSave->setEnabled(false);
     m_buttonReject->setText( theLocales.getLocalText("tran-file.button-reject-cancel.text","Cancel") );
     m_buttonReject->setToolTip( theLocales.getLocalText("tran-file.button-reject-cancel.tooltip","") );
     m_buttonReject->setVisible(true);
@@ -243,9 +243,9 @@ void EbWidgetFileTranItem::onButtonSave()
             sSaveTo = QString("%1/%2(%3).%4").arg(theApp->userFilePath()).arg(sFileSimpleName.c_str()).arg(++index).arg(sFileExt.c_str());
     }
     theApp->m_ebum.EB_AcceptFile( m_fileInfo.GetCallId(),m_fileInfo.m_nMsgId, sSaveTo.toStdString().c_str() );
-    m_buttonSave2Cloud->setVisible(false);  /// enable false
-    m_buttonSaveas->setVisible(false);      /// enable false
-    m_buttonSave->setVisible(false);        /// enable false
+    m_buttonSave2Cloud->setEnabled(false);
+    m_buttonSaveas->setEnabled(false);
+    m_buttonSave->setEnabled(false);
     m_buttonReject->setText( theLocales.getLocalText("tran-file.button-reject-cancel.text","Cancel") );
     m_buttonReject->setToolTip( theLocales.getLocalText("tran-file.button-reject-cancel.tooltip","") );
     m_buttonReject->setVisible(true);

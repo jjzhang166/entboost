@@ -48,6 +48,11 @@ const mycp::bigint theVisitorStartId = 0x2000000000000LL;	// =562949953421312(15
 #define is_visitor_uid(id) (id>=theVisitorStartId)
 #endif // is_visitor_uid
 
+typedef enum EB_SEND_KEY_TYPE {
+    EB_SEND_KEY_ENTER,
+    EB_SEND_KEY_CTRL_ENTER
+}EB_SEND_KEY_TYPE;
+
 typedef enum EB_MSG_RECORD_TYPE
 {
     MRT_UNKNOWN
@@ -153,6 +158,8 @@ public:
     EB_BROWSER_TYPE defaultBrowserType(void) const {return m_nDefaultBrowserType;}
     bool setDefaultUIStyleType(EB_UI_STYLE_TYPE newValue);
     EB_UI_STYLE_TYPE defaultUIStyleType(void) const {return m_nDefaultUIStyleType;}
+    void setSendKeyType(EB_SEND_KEY_TYPE v);
+    EB_SEND_KEY_TYPE sendKeyType(void) const {return m_sendKeyType;}
 
     const QRect& deskRect(void) const {return m_deskRect;}
     const QRect& screenRect(void) const {return m_screenRect;}
@@ -181,6 +188,7 @@ public slots:
 private:
     void onAppIdSuccess(QEvent *e);
     void onAppIdError(QEvent *e);
+    void loadUserSetting(void);
 
     HttpFileDownload m_httpFileDownload;
     void updateColor(bool bUpdateDatabase);
@@ -237,6 +245,7 @@ private:
     QString m_sForgetPwdUrl;
 
     EB_UI_STYLE_TYPE m_nDefaultUIStyleType;
+    EB_SEND_KEY_TYPE m_sendKeyType;
 
     QRect m_deskRect;
     QRect m_screenRect;

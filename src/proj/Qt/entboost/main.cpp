@@ -143,6 +143,8 @@ int main(int argc, char *argv[])
 //    return 1;
 //    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
+    /// 加了这行代码，会有问题；
+//    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
 
 //    QtWebEngine::initialize();
 

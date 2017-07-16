@@ -166,6 +166,36 @@ bool EbTextEdit::formatInputMsg(EB_ChatRoomRichMsg *pOutMsgFormat)
     return true;
 }
 
+void EbTextEdit::keyPressEvent(QKeyEvent *e)
+{
+    if ( !this->document()->isEmpty() && (e->key()==Qt::Key_Enter || e->key()==Qt::Key_Return) ) {
+        if ( theApp->sendKeyType()==EB_SEND_KEY_ENTER ) {
+            /// Enter 回车发送消息
+            if ( (e->modifiers()&Qt::ControlModifier)!=0 ) {
+                /// 需要回车
+                this->insertPlainText("\n");
+                return;
+            }
+            else {
+                emit requestSendText();
+                return;
+            }
+        }
+        else {
+            /// Ctrl+Enter 发送消息
+            if ( (e->modifiers()&Qt::ControlModifier)!=0 ) {
+                emit requestSendText();
+                return;
+            }
+            else {
+                /// 增加换行默认跑后面即可
+            }
+        }
+    }
+
+    QTextEdit::keyPressEvent(e);
+}
+
 //void EbTextEdit::timerEvent(QTimerEvent *event)
 //{
 //    if ( m_timerCheck==event->timerId() ) {

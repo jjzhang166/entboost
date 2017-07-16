@@ -5,6 +5,7 @@
 
 EbFrameList::EbFrameList(QWidget* parent)
     : m_pParent(parent)
+    , m_leftWidth(0)
 {
     assert(m_pParent!=0);
 
@@ -31,7 +32,7 @@ DialogWorkFrame *EbFrameList::getWorkFrame() const
     return 0;
 }
 
-void EbFrameList::addFrameItem(int leftWidth, const EbFrameItem::pointer &frameItem,bool bShow, bool bAutoCall, bool bForceAddToList,int nInsertOffset)
+void EbFrameList::addFrameItem(const EbFrameItem::pointer &frameItem,bool bShow, bool bAutoCall, bool bForceAddToList,int nInsertOffset)
 {
     if ( frameItem->isItemType(EbFrameItem::FRAME_ITEM_WORK_FRAME) ) {
         if ( showWorkFrame()!=0 ) {
@@ -61,7 +62,7 @@ void EbFrameList::addFrameItem(int leftWidth, const EbFrameItem::pointer &frameI
         }
     }
 
-    frameItem->buildButton( leftWidth,m_pParent );
+    frameItem->buildButton( m_leftWidth,m_pParent );
     if (nInsertIndex>=0) {
         onMove();
     }
@@ -69,7 +70,7 @@ void EbFrameList::addFrameItem(int leftWidth, const EbFrameItem::pointer &frameI
         nInsertIndex = (int)m_list.size();
         m_list.add(frameItem);
     }
-    frameItem->onResize( nInsertIndex,m_pParent->geometry(),leftWidth );
+    frameItem->onResize( nInsertIndex,m_pParent->geometry(),m_leftWidth );
     if ( frameItem->isItemType(EbFrameItem::FRAME_ITEM_WORK_FRAME) ) {
         if (bShow)
             showByIndex(nInsertIndex);
@@ -100,11 +101,12 @@ DialogChatBase::pointer EbFrameList::getDialogChatBase(mycp::bigint nCallId, boo
         return DialogChatBaseNull;
     }
     {
-//        EbFrameItem::pointer pPrevFrameWndInfo;
         BoostWriteLock wtLock(m_list.mutex());
         CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
+        int currentIndex = 0;
         for (; pIter!=m_list.end(); pIter++) {
             const EbFrameItem::pointer pFrameWndInfo = *pIter;
+            currentIndex++;
             if (pFrameWndInfo->callId()!=nCallId) {
                 continue;
             }
@@ -112,26 +114,13 @@ DialogChatBase::pointer EbFrameList::getDialogChatBase(mycp::bigint nCallId, boo
                 m_list.erase(pIter);
                 wtLock.unlock();
                 if (m_list.empty()) {
-//                    if (m_pCallback!=NULL)
-//                        m_pCallback->OnFrameWndEmpty();
-                    //if (m_nShrinkageWin)
-                    //{
-                    //	KillTimer(TIMERID_SHRINKAGE_WIN);
-                    //	m_nShrinkageWin = false;
-                    //	m_pDlgShrinkageBar->ShowWindow(SW_HIDE);
-                    //}
-                    //this->ShowWindow(SW_HIDE);
+                    this->m_pParent->hide();
                     return pFrameWndInfo->dialogChatBase();
                 }
-//                else if (pPrevFrameWndInfo.get()!=NULL) {
-//                    pPrevFrameWndInfo->ShowHide(true);
-//                    if (m_pCallback!=NULL)
-//                        m_pCallback->OnFrameWndShow(pPrevFrameWndInfo,true);
-//                }
-                else {
-                    EbFrameList::showFirst();
+                if ( !this->showByIndex(currentIndex) ) {
+                    this->showByIndex(currentIndex-1);
                 }
-//                RebuildBtnSize();
+                onMove();
             }
             else {// if (pFrameWndInfo->IsChecked() && m_pParent->IsWindowVisible())
                 if (!bAutoCall && pFrameWndInfo->isChecked() && m_pParent->isVisible()) {
@@ -164,12 +153,10 @@ bool EbFrameList::addUnreadMsg(eb::bigint nCallId, eb::bigint nMsgId)
     {
         BoostReadLock rdLock(m_list.mutex());
         CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
-        for (; pIter!=m_list.end(); pIter++)
-        {
-            const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-            if (pFrameWndInfo->callId()==nCallId)
-            {
-                pFrameWndInfo->addUnreadMsg();
+        for (; pIter!=m_list.end(); pIter++) {
+            const EbFrameItem::pointer& frameItem = *pIter;
+            if (frameItem->callId()==nCallId) {
+                frameItem->addUnreadMsg();
                 bResult = true;
                 goto AddUnreadMsgCount;
             }
@@ -180,16 +167,14 @@ bool EbFrameList::addUnreadMsg(eb::bigint nCallId, eb::bigint nMsgId)
     {
         BoostWriteLock wtLock(m_hide.mutex());
         CLockList<EbFrameItem::pointer>::iterator pIter = m_hide.begin();
-        for (; pIter!=m_hide.end(); pIter++)
-        {
-            const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-            if (pFrameWndInfo->callId()==nCallId)
-            {
-                const EbFrameItem::pointer pFrameWndInfoTemp = pFrameWndInfo;
+        for (; pIter!=m_hide.end(); pIter++) {
+            const EbFrameItem::pointer& frameItem = *pIter;
+            if (frameItem->callId()==nCallId) {
+                const EbFrameItem::pointer frameItemTemp = frameItem;
                 m_hide.erase(pIter);
                 wtLock.unlock();
-//                this->AddWnd(pFrameWndInfoTemp,true,false);
-                pFrameWndInfoTemp->addUnreadMsg();
+                addFrameItem( frameItemTemp,true,false );
+                frameItemTemp->addUnreadMsg();
                 bResult = true;
                 goto AddUnreadMsgCount;
             }
@@ -197,8 +182,8 @@ bool EbFrameList::addUnreadMsg(eb::bigint nCallId, eb::bigint nMsgId)
     }
 AddUnreadMsgCount:
     if (nMsgId>0) {
-        // *** read_flag=1 已经读；
-        // *** read_flag=2 对方接收回执
+        /// *** read_flag=1 已经读；
+        /// *** read_flag=2 对方接收回执
         char sSql[256];
         sprintf(sSql,"UPDATE msg_record_t SET read_flag=read_flag&2 WHERE msg_id=%lld AND (read_flag&1)=1",nMsgId);	// 1->0;3->2
         theApp->m_sqliteUser->execute(sSql);
@@ -269,6 +254,18 @@ void EbFrameList::onMemberInfo(const EB_MemberInfo *pMemberInfo, bool bSort)
         const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
         if (chatBase.get()!=0) {
             chatBase->onMemberInfo(pMemberInfo,bSort);
+        }
+    }
+}
+
+void EbFrameList::onGroupInfo(const EB_GroupInfo *pGroupInfo)
+{
+    BoostReadLock rdLock(m_list.mutex());
+    CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
+    for (; pIter!=m_list.end(); pIter++) {
+        const EbFrameItem::pointer& pFrameWndInfo = *pIter;
+        if (pFrameWndInfo->onGroupInfo(pGroupInfo)) {
+            break;
         }
     }
 }
@@ -352,7 +349,7 @@ void EbFrameList::onContactHeadChange(const EB_ContactInfo *pContactInfo)
     }
 }
 
-void EbFrameList::showByCallId(int leftWidth,mycp::bigint nCallId)
+void EbFrameList::showByCallId(mycp::bigint nCallId)
 {
     if (nCallId==0) return;
     bool bFindInfo = false;
@@ -386,21 +383,21 @@ void EbFrameList::showByCallId(int leftWidth,mycp::bigint nCallId)
             const EbFrameItem::pointer pFrameWndInfoTemp = pFrameWndInfo;
             m_hide.erase(pIter);
             wtLock.unlock();
-            addFrameItem( leftWidth,pFrameWndInfoTemp,true,false,true );
+            addFrameItem( pFrameWndInfoTemp,true,false,true );
             break;
         }
     }
 
 }
 
-void EbFrameList::onResize(const QRect& rect, int leftWidth)
+void EbFrameList::onResize(const QRect& rect)
 {
     BoostReadLock rdLock(m_list.mutex());
     CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
     int index = 0;
     for (; pIter!=m_list.end(); pIter++) {
         const EbFrameItem::pointer& frameInfo = *pIter;
-        frameInfo->onResize(index++, rect, leftWidth);
+        frameInfo->onResize(index++, rect, m_leftWidth);
     }
 
 }
@@ -435,7 +432,7 @@ void EbFrameList::checkCloseItem()
         const EbFrameItem::pointer& frameInfo = *pIter;
         const qint64 closeTime = frameInfo->closeTime();
         if (closeTime==0 || (closeTime+300)<nowTime) {
-            // 300=5分钟后，自动关闭隐藏窗口
+            /// 300=5分钟后，自动关闭隐藏窗口
             m_hide.erase(pIter++);
         }
         else {
@@ -491,8 +488,8 @@ void EbFrameList::clickedLeftButton(const QPushButton *leftButton, const QPoint&
     EbFrameItem::pointer frameInfoClose;
     {
         /// 同时判断是否点击了关闭按钮，并切换到不同的ITEM显示
-        EbFrameItem::pointer frameInfoPrevChecked;    // 点击关闭前一个checked ITEM
-        EbFrameItem::pointer frameInfoPrevClose;    // 点击关闭前一个ITEM
+        EbFrameItem::pointer frameInfoPrevChecked;    /// 点击关闭前一个checked ITEM
+        EbFrameItem::pointer frameInfoPrevClose;    /// 点击关闭前一个ITEM
         BoostWriteLock wtLock(m_list.mutex());
         CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
         for (; pIter!=m_list.end(); ) {
@@ -510,25 +507,29 @@ void EbFrameList::clickedLeftButton(const QPushButton *leftButton, const QPoint&
             }
             else if (clickState==1) {
                 frameInfoClose = frameInfo;
-                m_hide.add(frameInfo);
-                m_list.erase(pIter++);
-                if (frameInfoClose->isChecked() && frameInfoPrevClose.get()!=0) {
-                    /// *关闭显示ITEM，显示前一个 ITEM，然后退出
-                    frameInfoPrevClose->setChecked(true);
-                    break;
-                }
-                else if(frameInfoClose->isChecked()) {
-                    /// *关闭显示ITEM，需要显示下一个ITEM
-                    continue;
-                }
-                else {
-                    /// *关闭其他ITEM，直接退出
-                    if (frameInfoPrevChecked.get()!=NULL) {
-                        /// 重新设置前一个 checked ITEM
-                        frameInfoPrevChecked->setChecked(true);
-                    }
-                    break;
-                }
+                wtLock.unlock();
+                frameInfoClose->requestClose();
+                return;
+//                frameInfoClose = frameInfo;
+//                m_hide.add(frameInfo);
+//                m_list.erase(pIter++);
+//                if (frameInfoClose->isChecked() && frameInfoPrevClose.get()!=0) {
+//                    /// *关闭显示ITEM，显示前一个 ITEM，然后退出
+//                    frameInfoPrevClose->setChecked(true);
+//                    break;
+//                }
+//                else if(frameInfoClose->isChecked()) {
+//                    /// *关闭显示ITEM，需要显示下一个ITEM
+//                    continue;
+//                }
+//                else {
+//                    /// *关闭其他ITEM，直接退出
+//                    if (frameInfoPrevChecked.get()!=NULL) {
+//                        /// 重新设置前一个 checked ITEM
+//                        frameInfoPrevChecked->setChecked(true);
+//                    }
+//                    break;
+//                }
             }
             else {
                 if (frameInfoPrevChecked.get()==0 && frameInfo->isChecked()) {

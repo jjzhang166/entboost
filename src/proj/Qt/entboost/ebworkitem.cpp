@@ -15,6 +15,7 @@ EbWorkItem::EbWorkItem(WORK_ITEM_TYPE itemType)
     : m_itemType(itemType)
     , m_widgetUserInfo(0)
     , m_widgetUserList(0)
+    , m_widgetChatRecord(0)
     , m_widgetTranFile(0)
     , m_topButtonWidth(140)
     , m_pushButtonTop(0)
@@ -80,6 +81,10 @@ void EbWorkItem::buildButton(bool saveUrl,int topHeight, QWidget *parent)
         m_widgetUserList = new EbWidgetUserList(m_callInfo,parent);
         m_itemText = theLocales.getLocalText("user-list.title","User List");
     }
+    else if ( isItemType(WORK_ITEM_CHAT_RECORD) && m_widgetUserInfo==0 ) {
+        m_widgetChatRecord = new EbWidgetChatRecord(m_callInfo,parent);
+        m_itemText = theLocales.getLocalText("chat-record.title","Chat Record");
+    }
     else if ( isItemType(WORK_ITEM_TRAN_FILE) && m_widgetTranFile==0 ) {
         m_widgetTranFile = new EbWidgetFileTranList(m_callInfo,parent);
         m_itemText = theLocales.getLocalText("tran-file.title","Tran File");
@@ -106,7 +111,7 @@ void EbWorkItem::buildButton(bool saveUrl,int topHeight, QWidget *parent)
         if ( isItemType(WORK_ITEM_USER_LIST) ) {
             this->connect( m_widgetUserList,SIGNAL(memberOnlineSizeChange(int,int)),this,SLOT(onMemberOnlineSizeChange(int,int)) );
         }
-        if ( m_itemType>=WORK_ITEM_CHAT_MESSAGE )
+        if ( m_itemType>=WORK_ITEM_WEB_BROWSER )
             m_pushButtonTop->setObjectName("TopSwitchButton");
         else
             m_pushButtonTop->setObjectName("TopSwitchButton2");
@@ -119,6 +124,9 @@ void EbWorkItem::buildButton(bool saveUrl,int topHeight, QWidget *parent)
         }
         else if ( isItemType(WORK_ITEM_USER_LIST) ) {
             m_pushButtonTop->setToolTip( theLocales.getLocalText("user-list.title","") );
+        }
+        else if ( isItemType(WORK_ITEM_CHAT_RECORD) ) {
+            m_pushButtonTop->setToolTip( theLocales.getLocalText("chat-record.title","") );
         }
         else if ( isItemType(WORK_ITEM_TRAN_FILE) ) {
             m_pushButtonTop->setToolTip( theLocales.getLocalText("tran-file.title","") );
@@ -202,6 +210,9 @@ int EbWorkItem::onResize(int index, const QRect &rect, int topHeight, int leftOf
     else if (m_widgetUserList!=0) {
         m_widgetUserList->setGeometry( leftOffset,y,rect.width()-leftOffset,rect.height()-y );
     }
+    else if (m_widgetChatRecord!=0) {
+        m_widgetChatRecord->setGeometry( leftOffset,y,rect.width()-leftOffset,rect.height()-y );
+    }
     else if (m_widgetTranFile!=0) {
         m_widgetTranFile->setGeometry( leftOffset,y,rect.width()-leftOffset,rect.height()-y );
     }
@@ -253,6 +264,11 @@ void EbWorkItem::setChecked(bool checked, bool hideButton, bool /*bSearchFocus*/
         if (checked)
             m_widgetUserList->setFocus();
     }
+    else if (m_widgetChatRecord!=0) {
+        m_widgetChatRecord->setVisible(visible);
+        if (checked)
+            m_widgetChatRecord->setFocus();
+    }
     else if (m_widgetTranFile!=0) {
         m_widgetTranFile->setVisible(visible);
         if (checked)
@@ -282,6 +298,9 @@ bool EbWorkItem::setCheckedFocus()
         }
         else if (m_widgetUserList!=0) {
             m_widgetUserList->setFocus();
+        }
+        else if (m_widgetChatRecord!=0) {
+            m_widgetChatRecord->setFocus();
         }
         else if (m_widgetTranFile!=0) {
             m_widgetTranFile->setFocus();
@@ -318,6 +337,9 @@ void EbWorkItem::sendClose()
     }
     else if (m_widgetUserList!=0) {
         m_widgetUserList->close();
+    }
+    else if (m_widgetChatRecord!=0) {
+        m_widgetChatRecord->close();
     }
     else if (m_widgetTranFile!=0) {
         m_widgetTranFile->close();

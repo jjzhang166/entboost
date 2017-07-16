@@ -16,9 +16,11 @@ public:
 
 signals:
     void dropSendFile(const QString &filePath);
+    void requestSendText(void);
 
 protected:
 //    virtual void timerEvent( QTimerEvent *event );
+    virtual void keyPressEvent(QKeyEvent *ev);
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);

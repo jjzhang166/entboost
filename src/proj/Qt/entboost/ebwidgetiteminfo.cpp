@@ -184,22 +184,34 @@ bool EbWidgetItemInfo::operator <(const EbWidgetItemInfo *pItemInfo)
     return true;
 }
 
-void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
+int EbWidgetItemInfo::memberSubType(const EB_MemberInfo *memberInfo)
+{
+    EB_GROUP_TYPE groupType = EB_GROUP_TYPE_DEPARTMENT;
+    theApp->m_ebum.EB_GetGroupType(memberInfo->m_sGroupCode,groupType);
+    return memberSubType( groupType, memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId );
+}
+
+int EbWidgetItemInfo::memberSubType(EB_GROUP_TYPE groupType, eb::bigint groupId, eb::bigint memberUserId)
 {
     int nSubType = 0;
-    if (theApp->isEnterpriseCreateUserId(memberInfo->m_nMemberUserId))
+    if (groupType<=EB_GROUP_TYPE_PROJECT && theApp->isEnterpriseCreateUserId(memberUserId))
         nSubType = 11;
-    else if (theApp->m_ebum.EB_IsGroupCreator(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
+    else if (theApp->m_ebum.EB_IsGroupCreator(groupId, memberUserId))
         nSubType = 10;
-    else if (theApp->m_ebum.EB_IsGroupManager(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
+    else if (theApp->m_ebum.EB_IsGroupManager(groupId, memberUserId))
         nSubType = 10;
-    else if (theApp->m_ebum.EB_IsGroupAdminLevel(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
+    else if (theApp->m_ebum.EB_IsGroupAdminLevel(groupId, memberUserId))
         nSubType = 9;
-    else if (theApp->m_ebum.EB_GetLogonUserId()==memberInfo->m_nMemberUserId)
+    else if (theApp->logonUserId()==memberUserId)
         nSubType = 1;
     else
         nSubType = 0;
+    return nSubType;
+}
 
+void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
+{
+    const int nSubType = memberSubType(memberInfo);
     const QString sImagePath = QString::fromStdString(memberInfo->m_sHeadResourceFile.string());
     const EB_USER_LINE_STATE pOutLineState = memberInfo->m_nLineState;
     const QString sHeadMd5 = QString::fromStdString(memberInfo->m_sHeadMd5.string());
@@ -225,18 +237,20 @@ void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
     }
 
     /// 禁言图标
-    if ((memberInfo->m_nManagerLevel&EB_LEVEL_FORBID_SPEECH)==0)
-        this->m_nExtData &= ~EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
-    else
-        this->m_nExtData |= EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
+    bool oldForbidSpeech = false;
     QImage imageForbid;
-    if ((this->m_nExtData&EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH)!=0) {
+    if ((memberInfo->m_nManagerLevel&EB_LEVEL_FORBID_SPEECH)==0) {
+        oldForbidSpeech = (this->m_nExtData&EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH)==0?false:true;
+        this->m_nExtData &= ~EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
+    }
+    else {
+        this->m_nExtData |= EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
         imageForbid = QImage(":/img/imgstateforbid.png");
     }
 
 //    const QVariant variantFileMd5 = this->m_hItem->data( 0,EB_WIDGET_ITEM_USER_ROLE_FILE_MD5 );
     if (!sImagePath.isEmpty() && QFile::exists(sImagePath)) {
-        if (memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
+        if (oldForbidSpeech || memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
                 !m_headMd5.isValid() || m_headMd5.toString()!= sHeadMd5) {
             m_headMd5 = QVariant(sHeadMd5);
 //            this->m_hItem->setData( 0,EB_WIDGET_ITEM_USER_ROLE_FILE_MD5,QVariant(sHeadMd5) );
@@ -263,7 +277,7 @@ void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
         }
     }
     else {
-        if (memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
+        if (oldForbidSpeech || memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
                 !m_headMd5.isValid() || !m_headMd5.toString().isEmpty()) {
             m_headMd5 = QVariant("");
 //            this->m_hItem->setData( 0,EB_WIDGET_ITEM_USER_ROLE_FILE_MD5,QVariant(QString()) );

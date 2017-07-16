@@ -174,28 +174,6 @@
     <string>user image</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEditSearch">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>170</y>
-     <width>231</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true"/>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="maxLength">
-    <number>64</number>
-   </property>
-   <property name="frame">
-    <bool>false</bool>
-   </property>
-  </widget>
   <widget class="QLabel" name="labelSearchIcon">
    <property name="geometry">
     <rect>

@@ -18,22 +18,42 @@ EbWidgetChatRight::EbWidgetChatRight(const EbcCallInfo::pointer& pCallInfo,QWidg
         EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_USER_INFO);
         workItem->setCallInfo( m_callInfo );
         workItem->setTopButtonWidth( const_top_button_width );
-        DialogWorkFrame::addWorkItem(false,0,0,workItem,0);
+        DialogWorkFrame::addWorkItem(false,workItem,0);
     }
     else {
         ///
         EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_USER_LIST);
         workItem->setCallInfo( m_callInfo );
         workItem->setTopButtonWidth( const_top_button_width );
-        DialogWorkFrame::addWorkItem(false,0,0,workItem,0);
+        DialogWorkFrame::addWorkItem(false,workItem,0);
     }
+}
+
+EbWidgetChatRight::~EbWidgetChatRight()
+{
+    exitChat(false);
+}
+
+void EbWidgetChatRight::exitChat(bool bHangup)
+{
+//    if (m_pPanVideos!=NULL)
+//    {
+//        m_pPanVideos->ExitChat(bHangup);
+//    }
+    EbWidgetFileTranList * tranFile = widgetTranFile();
+    if ( tranFile!=0 ) {
+        tranFile->onExitChat(bHangup);
+    }
+//    if (m_pPanRemoteDesktop!=NULL)
+//        m_pPanRemoteDesktop->ExitChat(bHangup);
 }
 
 void EbWidgetChatRight::onUserExit(eb::bigint nUserId, bool bExitDep)
 {
     EbWidgetUserList * widgetUserList = DialogWorkFrame::widgetUserList();
-    assert (widgetUserList!=0);
-    widgetUserList->onExitUser( nUserId, bExitDep );
+    if ( widgetUserList!=0 ) {
+        widgetUserList->onExitUser( nUserId, bExitDep );
+    }
 }
 
 void EbWidgetChatRight::setCallInfo(const EbcCallInfo::pointer &pCallInfo)
@@ -54,7 +74,7 @@ void EbWidgetChatRight::onSendingFile(const CCrFileInfo *fileInfo)
     EbWidgetFileTranList * tranFile = this->openTranFile();
     tranFile->onSendingFile(fileInfo);
     if (tranFile->isEmpty()) {
-        DialogWorkFrame::closeItem( 0, indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
+        DialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
     }
 }
 
@@ -83,9 +103,49 @@ void EbWidgetChatRight::deleteTranFile(eb::bigint msgId)
     if (tranFile!=0) {
         tranFile->deleteTranFile(msgId);
         if (tranFile->isEmpty()) {
-            DialogWorkFrame::closeItem( 0, indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
+            DialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
         }
     }
+}
+
+void EbWidgetChatRight::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
+{
+    EbWidgetUserList * userList = widgetUserList();
+    if (userList!=0) {
+        userList->onMemberInfo(memberInfo,bSort);
+    }
+}
+
+void EbWidgetChatRight::getProcessing(bool &/*pVideoProcessing*/, bool &pFileProcessing, bool &/*pDesktopProcessing*/) const
+{
+//    if (m_pPanVideos!=NULL)
+//    {
+//        pVideoProcessing = m_pPanVideos->GetVideoCount()>0;
+//    }else
+//    {
+//        pVideoProcessing = false;
+//    }
+    const EbWidgetFileTranList * tranFile = widgetTranFile();
+    pFileProcessing = (tranFile!=0 && !tranFile->isEmpty())?true:false;
+//    if (m_pPanRemoteDesktop!=NULL)
+//        pDesktopProcessing = m_pPanRemoteDesktop->GetInDesktop();
+//    else
+    //        pDesktopProcessing = false;
+}
+
+void EbWidgetChatRight::showMsgRecord()
+{
+    EbWidgetChatRecord * chatRecord = widgetChatRecord();
+    if (chatRecord==0) {
+        EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_CHAT_RECORD);
+        workItem->setCallInfo( m_callInfo );
+        workItem->setTopButtonWidth( const_top_button_width );
+        DialogWorkFrame::addWorkItem(false,workItem);
+    }
+    else {
+        DialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_CHAT_RECORD) );
+    }
+
 }
 
 void EbWidgetChatRight::resizeEvent(QResizeEvent *e)
@@ -101,7 +161,7 @@ EbWidgetFileTranList * EbWidgetChatRight::openTranFile()
         EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_TRAN_FILE);
         workItem->setCallInfo( m_callInfo );
         workItem->setTopButtonWidth( const_top_button_width );
-        DialogWorkFrame::addWorkItem(false,0,0,workItem);
+        DialogWorkFrame::addWorkItem(false,workItem);
         tranFile = workItem->widgetTranFile();
     }
     return tranFile;

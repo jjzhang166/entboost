@@ -8,6 +8,7 @@
 #include <ebwidgetworkview.h>
 #include <ebwidgetuserinfo.h>
 #include <ebwidgetuserlist.h>
+#include <ebwidgetchatrecord.h>
 #include <ebwidgetfiletranlist.h>
 
 //const int const_top_button_width = 140;
@@ -22,7 +23,7 @@ public:
         WORK_ITEM_USER_INFO,             /// 用户名片
         WORK_ITEM_USER_LIST,             /// 群组成员
         WORK_ITEM_TRAN_FILE,             /// 文件传输
-        WORK_ITEM_CHAT_MESSAGE,             /// 历史消息
+        WORK_ITEM_CHAT_RECORD,             /// 聊天记录
         WORK_ITEM_WEB_BROWSER             /// 浏览器
     };
 //    explicit EbWorkItem(QObject *parent=0);
@@ -49,6 +50,7 @@ public:
     EbWidgetWorkView::pointer widgetWorkView(void) const {return m_widgetWorkView;}
     EbWidgetUserInfo * widgetUserInfo(void) const {return m_widgetUserInfo;}
     EbWidgetUserList * widgetUserList(void) const {return m_widgetUserList;}
+    EbWidgetChatRecord * widgetChatRecord(void) const {return m_widgetChatRecord;}
     EbWidgetFileTranList * widgetTranFile(void) const {return m_widgetTranFile;}
 
     QRect rectButton(void) const;
@@ -90,6 +92,7 @@ private:
     EbcCallInfo::pointer m_callInfo;
     EbWidgetUserInfo * m_widgetUserInfo;
     EbWidgetUserList * m_widgetUserList;
+    EbWidgetChatRecord * m_widgetChatRecord;
     EbWidgetFileTranList * m_widgetTranFile;
     int m_topButtonWidth;
     QPushButton * m_pushButtonTop;

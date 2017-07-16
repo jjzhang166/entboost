@@ -136,8 +136,8 @@ DialogLogin::DialogLogin(QWidget *parent)
 //        ui->labelPasswordIcon->move( const_dialog_login_size.width()-const_left_interval-const_edit_icon_size-2,y+2 );
         y += (const_common_edit_height + 10);
         // 记住密码 & 开机启动
-        ui->checkBoxSavePwd->setObjectName("CheckBoxSelect");
-        ui->checkBoxAutoRun->setObjectName("CheckBoxSelect");
+//        ui->checkBoxSavePwd->setObjectName("CheckBoxSelect");
+//        ui->checkBoxAutoRun->setObjectName("CheckBoxSelect");
 #ifdef WIN32
         const int const_checkbox_width = 70;
 #else
@@ -557,16 +557,21 @@ bool DialogLogin::eventFilter(QObject *obj, QEvent *e)
     else if (obj == ui->lineEditAccount) {
         if (e->type() == QEvent::KeyPress) {
             const QKeyEvent * event = (QKeyEvent*)e;
+                if ( (event->key()>=Qt::Key_0 && event->key()<=Qt::Key_9) ||
+                     (event->key()>=Qt::Key_A && event->key()<=Qt::Key_Z) ) {
+                    /// 手工输入密码，清空 m_sOAuthKey
+                    m_sOAuthKey.clear();
+                }
             switch (event->key()) {
             case Qt::Key_Down: {
-                // 实现鼠标向下移动，切换到 listWidgetLoginRecords
+                /// 实现鼠标向下移动，切换到 listWidgetLoginRecords
                 if (ui->listWidgetLoginRecords->isVisible() && !ui->listWidgetLoginRecords->hasFocus()) {
                     ui->listWidgetLoginRecords->setFocus();
                 }
                 break;
             }
             case Qt::Key_Tab: {
-                // 实现按TAB，自动隐藏 listWidgetLoginRecords
+                /// 实现按TAB，自动隐藏 listWidgetLoginRecords
                 if (ui->listWidgetLoginRecords->isVisible()) {
                     onClickedLabelAccountIcon();
                 }
@@ -881,7 +886,8 @@ void DialogLogin::onClickPushButtonLogon(void)
     const EB_USER_LINE_STATE m_nOutLineState = EB_LINE_STATE_ONLINE_NEW;
 
     int ret = 0;
-    if (theApp->ebServerVersion()==0 && sPassword != "********") {	// ** 兼容旧版本，("********"))是新版本自动登录
+    if (theApp->ebServerVersion()==0 && sPassword != "********") {
+        /// ** 兼容旧版本，("********"))是新版本自动登录
         ret = theApp->m_ebum.EB_LogonByAccount(sAccount.toStdString().c_str(),sPassword.toStdString().c_str(),
                                                m_sReqCode,"",m_nOutLineState);
     }
@@ -1168,21 +1174,21 @@ void DialogLogin::onClickPushButtonForgetPwd(void)
 //#include "dialogmemberinfo.h"
 //#include "dialogchangehead.h"
 //#include "dialogemotionselect.h"
-#include "dialogmycenter.h"
+//#include "dialogmycenter.h"
 //#include "dialoggroupinfo.h"  /// 编译有问题
 
 void DialogLogin::onClickPushButtonConnectSetting(void)
 {
     /// for test
 //    DialogGroupInfo dlg;
-    DialogMyCenter dlg;
+//    DialogMyCenter dlg;
 //    DialogEmotionSelect dlg;
 //    DialogChangeHead dlg;
 //    DialogMemberInfo dlg;
 //    DialogMessageTip dlg;
 //    DialogFrameList dlg;
-    dlg.exec();
-    return;
+//    dlg.exec();
+//    return;
 
     DialogConnectSetting pDialogConnectSetting;
     const int ret = pDialogConnectSetting.exec();

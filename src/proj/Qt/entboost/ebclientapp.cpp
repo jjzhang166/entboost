@@ -108,6 +108,15 @@ bool EbClientApp::setDefaultUIStyleType(EB_UI_STYLE_TYPE newValue)
     return false;
 }
 
+void EbClientApp::setSendKeyType(EB_SEND_KEY_TYPE v)
+{
+    if (m_sendKeyType != v) {
+        m_sendKeyType = v;
+        const std::string userSettingIniFile = this->m_userSettingIniFile.toStdString();
+        WritePrivateProfileIntABoost( "default", "send-type", (int)m_sendKeyType, userSettingIniFile.c_str() );
+    }
+}
+
 DialogEmotionSelect* EbClientApp::showDialogEmotionSelect(const QPoint& pt,QObject* receiver)
 {
     if (m_dialogEmotionSelect==0) {
@@ -508,6 +517,13 @@ void EbClientApp::onAppIdError(QEvent *e)
     }
 }
 
+void EbClientApp::loadUserSetting()
+{
+    const std::string sUserSettingIniFile = m_userSettingIniFile.toStdString();
+    m_sendKeyType = (EB_SEND_KEY_TYPE)GetPrivateProfileIntABoost("default","send-type",(int)EB_SEND_KEY_ENTER,sUserSettingIniFile.c_str());
+
+}
+
 //bool EbClientApp::startEBUMClient(void)
 //{
 
@@ -629,7 +645,7 @@ bool EbClientApp::onLogonSuccess(void)
         QDir dir(m_userFilePath);
         dir.mkdir(m_userFilePath);
     }
-//    ReadUserSetting();
+    loadUserSetting();
 
     if (this->m_sqliteUser.get()==NULL) {
         QString sBoPath = QString("%1/%2").arg(m_userMainPath).arg(this->deployId());
@@ -667,7 +683,7 @@ bool EbClientApp::onLogonSuccess(void)
         //m_nDefaultUIStyleType = EB_UI_STYLE_TYPE_OFFICE;	// *
     }
     else {
-        // 检查默认界面类型
+        /// 检查默认界面类型
         const std::string sUserSettingIniFile = m_userSettingIniFile.toStdString();
         const int nDefaultUIStyleType = GetPrivateProfileIntABoost("default","uistyle-type",2,sUserSettingIniFile.c_str());
         if (nDefaultUIStyleType>=2) {

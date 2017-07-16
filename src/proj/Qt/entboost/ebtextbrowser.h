@@ -19,12 +19,15 @@ public:
     void insertUrl(const QString & url);
     void insertPlainTextEb(const QString & text,const QColor & color);
     void addRichMsg(bool saveHistory, bool bReceive,const CCrRichInfo* pCrMsgInfo,EB_STATE_CODE nState=EB_STATE_OK,QString* sOutFirstMsg1=0,QString* sOutFirstMsg2=0);
-    void addFileMsg(bool bReceive, const CCrFileInfo *fileInfo, EB_STATE_CODE nState);
+    void addFileMsg(bool bReceive, const CCrFileInfo *fileInfo);
     void writeMsgDate(time_t tMsgTime);
+    void moveTextBrowserToStart(void);
     void moveTextBrowserToEnd(void);
     void addLineString(eb::bigint msgId,const QString& sText);
     void updateMsgText(eb::bigint msgId, const QString &newText, int blockFrom, int blockTo=-1);
     void setMsgReceiptFlag(eb::bigint msgId, int receiptFlag);
+    void loadHistoryMsg(int loadLastCount);
+    void loadMsgRecord(const char * sql, bool desc);
 
 public slots:
     void onAnchorClicked(const QUrl &);
@@ -39,13 +42,12 @@ protected:
 //    virtual void paintEvent(QPaintEvent *e);
 
     EbTextBlockUserData * updateBlockMsgId(eb::bigint msgId);
-    void loadHistoryMsg(void);
-    void loadMsgRecord(const char * sql);
-    void writeTitle(eb::bigint nMsgId,bool bPrivate,eb::bigint nFromUid,const tstring& sFromName,eb::bigint nToUid,const tstring& sToName,time_t tMsgTime, int nReadFlag,QString *pOutWindowText=0);
-    void writeFileMessage(eb::bigint msgId,eb::bigint resourceId, const char* filePath,QString *pOutMsgText=0);
+    void getFromToName(bool bReceive, eb::bigint fromUserId, eb::bigint toUserId, tstring& pOutFromUserName, tstring & pOutToUserName);
+    void writeTitle(bool writeLeft,eb::bigint nMsgId,bool bPrivate,eb::bigint nFromUid,const tstring& sFromName,eb::bigint nToUid,const tstring& sToName,time_t tMsgTime, int nReadFlag,QString *pOutWindowText=0);
+    void writeFileMessage(eb::bigint msgId,eb::bigint resourceId, const char* filePath,eb::bigint fileSize,QString *pOutMsgText=0);
     void writeVoiceMessage(const char* voiceFile,QString *pOutMsgText=0);
     bool writeCardDataMessage( mycp::bigint msgId, const char* cardData,QString *pOutMsgText=0);
-    void addChatMsgBlock(eb::bigint msgId, bool bReceive);
+    void addChatMsgBlock(eb::bigint msgId, bool alignLeft);
 
 private:
     EbcCallInfo::pointer m_callInfo;

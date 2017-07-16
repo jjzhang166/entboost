@@ -96,7 +96,7 @@ void DialogFrameList::updateLocaleInfo()
 DialogWorkFrame *DialogFrameList::showWorkFrame()
 {
     /// 加到第一个
-    EbFrameList::addFrameItem( ui->widgetLeftBackground->geometry().width(),EbFrameItem::create(EbFrameItem::FRAME_ITEM_WORK_FRAME),true,false,false,0 );
+    EbFrameList::addFrameItem( EbFrameItem::create(EbFrameItem::FRAME_ITEM_WORK_FRAME),true,false,false,0 );
     DialogWorkFrame * workFrame = EbFrameList::getWorkFrame();
     assert (workFrame!=0);
     if ( workFrame->isEmpty() ) {
@@ -107,11 +107,11 @@ DialogWorkFrame *DialogFrameList::showWorkFrame()
 
 void DialogFrameList::addFrameItem(const EbFrameItem::pointer &frameItem, bool bShow, bool bAutoCall, bool bForceAddToList)
 {
-    EbFrameList::addFrameItem( ui->widgetLeftBackground->geometry().width(),frameItem,bShow,bAutoCall,bForceAddToList );
+    EbFrameList::addFrameItem( frameItem,bShow,bAutoCall,bForceAddToList );
 }
 void DialogFrameList::showFrameItem(mycp::bigint callId)
 {
-    EbFrameList::showByCallId(ui->widgetLeftBackground->geometry().width(),callId);
+    EbFrameList::showByCallId(callId);
 }
 
 void DialogFrameList::showFrameList(bool show)
@@ -163,7 +163,6 @@ void DialogFrameList::onClickedPushButtonShowHideLeft()
 {
     m_showedLeft = !m_showedLeft;
     updateShowHideIcon();
-
     updateSize();
 }
 
@@ -313,9 +312,8 @@ void DialogFrameList::updateSize()
     else {
         ui->widgetLeftBackground->setGeometry( 0, 0, m_showedLeft?const_border_left:const_hide_border_offiice, height() );
     }
+    m_leftWidth = ui->widgetLeftBackground->geometry().width();
     ui->pushButtonShowHideLeft->move(8,height()-(8+16));
-
-    const QRect& rectLeftBackground = ui->widgetLeftBackground->geometry();
-    EbFrameList::onResize(geometry(),rectLeftBackground.width());
+    EbFrameList::onResize( geometry() );
 
 }

@@ -10,7 +10,9 @@ class EbWidgetChatRight : public DialogWorkFrame
     Q_OBJECT
 public:
     explicit EbWidgetChatRight(const EbcCallInfo::pointer& pCallInfo,QWidget *parent = 0);
+    virtual ~EbWidgetChatRight(void);
 
+    void exitChat(bool bHangup);
     void onUserExit(eb::bigint nUserId, bool bExitDep);
     void setCallInfo(const EbcCallInfo::pointer &pCallInfo);
     void onMsgReceipt(const CCrRichInfo* pCrMsgInfo,int nAckType);
@@ -19,6 +21,9 @@ public:
     void onReceivedFile(const CCrFileInfo * fileInfo);
     void onFilePercent(const CChatRoomFilePercent * pChatRoomFilePercent);
     void deleteTranFile(eb::bigint msgId);
+    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
+    void getProcessing(bool& pVideoProcessing, bool& pFileProcessing, bool& pDesktopProcessing) const;
+    void showMsgRecord(void);
 
 signals:
 

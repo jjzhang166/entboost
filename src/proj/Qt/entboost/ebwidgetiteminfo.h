@@ -40,6 +40,8 @@ public:
     void operator =(const EbWidgetItemInfo* pItemInfo);
     bool operator <(const EbWidgetItemInfo* pItemInfo);
 
+    static int memberSubType(const EB_MemberInfo* memberInfo);
+    static int memberSubType(EB_GROUP_TYPE groupType, eb::bigint groupId, eb::bigint memberUserId);
     void updateMemberInfo(const EB_MemberInfo* memberInfo);
 
     ITEM_TYPE m_nItemType;

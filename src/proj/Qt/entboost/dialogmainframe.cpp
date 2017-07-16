@@ -9,6 +9,8 @@
 #include "dialogmycenter.h"
 #include "dialogworkframe.h"
 #include "ebwidgetappbar.h"
+#include "eblineedit.h"
+#include "ebwidgetsearchresult.h"
 #include <QSound>
 
 DialogMainFrame::DialogMainFrame(QWidget *parent) :
@@ -23,6 +25,9 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
   , m_pDlgFrameList(0)
   , m_pDlgMsgTip(0)
   , m_widgetMyGroup(0)
+  , m_widgetSearchResult(0)
+//  , m_canSearch(false)
+  , m_canUpdateSearchFirst(false)
 #ifdef USES_EVENT_DATE_TIMER
   , m_checkEventData(0)
 #endif
@@ -55,7 +60,8 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
         const_main_frame_width = theLocales.getLocalInt("main-frame.window1-size.1.width", 288);
         const_main_frame_height = theLocales.getLocalInt("main-frame.window1-size.1.height", 568);
     }
-    this->resize( const_main_frame_width,const_main_frame_height );
+
+//    this->resize( const_main_frame_width,const_main_frame_height );
     /// 去掉标题栏
     this->setWindowFlags( Qt::Window|Qt::FramelessWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinMaxButtonsHint);
     /// 设置位置，显示在上面
@@ -75,8 +81,6 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
     m_labelUserImage->setCursor( QCursor(Qt::PointingHandCursor) );
     connect( m_labelUserImage,SIGNAL(clicked()),this,SLOT(onClickedLabelUserImage()) );
 
-    /// 必须放在后面
-    updateLocaleInfo();
     /// 显示头像
     if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_OFFICE) {
     }
@@ -146,16 +150,23 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
         x += const_main_frame_btn_size;
         ui->pushButtonApps->setGeometry( x,y,const_main_frame_btn_size,const_main_frame_btn_size );
         /// 显示“搜索框”和搜索ICON
-        ui->lineEditSearch->setObjectName("MainSearch");
+        m_lineEditSearch = new EbLineEdit(this);
+        m_lineEditSearch->setMouseFocusInSelectAll(true);
+        m_lineEditSearch->setObjectName("MainSearch");
         x = 0;
         y += 30;    /// 28
-        ui->lineEditSearch->raise();
-        ui->lineEditSearch->setGeometry( 0,y,const_main_frame_width,24 );
+        m_lineEditSearch->raise();
+        m_lineEditSearch->setGeometry( 0,y,const_main_frame_width,24 );
         /// 搜索用户、浏览记录、集成应用(/)
         IconHelper::Instance()->SetIcon(ui->labelSearchIcon,QChar(0xf002),9);
         ui->labelSearchIcon->raise();
         ui->labelSearchIcon->setGeometry( 4,y+2,18,18 );
         ui->labelSearchIcon->setObjectName("SearchIcon");
+        m_lineEditSearch->installEventFilter(this);
+        connect( m_lineEditSearch,SIGNAL(keyPressEnter(QString)),this,SLOT(onSearchEditKeyPressEnter(QString)) );
+        connect( m_lineEditSearch,SIGNAL(keyPressEsc()),this,SLOT(onSearchEditKeyPressEsc()) );
+        connect( m_lineEditSearch,SIGNAL(textChanged(QString)),this,SLOT(onSearchEditTextChange(QString)) );
+        connect( m_lineEditSearch,SIGNAL(keyPressDown()),this,SLOT(onSearchEditKeyPressDown()) );
 
         /// 显示“我的部门/联系人/最近会话/公司组织结构/集成应用”
         IconHelper::Instance()->SetIcon(ui->pushButtonMyGroup,QChar(0xf0c0),14);
@@ -197,6 +208,18 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
     m_pDlgMsgTip->setModal(false);
     m_pDlgMsgTip->setWindowModality(Qt::WindowModal);
 
+    /// 主界面搜索结果列表
+    m_widgetSearchResult = new EbWidgetSearchResult(this);
+    m_widgetSearchResult->setVisible(false);
+    connect( m_widgetSearchResult,SIGNAL(searchFirst(QString)),this,SLOT(onSearchFirst(QString)) );
+    connect( m_widgetSearchResult,SIGNAL(clickedSearchResultUrl(QString)),this,SLOT(onClickedSearchResultUrl(QString)) );
+    connect( m_widgetSearchResult->listResults(),SIGNAL(keyPressFirstItemUp()),this,SLOT(onListResultsKeyPressFirstItemUp()) );
+    connect( m_widgetSearchResult->listResults(),SIGNAL(keyPressEsc()),this,SLOT(onListResultsKeyPressEsc()) );
+
+    /// 必须放在后面
+    updateLocaleInfo();
+
+    this->resize( const_main_frame_width,const_main_frame_height );
     onLogonSuccess(0);
 
     refreshSkin();
@@ -220,7 +243,7 @@ void DialogMainFrame::refreshSkin(void)
 {
     const EB_UI_STYLE_TYPE nDefaultUIStyleType = theApp->defaultUIStyleType();
     if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT) {
-        const QRect& rectSearchIcon = ui->lineEditSearch->geometry();
+        const QRect& rectSearchIcon = m_lineEditSearch->geometry();
         this->showTitleBackground(rectSearchIcon.bottom());
     }
     else {
@@ -276,8 +299,8 @@ void DialogMainFrame::updateLocaleInfo()
     ui->pushButtonFileManager->setToolTip( theLocales.getLocalText("main-frame.up-button-file-manager.tooltip","file manager") );
     ui->pushButtonMyShare->setToolTip( theLocales.getLocalText("main-frame.up-button-my-share.tooltip","my share") );
     ui->pushButtonApps->setToolTip( theLocales.getLocalText("main-frame.up-button-apps.tooltip","apps") );
-    ui->lineEditSearch->setPlaceholderText( theLocales.getLocalText("main-frame.edit-search.bg-text","search") );
-    ui->lineEditSearch->setToolTip( theLocales.getLocalText("main-frame.edit-search.tooltip","") );
+    m_lineEditSearch->setPlaceholderText( theLocales.getLocalText("main-frame.edit-search.bg-text","search") );
+    m_lineEditSearch->setToolTip( theLocales.getLocalText("main-frame.edit-search.tooltip","") );
     ui->pushButtonMyGroup->setToolTip( theLocales.getLocalText("main-frame.mid-button-my-group.tooltip","group") );
     ui->pushButtonMyContact->setToolTip( theLocales.getLocalText("main-frame.mid-button-my-contact.tooltip","contact") );
     ui->pushButtonMySession->setToolTip( theLocales.getLocalText("main-frame.mid-button-my-session.tooltip","session") );
@@ -291,9 +314,15 @@ void DialogMainFrame::resizeEvent(QResizeEvent *e)
     const EB_UI_STYLE_TYPE nDefaultUIStyleType = theApp->defaultUIStyleType();
     if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT) {
         const QRect& rectSearchIcon = ui->labelSearchIcon->geometry();
-        ui->lineEditSearch->setGeometry( 0,rectSearchIcon.top()-2,e->size().width(),22 );
+        m_lineEditSearch->setGeometry( 0,rectSearchIcon.top()-2,e->size().width(),22 );
     }else {
 
+    }
+    if (m_widgetSearchResult!=0) {
+        int x = m_lineEditSearch->geometry().left();
+        int y = m_lineEditSearch->geometry().bottom()+1;
+        const int searchResultHeight = m_widgetSearchResult->height();
+        m_widgetSearchResult->setGeometry( x+1,y,m_lineEditSearch->width()-2,searchResultHeight );
     }
 
     if (ui->pushButtonSetting!=NULL) {
@@ -521,8 +550,9 @@ void DialogMainFrame::onMemberInfo(QEvent *e)
 //        CFrameWndInfoProxy::OnUserEmpInfo(pMemberInfo,true);
 //        return 0;
     }
-    if (m_pDlgFrameList!=0)
+    if (m_pDlgFrameList!=0) {
         m_pDlgFrameList->onMemberInfo(pMemberInfo,true);
+    }
 
 }
 void DialogMainFrame::onRejectAdd2Group(QEvent *e)
@@ -757,9 +787,9 @@ void DialogMainFrame::onGroupInfo(QEvent *e)
         return;
     }
 
-//    if (m_pDlgFrameList!=NULL) {
-//        m_pDlgFrameList->ChangeDepartmentInfo(pGroupInfo);
-//    }
+    if (m_pDlgFrameList!=0) {
+        m_pDlgFrameList->onGroupInfo(pGroupInfo);
+    }
 }
 
 void DialogMainFrame::onEnterpriseInfo(QEvent *e)
@@ -960,6 +990,9 @@ bool DialogMainFrame::checkEventData(QEvent * e)
         case CR_WM_FILE_PERCENT:
             onFilePercent(e);
             break;
+        case CR_WM_SAVE2CLOUD_DRIVE:
+            onSave2Cloud(e);
+            break;
         /// 聊天会话
         case EB_WM_CALL_CONNECTED:
             onCallConnected(e);
@@ -1129,7 +1162,7 @@ void DialogMainFrame::checkCallExit()
 void DialogMainFrame::mousePressEvent(QMouseEvent *event)
 {
     if (ui->lineEditUserDescription->hasFocus() ||  // 切换实现 “个人签名” 位置刷新界面
-            ui->lineEditSearch->hasFocus() ) {      // 切换实现 “搜索框” 位置刷新界面
+            m_lineEditSearch->hasFocus() ) {      // 切换实现 “搜索框” 位置刷新界面
         m_labelLinState->setFocus();
     }
     EbDialogBase::mousePressEvent(event);
@@ -1161,8 +1194,19 @@ void DialogMainFrame::contextMenuEvent(QContextMenuEvent * e)
 
 bool DialogMainFrame::eventFilter(QObject *obj, QEvent *e)
 {
-    // pass the event on to the parent class
-    if (obj==ui->lineEditUserDescription) {
+    if ( obj==m_lineEditSearch && e->type()==QEvent::KeyPress ) {
+        const QKeyEvent * event = (QKeyEvent*)e;
+        switch (event->key()) {
+        case Qt::Key_Backspace:
+        case Qt::Key_Delete:
+            m_canUpdateSearchFirst = false;
+            break;
+        default:
+            m_canUpdateSearchFirst = true;
+            break;
+        }
+    }
+    else if (obj==ui->lineEditUserDescription) {
         bool checkUpdateDescription = e->type()==QEvent::FocusOut?true:false;
         if (!checkUpdateDescription && e->type()==QEvent::KeyPress) {
             const QKeyEvent * event = (QKeyEvent*)e;
@@ -1521,6 +1565,75 @@ void DialogMainFrame::trayIconActivated(QSystemTrayIcon::ActivationReason reason
     default:
         break;
     }
+}
+
+void DialogMainFrame::onSearchEditTextChange(const QString &text)
+{
+//    if (m_canSearch) {
+        m_widgetSearchResult->search(text.toStdString().c_str());
+//    }
+}
+
+void DialogMainFrame::onSearchEditKeyPressEsc()
+{
+    if (m_widgetSearchResult->isVisible()) {
+        m_widgetSearchResult->setVisible(false);
+    }
+}
+
+void DialogMainFrame::onSearchEditKeyPressEnter(const QString &text)
+{
+//    if ( !text.isEmpty() ) {
+//        emit searchKeyPressEnter(text);
+//    }
+    if (m_widgetSearchResult->isVisible()) {
+        m_widgetSearchResult->hide();
+    }
+}
+
+void DialogMainFrame::onSearchEditKeyPressDown()
+{
+    m_widgetSearchResult->setFocusSelectFirst();
+}
+
+void DialogMainFrame::onSearchFirst(const QString &url)
+{
+    if ( !m_canUpdateSearchFirst ) {
+        return;
+    }
+    const QString text = m_lineEditSearch->text();
+    if (text.isEmpty()) {
+        return;
+    }
+    const int index = url.indexOf(text);
+    if (index<0) {
+        return;
+    }
+    /// 取后面文本用于显示
+    const QString newText = url.mid(index);
+    m_lineEditSearch->setText(newText);
+    /// 选择后面未输入内容
+    m_lineEditSearch->setSelection(text.length(),newText.length());
+}
+
+void DialogMainFrame::onClickedSearchResultUrl(const QString &url)
+{
+    m_lineEditSearch->setText(url);
+    m_lineEditSearch->selectAll();
+    if (m_widgetSearchResult->isVisible()) {
+        m_widgetSearchResult->setVisible(false);
+    }
+}
+
+void DialogMainFrame::onListResultsKeyPressFirstItemUp()
+{
+    m_lineEditSearch->setFocus();
+}
+
+void DialogMainFrame::onListResultsKeyPressEsc()
+{
+    m_lineEditSearch->setFocus();
+    m_widgetSearchResult->hide();
 }
 
 void DialogMainFrame::createMenuData(void)
@@ -2021,16 +2134,16 @@ bool DialogMainFrame::onReceiveRich(QEvent *e)
         return false;
     }
     pEbCallInfo->m_tLastTime = time(0);
-    DialogChatBase::pointer pDlgDialog = getDialogChatBase(pEbCallInfo,false);
+    DialogChatBase::pointer chatBase = getDialogChatBase(pEbCallInfo,false);
     QString sFirstMsg1;
     QString sFirstMsg2;
-    pDlgDialog->onReceiveRich(pCrMsgInfo,&sFirstMsg1,&sFirstMsg2);
+    chatBase->onReceiveRich(pCrMsgInfo,&sFirstMsg1,&sFirstMsg2);
     const eb::bigint nMsgId = pCrMsgInfo->m_pRichMsg->GetMsgId();
     //CEBCMsgInfo::pointer pEbcMsgInfo = CEBCMsgInfo::create(CEBCMsgInfo::MSG_TYPE_RECEIVE_RICH);
     //pEbcMsgInfo->m_pEbCallInfo = pEbCallInfo;
     //m_pEbcMsgList.add(pEbcMsgInfo);
 
-    if (!pDlgDialog->isVisible()) {
+    if (!chatBase->isVisible()) {
         QSound::play( ":/wav/msg.wav" );
 
         bool bRet = false;
@@ -2056,8 +2169,7 @@ bool DialogMainFrame::onReceiveRich(QEvent *e)
         }
         //m_btnMySession.SetWindowText(_T("！"));
         if (m_pDlgMsgTip!=0) {
-//            pDlgDialog->formImage()
-            m_pDlgMsgTip->addMsgTip(pDlgDialog->fromImage(), pEbCallInfo->m_pCallInfo.m_sGroupCode,nFromUserid,sFirstMsg2);
+            m_pDlgMsgTip->addMsgTip(chatBase->fromImage(), pEbCallInfo->groupId(),nFromUserid,sFirstMsg2);
         }
     }
     return true;
@@ -2146,14 +2258,14 @@ void DialogMainFrame::onSendingFile(QEvent *e)
 
 void DialogMainFrame::onSentFile(QEvent *e)
 {
-    const CCrFileInfo * pCrFileInfo = (const CCrFileInfo*)e;
-    const EB_STATE_CODE nState = (EB_STATE_CODE)pCrFileInfo->GetStateCode();
+    const CCrFileInfo * fileInfo = (const CCrFileInfo*)e;
+    const EB_STATE_CODE nState = (EB_STATE_CODE)fileInfo->GetStateCode();
     if (EB_STATE_APPID_KEY_ERROR==nState || EB_STATE_APP_ONLINE_KEY_TIMEOUT==nState) {
         return;
     }
 
-    const eb::bigint sCallId = pCrFileInfo->GetCallId();
-    const eb::bigint sResId = pCrFileInfo->m_sResId;
+    const eb::bigint sCallId = fileInfo->GetCallId();
+    const eb::bigint sResId = fileInfo->m_sResId;
     if (sResId>0 && sCallId==0) {
 //        if (m_pDlgFileManager!=NULL && (pCrFileInfo->m_sReceiveAccount==0 || pCrFileInfo->m_sReceiveAccount==theEBAppClient.EB_GetLogonUserId()))
 //        {
@@ -2170,18 +2282,18 @@ void DialogMainFrame::onSentFile(QEvent *e)
     //	return 1;
     //}
     //pEbCallInfo->m_tLastTime = time(0);
-    if (pCrFileInfo->m_sReceiveAccount>0) {
+    if (fileInfo->m_sReceiveAccount>0) {
         DialogChatBase::pointer chatBase = getDialogChatBase(sCallId);
         if (chatBase.get()!=0) {
-            if (chatBase->onSentFile(pCrFileInfo, nState) && !chatBase->isVisible()) {
+            if (chatBase->onSentFile(fileInfo) && !chatBase->isVisible()) {
                 QSound::play( ":/wav/msg.wav" );
             }
         }
         else {
-            if ( pCrFileInfo->m_sReceiveAccount!=theApp->logonUserId() ) {
+            if ( fileInfo->m_sReceiveAccount!=theApp->logonUserId() ) {
                 /// * 对方接收消息回执
-                const eb::bigint nFromUserId = pCrFileInfo->m_sReceiveAccount;
-                const eb::bigint nMsgId = pCrFileInfo->m_nMsgId;
+                const eb::bigint nFromUserId = fileInfo->m_sReceiveAccount;
+                const eb::bigint nMsgId = fileInfo->m_nMsgId;
                 theApp->updateMsgReceiptData(nMsgId, nFromUserId, 0);
             }
         }
@@ -2223,7 +2335,7 @@ void DialogMainFrame::onCancelFile(QEvent *e)
             }
         }
     }
-    const tstring sFileName = libEbc::GetFileName(pCrFileInfo->m_sFileName);
+//    const tstring sFileName = libEbc::GetFileName(pCrFileInfo->m_sFileName);
 
     EbcCallInfo::pointer pEbCallInfo;
     if (nReceiveAccount!=0 && theApp->m_pCallList.find(sCallId,pEbCallInfo))	/// sReceiveAccount==0是主动取消
@@ -2314,6 +2426,9 @@ bool DialogMainFrame::onReceivingFile(QEvent *e)
             return true;
         }
 
+        if (m_pDlgMsgTip!=0) {
+            m_pDlgMsgTip->addMsgTip(chatBase->fromImage(), pEbCallInfo->groupId(),pEbCallInfo->fromUserId(),sFirstMsg);
+        }
         /// 显示消息
 //        CWnd * pParent = CWnd::FromHandle(::GetDesktopWindow());
 //        CDlgFuncWindow * pFuncWindow = new CDlgFuncWindow(pParent,true);
@@ -2405,6 +2520,24 @@ void DialogMainFrame::onFilePercent(QEvent *e)
     if (chatBase.get()!=0) {
         chatBase->onFilePercent(pChatRoomFilePercent);
     }
+}
+
+void DialogMainFrame::onSave2Cloud(QEvent *e)
+{
+    const CCrFileInfo * fileInfo = (const CCrFileInfo*)e;
+    const EB_STATE_CODE stateCode = (EB_STATE_CODE)fileInfo->GetStateCode();
+    if (EB_STATE_APPID_KEY_ERROR==stateCode || EB_STATE_APP_ONLINE_KEY_TIMEOUT==stateCode) {
+        return;
+    }
+    const eb::bigint sCallId = fileInfo->GetCallId();
+    DialogChatBase::pointer chatBase = getDialogChatBase(sCallId);
+    if (chatBase.get()!=0) {
+        chatBase->onSave2Cloud(fileInfo);
+        if ( !chatBase->isVisible() ) {
+            QSound::play( ":/wav/msg.wav" );
+        }
+    }
+
 }
 
 void DialogMainFrame::CreateFrameList(bool bShow)

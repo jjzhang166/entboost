@@ -29,6 +29,7 @@ public:
 //    void deleteGroupInfo(const EB_GroupInfo* pGroupInfo);
 
 public slots:
+    void onItemDoubleClicked(QTreeWidgetItem *item, int column);
     void onItemClicked(QTreeWidgetItem *item, int column);
     void onItemEntered(QTreeWidgetItem *item, int column);
     void onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);

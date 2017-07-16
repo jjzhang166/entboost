@@ -2,6 +2,8 @@
 
 EbWorkList::EbWorkList(QWidget * parent)
     : m_pParent(parent)
+    , m_topHeight(0)
+    , m_leftOffset(0)
 {
     assert(m_pParent!=0);
 
@@ -51,6 +53,19 @@ EbWidgetUserList *EbWorkList::widgetUserList() const
     return 0;
 }
 
+EbWidgetChatRecord *EbWorkList::widgetChatRecord() const
+{
+    AUTO_CONST_RLOCK(m_list);
+    CLockList<EbWorkItem::pointer>::const_iterator pIter = m_list.begin();
+    for (; pIter!=m_list.end(); pIter++) {
+        const EbWorkItem::pointer& frameInfo = *pIter;
+        if ( frameInfo->isItemType(EbWorkItem::WORK_ITEM_CHAT_RECORD) ) {
+            return frameInfo->widgetChatRecord();
+        }
+    }
+    return 0;
+}
+
 EbWidgetFileTranList *EbWorkList::widgetTranFile() const
 {
     AUTO_CONST_RLOCK(m_list);
@@ -64,7 +79,7 @@ EbWidgetFileTranList *EbWorkList::widgetTranFile() const
     return 0;
 }
 
-void EbWorkList::addWorkItem(bool saveUrl,int topHeight, int leftOffset,const EbWorkItem::pointer &workItem, int nInsertOffset)
+void EbWorkList::addWorkItem(bool saveUrl,const EbWorkItem::pointer &workItem, int nInsertOffset)
 {
     int nInsertIndex = -1;
     if (nInsertOffset>=0 && nInsertOffset<(int)m_list.size()) {
@@ -81,15 +96,15 @@ void EbWorkList::addWorkItem(bool saveUrl,int topHeight, int leftOffset,const Eb
     }
     int topButtonRightPos = -1;
     if (nInsertIndex>=0) {
-        topButtonRightPos = onMove(leftOffset);
+        topButtonRightPos = onMove();
     }
     else {
         nInsertIndex = (int)m_list.size();
         m_list.add(workItem);
     }
 
-    workItem->buildButton( saveUrl,topHeight,m_pParent );
-    const int x = workItem->onResize( nInsertIndex,m_pParent->geometry(),topHeight,leftOffset );
+    workItem->buildButton( saveUrl,m_topHeight,m_pParent );
+    const int x = workItem->onResize( nInsertIndex,m_pParent->geometry(),m_topHeight,m_leftOffset );
     showByIndex( nInsertIndex,false );
     if (topButtonRightPos>0)
         onItemSizeChange( workItem,(int)m_list.size(),topButtonRightPos );
@@ -122,7 +137,7 @@ void EbWorkList::setItemText(EbWorkItem::WORK_ITEM_TYPE itemType, const QString 
     }
 }
 
-void EbWorkList::clickedTopButton(int leftOffset, const QPushButton *topButton, const QPoint &pt)
+void EbWorkList::clickedTopButton(const QPushButton *topButton, const QPoint &pt)
 {
     /// *需要判断是否点击了X关闭按钮
     EbWorkItem::pointer frameInfoClose;
@@ -186,7 +201,7 @@ void EbWorkList::clickedTopButton(int leftOffset, const QPushButton *topButton, 
         /// *点击关闭某个 ITEM，上下移动调整按钮位置
         frameInfoClose->setChecked( false,true );
 //        frameInfoClose->setCloseTime( QDateTime::currentSecsSinceEpoch() );
-        const int x = onMove(leftOffset);
+        const int x = onMove();
         onItemSizeChange( frameInfoClose,(int)m_list.size(),x );
     }
 }
@@ -240,7 +255,7 @@ int EbWorkList::indexOf(const EbWidgetWorkView *view) const
     return -1;
 }
 
-void EbWorkList::closeItem(int leftOffset, const EbWidgetWorkView * view)
+void EbWorkList::closeItem(const EbWidgetWorkView * view)
 {
     EbWorkItem::pointer frameInfoClose;
     {
@@ -290,12 +305,12 @@ void EbWorkList::closeItem(int leftOffset, const EbWidgetWorkView * view)
     if (frameInfoClose.get()!=0) {
         /// *点击关闭某个 ITEM，上下移动调整按钮位置
         frameInfoClose->setChecked( false,true );
-        const int x = onMove(leftOffset);
+        const int x = onMove();
         onItemSizeChange( frameInfoClose,(int)m_list.size(),x );
     }
 }
 
-void EbWorkList::closeItem(int leftOffset, int index)
+void EbWorkList::closeItem(int index)
 {
     EbWorkItem::pointer frameInfoClose;
     {
@@ -346,7 +361,7 @@ void EbWorkList::closeItem(int leftOffset, int index)
     if (frameInfoClose.get()!=0) {
         /// *点击关闭某个 ITEM，上下移动调整按钮位置
         frameInfoClose->setChecked( false,true );
-        const int x = onMove(leftOffset);
+        const int x = onMove();
         onItemSizeChange( frameInfoClose,(int)m_list.size(),x );
     }
 }
@@ -373,7 +388,7 @@ void EbWorkList::checkShowHideCloseButton(const QPoint &pt)
     }
 }
 
-int EbWorkList::onResize(const QRect &rect, int topHeight, int leftOffset)
+int EbWorkList::onResize(const QRect &rect)
 {
     int result = 0;
     BoostReadLock rdLock(m_list.mutex());
@@ -381,12 +396,12 @@ int EbWorkList::onResize(const QRect &rect, int topHeight, int leftOffset)
     int index = 0;
     for (; pIter!=m_list.end(); pIter++) {
         const EbWorkItem::pointer& frameInfo = *pIter;
-        result = frameInfo->onResize(index++, rect, topHeight, leftOffset);
+        result = frameInfo->onResize(index++, rect, m_topHeight, m_leftOffset);
     }
     return result;
 }
 
-int EbWorkList::onMove(int leftOffset)
+int EbWorkList::onMove(void)
 {
     int result = 0;
     BoostReadLock rdLock(m_list.mutex());
@@ -394,7 +409,7 @@ int EbWorkList::onMove(int leftOffset)
     int index = 0;
     for (; pIter!=m_list.end(); pIter++) {
         const EbWorkItem::pointer& frameInfo = *pIter;
-        result = frameInfo->onMove( index++,leftOffset );
+        result = frameInfo->onMove( index++,m_leftOffset );
     }
     return result;
 }

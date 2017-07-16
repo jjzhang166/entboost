@@ -47,6 +47,7 @@ EbWidgetWorkView::EbWidgetWorkView(bool saveUrl,const QUrl & url, const QString 
 //    m_webEngineUrlRequestInterceptor = new EbWebEngineUrlRequestInterceptor(this);
 //    m_webEngineView->page()->profile()->setRequestInterceptor(m_webEngineUrlRequestInterceptor);
     m_labelStatus = new QLabel(this);
+    m_labelStatus->setVisible(false);
     m_labelStatus->setStyleSheet("QLabel{background-color:rgb(224,224,224);color:rgb(96,96,96);padding-left:2;padding-right:2;}");
 //    m_labelStatus->setObjectName("LabelStatus");
     m_frameFindText = new EbFrameFindText(this);

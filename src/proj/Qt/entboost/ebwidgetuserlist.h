@@ -13,6 +13,7 @@ class EbWidgetUserList : public QWidget
     Q_OBJECT
 public:
     explicit EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget *parent = nullptr);
+    virtual ~EbWidgetUserList(void);
 
     void onEnterUser(eb::bigint nUserId, bool bSort);
     void onExitUser(eb::bigint nUserId,bool bExitDep);
@@ -22,6 +23,7 @@ signals:
     void memberOnlineSizeChange(int memberSize, int onlineSize);
 
 public slots:
+    void onItemDoubleClicked(QListWidgetItem *item);
     void onItemEntered(QListWidgetItem *);
     void onLoadUserList(void);
     void onClickedPushButtonCall(void);
@@ -29,7 +31,9 @@ public slots:
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
+    void createMenuData(void);
     virtual void contextMenuEvent(QContextMenuEvent *event);
+    virtual void timerEvent(QTimerEvent *event);
 private:
     void onCallItem(QListWidgetItem* item);
     void onEditItem(QListWidgetItem* item);
@@ -42,7 +46,7 @@ private:
     QPushButton * m_pushButtonCall;
     QPushButton * m_pushButtonEdit;
     EbContextMenu * m_contextMenu;
-
+    int m_timerIdCheckState;
 };
 
 #endif // EBWIDGETUSERLIST_H

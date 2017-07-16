@@ -7,6 +7,7 @@ const QSize const_user_image_size(28,28);
 EbWidgetUserList::EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget *parent) : QWidget(parent)
   , m_callInfo(callInfo)
   , m_contextMenu(0)
+  , m_timerIdCheckState(0)
 {
     assert( m_callInfo.get()!=0 );
 
@@ -16,6 +17,7 @@ EbWidgetUserList::EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget 
     m_listWidgetUsers->setObjectName("UserList");
     m_listWidgetUsers->setIconSize(const_user_image_size);
     connect( m_listWidgetUsers,SIGNAL(itemEntered(QListWidgetItem*)),SLOT(onItemEntered(QListWidgetItem*)) );
+    connect( m_listWidgetUsers,SIGNAL(itemDoubleClicked(QListWidgetItem*)),SLOT(onItemDoubleClicked(QListWidgetItem*)) );
 
     /// “打开会话”按钮
     m_pushButtonCall = new QPushButton(this);
@@ -36,6 +38,13 @@ EbWidgetUserList::EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget 
 
     QTimer::singleShot( 1, this, SLOT(onLoadUserList()) );
 
+    m_timerIdCheckState = this->startTimer(500);
+}
+
+EbWidgetUserList::~EbWidgetUserList()
+{
+    this->killTimer(m_timerIdCheckState);
+    m_timerIdCheckState = 0;
 }
 
 void EbWidgetUserList::onEnterUser(eb::bigint nUserId, bool bSort)
@@ -124,6 +133,15 @@ int EbWidgetUserList::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
     return nResult;
 }
 
+void EbWidgetUserList::onItemDoubleClicked(QListWidgetItem *item)
+{
+    const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;
+    if (ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
+        createMenuData();
+        m_contextMenu->onCallItem(ebitem->m_itemInfo);
+    }
+}
+
 void EbWidgetUserList::onItemEntered(QListWidgetItem *item)
 {
 //    if (!m_listWidgetUsers->hasFocus()) {
@@ -191,6 +209,13 @@ void EbWidgetUserList::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
 }
 
+void EbWidgetUserList::createMenuData()
+{
+    if (m_contextMenu==0) {
+        m_contextMenu = new EbContextMenu( EbContextMenu::UserList, this );
+    }
+}
+
 void EbWidgetUserList::contextMenuEvent(QContextMenuEvent *e)
 {
     const EbListWidgetItem* item = (EbListWidgetItem*)m_listWidgetUsers->itemAt(e->pos());
@@ -198,37 +223,56 @@ void EbWidgetUserList::contextMenuEvent(QContextMenuEvent *e)
         return;
     }
     const EbWidgetItemInfo::pointer itemInfo = item->m_itemInfo;
-    if (m_contextMenu==0) {
-        m_contextMenu = new EbContextMenu( EbContextMenu::UserList, this );
-    }
+    createMenuData();
     if (!m_contextMenu->updateMenuItem(itemInfo)) {
         return;
     }
     m_contextMenu->exec( e->globalPos() );
 }
 
-void EbWidgetUserList::onCallItem(QListWidgetItem *aitem)
+void EbWidgetUserList::timerEvent(QTimerEvent *event)
 {
-    if (aitem==0) return;
-    const EbListWidgetItem *item = (EbListWidgetItem*)aitem;
-    if (item->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
-//        theApp->m_pAutoCallFromUserIdList.remove(item->m_itemInfo->m_nUserId);
-        theApp->m_ebum.EB_CallMember(item->m_itemInfo->m_sMemberCode,0);
+    if ( m_timerIdCheckState!=0 && m_timerIdCheckState==event->timerId()
+         && (m_pushButtonCall->isVisible() || m_pushButtonEdit->isVisible()) ) {
+        /// 实现定期自动判断当前鼠标位置，并刷新 call/edit 按钮
+        const QRect& rect = m_listWidgetUsers->geometry();
+        const QPoint pointMouseToDialog = this->mapFromGlobal(this->cursor().pos());
+        if (!rect.contains(pointMouseToDialog)) {
+            m_pushButtonCall->setVisible(false);
+            m_pushButtonEdit->setVisible(false);
+        }
     }
-//    else if (item->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_GROUP) {
-//        theApp->m_pAutoCallGroupIdList.remove(item->m_itemInfo->m_sGroupCode);
-//        theApp->m_ebum.EB_CallGroup(item->m_itemInfo->m_sGroupCode);
-    //    }
+
+    QWidget::timerEvent(event);
 }
 
-void EbWidgetUserList::onEditItem(QListWidgetItem *aitem)
+void EbWidgetUserList::onCallItem(QListWidgetItem *item)
 {
-    if (aitem==0) return;
-    const EbListWidgetItem* item = (EbListWidgetItem*)aitem;
-    EB_MemberInfo pMemberInfo;
-    if (theApp->m_ebum.EB_GetMemberInfoByUserId(&pMemberInfo,item->m_itemInfo->m_sGroupCode,item->m_itemInfo->m_nUserId)) {
-        theApp->editMemberInfo(&pMemberInfo);
-    }
+    if (item==0) return;
+    const EbListWidgetItem *ebitem = (EbListWidgetItem*)item;
+    createMenuData();
+    m_contextMenu->onCallItem(ebitem->m_itemInfo);
+
+//    if (ebitem->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
+////        theApp->m_pAutoCallFromUserIdList.remove(item->m_itemInfo->m_nUserId);
+//        theApp->m_ebum.EB_CallMember(ebitem->m_itemInfo->m_sMemberCode,0);
+//    }
+////    else if (item->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_GROUP) {
+////        theApp->m_pAutoCallGroupIdList.remove(item->m_itemInfo->m_sGroupCode);
+////        theApp->m_ebum.EB_CallGroup(item->m_itemInfo->m_sGroupCode);
+//    //    }
+}
+
+void EbWidgetUserList::onEditItem(QListWidgetItem *item)
+{
+    if (item==0) return;
+    const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;
+    createMenuData();
+    m_contextMenu->onEditItem(ebitem->m_itemInfo);
+//    EB_MemberInfo pMemberInfo;
+//    if (theApp->m_ebum.EB_GetMemberInfoByUserId(&pMemberInfo,ebitem->m_itemInfo->m_sGroupCode,ebitem->m_itemInfo->m_nUserId)) {
+//        theApp->editMemberInfo(&pMemberInfo);
+//    }
 }
 
 void EbWidgetUserList::updateGroupMemberSize()

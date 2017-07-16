@@ -18,14 +18,15 @@ public:
 
     void onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUserId, EB_USER_LINE_STATE nLineState);
     void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
+    void onGroupInfo(const EB_GroupInfo* pGroupInfo);
     void onRemoveGroup(eb::bigint nGroupId);
     void onRemoveMember(eb::bigint nGroupId, eb::bigint nMemberId, mycp::bigint memberUserId);
     void onMemberHeadChange(const EB_MemberInfo * pMemberInfo);
     void onContactHeadChange(const EB_ContactInfo* pContactInfo);
 
 protected:
-    void addFrameItem(int leftWidth, const EbFrameItem::pointer& frameItem,bool bShow, bool bAutoCall, bool bForceAddToList = false,int nInsertOffset=-1);
-    void showByCallId(int leftWidth, mycp::bigint callId);
+    void addFrameItem(const EbFrameItem::pointer& frameItem,bool bShow, bool bAutoCall, bool bForceAddToList = false,int nInsertOffset=-1);
+    void showByCallId(mycp::bigint callId);
     bool showByIndex(int index);
     DialogWorkFrame* showWorkFrame(void);
     void clickedLeftButton(const QPushButton* leftButton, const QPoint& pt);
@@ -33,7 +34,7 @@ protected:
     void closeItem(const DialogChatBase* chatBase);
 
     void checkShowHideCloseButton(const QPoint& pt);    /// 定期检查显示或隐藏关闭按钮
-    void onResize(const QRect& rect, int leftWidth);
+    void onResize(const QRect& rect);
     /// * 用于关闭某个ITEM，上下移动按钮位置
     void onMove(void);
     /// 主要用于移某些 parent=0 窗口
@@ -45,6 +46,7 @@ protected:
 
 protected:
     QWidget* m_pParent;
+    int m_leftWidth;
     CLockList<EbFrameItem::pointer> m_list;
     CLockList<EbFrameItem::pointer> m_hide;
     CLockList<EbFrameItem::pointer> m_close;

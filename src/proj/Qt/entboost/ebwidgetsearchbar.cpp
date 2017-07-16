@@ -282,7 +282,7 @@ void EbWidgetSearchBar::resizeEvent(QResizeEvent *event)
     y = m_lineEditSearch->geometry().bottom()+1;
     QPoint pos = this->mapToParent(QPoint(x,y));
     const int searchResultHeight = m_widgetSearchResult->height();
-    m_widgetSearchResult->setGeometry( pos.x(),pos.y(),m_lineEditSearch->geometry().width(),searchResultHeight );
+    m_widgetSearchResult->setGeometry( pos.x(),pos.y(),m_lineEditSearch->width(),searchResultHeight );
 //    onMoveEvent();
 }
 
@@ -298,8 +298,7 @@ bool EbWidgetSearchBar::eventFilter(QObject *watched, QEvent *e)
 {
     if ( watched==m_lineEditSearch && e->type()==QEvent::KeyPress ) {
         const QKeyEvent * event = (QKeyEvent*)e;
-        switch (event->key())
-        {
+        switch (event->key()) {
         case Qt::Key_Backspace:
         case Qt::Key_Delete:
             m_canUpdateSearchFirst = false;

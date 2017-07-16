@@ -38,7 +38,7 @@ public:
 
     void buildButton(int leftWidth,QWidget *parent = 0);
 //    QPushButton* buttonClose(void) const {return m_pushButtonClose;}
-    void setItemText(const QString & text);
+//    void setItemText(const QString & text);
     const QString & itemText(void) const {return m_itemText;}
     DialogWorkFrame * dialogWorkFrame(void) const {return m_dialogWorkFrame;}
 //    void updateWorkFrameSize(bool showLeft,int size);
@@ -48,6 +48,7 @@ public:
     mycp::bigint fromUserId(void) const {return (m_dialogChatBase.get()==0)?0:m_dialogChatBase->fromUserId();}
     /// * 检查按钮点击状态：1=点击关闭，2=上边点击，0=没有点击
     int checkLeftButtonClickState(const QPushButton* button, const QPoint& pt) const;
+    void requestClose(void);
 //    QPushButton* buttonLeft(void) const {return m_pushButtonLeft;}
 
     void onResize(int index, const QRect& rect, int leftWidth);
@@ -67,6 +68,8 @@ public:
     void onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUserId, EB_USER_LINE_STATE bLineState);
     void onMemberHeadChange(const EB_MemberInfo * pMemberInfo);
     void onContactHeadChange(const EB_ContactInfo* pContactInfo);
+    bool onGroupInfo(const EB_GroupInfo* pGroupInfo);
+
 signals:
     void checkedFrameitem(const EbFrameItem*);
 
