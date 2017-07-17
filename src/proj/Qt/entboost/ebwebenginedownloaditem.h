@@ -10,8 +10,8 @@ class EbWebEngineDownloadItem : public QObject
     Q_OBJECT
 public:
     typedef boost::shared_ptr<EbWebEngineDownloadItem> pointer;
-    EbWebEngineDownloadItem(const QWebEngineDownloadItem * download, QObject * parent);
-    static EbWebEngineDownloadItem::pointer create(const QWebEngineDownloadItem * download,QObject * parent=0);
+    EbWebEngineDownloadItem(QWebEngineDownloadItem * download, QObject * parent);
+    static EbWebEngineDownloadItem::pointer create(QWebEngineDownloadItem * download,QObject * parent=0);
 
     quint32 id(void) const {return m_id;}
 //    void setState(QWebEngineDownloadItem::DownloadState state) {m_state=state;}
@@ -27,9 +27,9 @@ public:
     bool isFinished() const {return m_state==QWebEngineDownloadItem::DownloadCompleted?true:false;}
 
 signals:
-    void downloadFinished(const EbWebEngineDownloadItem*);
-//    void downLoadStateChanged(const EbWebEngineDownloadItem*);
-    void downloadProgress(const EbWebEngineDownloadItem*);
+//    void downloadFinished(const EbWebEngineDownloadItem*);
+////    void downLoadStateChanged(const EbWebEngineDownloadItem*);
+//    void downloadProgress(const EbWebEngineDownloadItem*);
 
 public slots:
     void onDownloadFinished();
@@ -37,6 +37,7 @@ public slots:
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
+    QWebEngineDownloadItem * m_downloadItem;
     quint32 m_id;
     QWebEngineDownloadItem::DownloadState m_state;
     qint64 m_totalBytes;
@@ -44,6 +45,8 @@ private:
     QUrl m_url;
     QString m_mimeType;
     QString m_path;
+//    bool m_sendReceiving;
+    time_t m_tCreateTime;
 };
 
 #endif // EBWEBENGINEDOWNLOADITEM_H

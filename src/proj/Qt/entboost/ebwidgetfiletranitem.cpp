@@ -132,15 +132,15 @@ void EbWidgetFileTranItem::updateFileInfo(const CCrFileInfo *pCrFileInfo)
     }
 }
 
-void EbWidgetFileTranItem::setFilePercent(const CChatRoomFilePercent *pChatRoomFilePercent)
+void EbWidgetFileTranItem::setFilePercent(const CChatRoomFilePercent *filePercent)
 {
     if ( m_buttonOffSend->isEnabled() ) {
         m_buttonOffSend->setEnabled(false);
     }
     char status[128];
-    if (pChatRoomFilePercent->m_percent>100) {
+    if (filePercent->m_percent>100) {
         /// ** 这是传输字节
-        const double fReceivedBytes = pChatRoomFilePercent->m_percent;
+        const double fReceivedBytes = filePercent->m_percent;
         if (fReceivedBytes >= const_gb_size)
             sprintf( status, "%.02fGB",(double)fReceivedBytes/const_gb_size);
         else if (fReceivedBytes >= const_mb_size)
@@ -150,16 +150,23 @@ void EbWidgetFileTranItem::setFilePercent(const CChatRoomFilePercent *pChatRoomF
         else
             sprintf( status, "%dByte",(int)fReceivedBytes);
     }
-    else if (pChatRoomFilePercent->m_nCurSpeed>1024000.0) {
-        sprintf( status, "%.2fMB/S", pChatRoomFilePercent->m_nCurSpeed/(1024.0*1024.0));
+    else if (filePercent->m_nCurSpeed>1024000.0) {
+        sprintf( status, "%.2fMB/S", filePercent->m_nCurSpeed/(1024.0*1024.0));
 //        sprintf( status, "%.2f%% %.2fMB/S", pChatRoomFilePercent->m_percent,pChatRoomFilePercent->m_nCurSpeed/(1024.0*1024.0));
     }
     else {
-        sprintf( status, "%.2fKB/S", pChatRoomFilePercent->m_nCurSpeed/1024.0);
+        sprintf( status, "%.2fKB/S", filePercent->m_nCurSpeed/1024.0);
 //        sprintf( status, "%.2f%% %.2fKB/S", pChatRoomFilePercent->m_percent,pChatRoomFilePercent->m_nCurSpeed/1024.0);
     }
-    const QString format = QString("%p% %1").arg(status);
-    m_progressBar->setValue( (int)(pChatRoomFilePercent->m_percent) );
+    /// ==0.0，没有进度，表示未知文件大小
+    if (filePercent->m_percent==0.0) {
+        const int value = m_progressBar->value();
+        m_progressBar->setValue( MIN(100,value+(100-value)/30) );
+    }
+    else {
+        m_progressBar->setValue( (int)(filePercent->m_percent) );
+    }
+    const QString format = filePercent->m_percent==0.0?QString("%1").arg(status): QString("%p% %1").arg(status);
     m_progressBar->setFormat( format );
 }
 
@@ -266,7 +273,7 @@ void EbWidgetFileTranItem::onButtonOffSend()
 void EbWidgetFileTranItem::onButtonCancel()
 {
     if (m_fileInfo.m_sResId>0 && m_fileInfo.m_sResId==m_fileInfo.m_nMsgId) {
-//        theApp.m_pCancelFileList.insert(m_fileInfo.m_nMsgId,true,false);
+        theApp->m_pCancelFileList.insert(m_fileInfo.m_nMsgId,true,false);
         return;
     }
 

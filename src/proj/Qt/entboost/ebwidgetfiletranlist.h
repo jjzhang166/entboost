@@ -8,7 +8,7 @@ class EbWidgetFileTranList : public QWidget
 {
     Q_OBJECT
 public:
-    explicit EbWidgetFileTranList(const EbcCallInfo::pointer &callInfo,QWidget *parent = nullptr);
+    explicit EbWidgetFileTranList(QWidget *parent = nullptr);
 
     void onExitChat(bool bHangup);
     void onSendingFile(const CCrFileInfo * fileInfo);
@@ -28,7 +28,7 @@ protected:
     virtual void closeEvent(QCloseEvent *event);
 
 private:
-    EbcCallInfo::pointer m_callInfo;
+//    EbcCallInfo::pointer m_callInfo;
     CLockList<CCrFileInfo> m_pAddTranFile;
 //    CLockList<EbWidgetFileTranItem::pointer> m_pDelTranFile;
     CLockMap<eb::bigint, EbWidgetFileTranItem::pointer> m_tranFileList;	/// msgid->

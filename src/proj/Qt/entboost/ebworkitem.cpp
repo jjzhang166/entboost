@@ -86,7 +86,7 @@ void EbWorkItem::buildButton(bool saveUrl,int topHeight, QWidget *parent)
         m_itemText = theLocales.getLocalText("chat-record.title","Chat Record");
     }
     else if ( isItemType(WORK_ITEM_TRAN_FILE) && m_widgetTranFile==0 ) {
-        m_widgetTranFile = new EbWidgetFileTranList(m_callInfo,parent);
+        m_widgetTranFile = new EbWidgetFileTranList(parent);
         m_itemText = theLocales.getLocalText("tran-file.title","Tran File");
     }
     else if ( isItemType(WORK_ITEM_WEB_BROWSER) && m_widgetWorkView.get()==0 ) {
@@ -188,12 +188,12 @@ int EbWorkItem::checkTopButtonClickState(const QPushButton *button, const QPoint
     return 0;
 }
 
-int EbWorkItem::onResize(int index, const QRect &rect, int topHeight, int leftOffset)
+int EbWorkItem::onResize(int x, const QRect &rect, int topHeight, int leftOffset)
 {
     if (m_pushButtonTop==0) {
         return 0;
     }
-    const int x = leftOffset+const_top_button_left+index*m_topButtonWidth;
+//    const int x = leftOffset+const_top_button_left+index*m_topButtonWidth;
     int y = topHeight;
     m_pushButtonTop->setGeometry( x,y,m_topButtonWidth,const_top_button_height );
     const QRect& rectLeftButton = m_pushButtonTop->geometry();
@@ -217,7 +217,8 @@ int EbWorkItem::onResize(int index, const QRect &rect, int topHeight, int leftOf
         m_widgetTranFile->setGeometry( leftOffset,y,rect.width()-leftOffset,rect.height()-y );
     }
     else if (m_widgetWorkView.get()!=0) {
-        m_widgetWorkView->setGeometry( leftOffset,y,rect.width()-leftOffset,rect.height()-y );
+        /// -1 避免看不到右边和下边边框
+        m_widgetWorkView->setGeometry( leftOffset,y,rect.width()-leftOffset-1,rect.height()-y-1 );
     }
     return rectLeftButton.right();
 }
@@ -230,12 +231,12 @@ QRect EbWorkItem::topGeometry() const
     return m_pushButtonTop->geometry();
 }
 
-int EbWorkItem::onMove(int index,int leftOffset)
+int EbWorkItem::onMove(int x)
 {
     if (m_pushButtonTop==0) {
         return 0;
     }
-    const int x = leftOffset+const_top_button_left+index*m_topButtonWidth;
+//    const int x = leftOffset+const_top_button_left+index*m_topButtonWidth;
     const int y = m_pushButtonTop->geometry().top();
     m_pushButtonTop->move( x,y );
     return m_pushButtonTop->geometry().right();

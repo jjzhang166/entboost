@@ -68,6 +68,7 @@ typedef enum EB_MSG_RECORD_TYPE
 inline bool isCanCollectRecordType(EB_MSG_RECORD_TYPE nType) {return (nType==MRT_FILE || nType==MRT_RESOURCE)?false:true;}
 
 class DialogEmotionSelect;
+class DialogMainFrame;
 
 class EbClientApp : public QObject
 {
@@ -90,7 +91,14 @@ public:
     CLockMap<eb::bigint,bool> m_pAutoCallGroupIdList;
     /// 记录自动 CALL from user id
     CLockMap<eb::bigint,bool> m_pAutoCallFromUserIdList;
+    CLockMap<eb::bigint,bool> m_pCancelFileList;
+    eb::bigint m_nSelectCallId;
+    void clearSubscribeSelectInfo(void);
+    void triggeredApps(int index);
+    std::vector<EB_SubscribeFuncInfo> m_pSubscribeFuncList;
 
+    void setMainWnd(DialogMainFrame * mainWnd) {m_mainWnd=mainWnd;}
+    DialogMainFrame *mainWnd(void) const {return m_mainWnd;}
     bool setDevAppId(QObject* receiver);
 
     bool initApp(void);
@@ -250,6 +258,7 @@ private:
     QRect m_deskRect;
     QRect m_screenRect;
 
+    DialogMainFrame * m_mainWnd;
     QObject* m_receiver;
     DialogEmotionSelect* m_dialogEmotionSelect;
 };

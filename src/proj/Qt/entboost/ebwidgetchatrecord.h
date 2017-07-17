@@ -24,7 +24,7 @@ public slots:
     void updateViewButtonCheckState(void);
     void onClickedButtonViewMsg(void);
     void onTextChangeLineEditSearch(const QString &text);
-    void onClickedButtonDeleteAll(void);
+    void onClickedButtonClearAll(void);
     void onClickedCheckBoxOnlineMsg(void);
     void onUserDateChanged(const QDate &date);
     void onClickedButtonMoveFirst(void);
@@ -40,13 +40,14 @@ protected:
 
 private:
     EbcCallInfo::pointer m_callInfo;
+    QString m_fromName;
     QPushButton * m_buttonViewAll;
     QPushButton * m_buttonViewImage;
     QPushButton * m_buttonViewFile;
     QPushButton * m_buttonViewAudio;
     QPushButton * m_buttonViewText;
     EbLineEdit * m_lineEditSearch;
-    QPushButton * m_buttonDeleteAll;
+    QPushButton * m_buttonClearAll;
     EbTextBrowser * m_textBrowser;
     EbWidgetWorkView::pointer m_widgetWorkView;
     QCheckBox * m_checkBoxOnlineMsg;

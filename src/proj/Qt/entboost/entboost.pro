@@ -163,7 +163,8 @@ SOURCES += main.cpp\
     ebcontextmenu.cpp \
     ebwidgetfiletranlist.cpp \
     ebwidgetfiletranitem.cpp \
-    ebwidgetchatrecord.cpp
+    ebwidgetchatrecord.cpp \
+    ebdialogfilemanager.cpp
 
 HEADERS  += mainwindow.h \
     EbDialogBase.h \
@@ -224,7 +225,8 @@ HEADERS  += mainwindow.h \
     ebcontextmenu.h \
     ebwidgetfiletranlist.h \
     ebwidgetfiletranitem.h \
-    ebwidgetchatrecord.h
+    ebwidgetchatrecord.h \
+    ebdialogfilemanager.h
 
 FORMS    += mainwindow.ui \
     dialoglogin.ui \
@@ -240,7 +242,8 @@ FORMS    += mainwindow.ui \
     dialogchangehead.ui \
     dialogmycenter.ui \
     dialoggroupinfo.ui \
-    dialogworkframe.ui
+    dialogworkframe.ui \
+    ebdialogfilemanager.ui
 
 RESOURCES += \
     entboost.qrc

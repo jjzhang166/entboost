@@ -7,6 +7,7 @@
 #include "dialogframelist.h"
 #include "dialogmessagetip.h"
 #include "dialogmycenter.h"
+#include "ebdialogfilemanager.h"
 #include "dialogworkframe.h"
 #include "ebwidgetappbar.h"
 #include "eblineedit.h"
@@ -24,6 +25,7 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
   , m_pDlgMyCenter(0)
   , m_pDlgFrameList(0)
   , m_pDlgMsgTip(0)
+  , m_dialogFileManager(0)
   , m_widgetMyGroup(0)
   , m_widgetSearchResult(0)
 //  , m_canSearch(false)
@@ -35,6 +37,7 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
   , m_trayIcon(0)
 
 {
+    theApp->setMainWnd(this);
     m_widgetMainAppBar = new EbWidgetAppBar(EB_FUNC_LOCATION_MAINFRAME_BTN2,this);
     connect( m_widgetMainAppBar,SIGNAL(clickedSubApp(EB_SubscribeFuncInfo)),this,SLOT(onClickedSubApp(EB_SubscribeFuncInfo)) );
     theApp->m_ebum.EB_SetMsgReceiver(this);
@@ -145,6 +148,8 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
         ui->pushButtonMyCenter->setGeometry( x,y,const_main_frame_btn_size,const_main_frame_btn_size );
         x += const_main_frame_btn_size;
         ui->pushButtonFileManager->setGeometry( x,y,const_main_frame_btn_size,const_main_frame_btn_size );
+        connect( ui->pushButtonFileManager,SIGNAL(clicked()),this,SLOT(onClickedPushButtonFileManager()) );
+
         x += const_main_frame_btn_size;
         ui->pushButtonMyShare->setGeometry( x,y,const_main_frame_btn_size,const_main_frame_btn_size );
         x += const_main_frame_btn_size;
@@ -226,8 +231,6 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
 
     connect( ui->pushButtonSetting,SIGNAL(clicked()),this,SLOT(onClickedPushButtonSetting()) );
 
-//    connect( ui->pushButtonFileManager,SIGNAL(clicked()),this,SLOT(onClickedPushButtonFileManager()) );
-
     connect( ui->pushButtonMyGroup,SIGNAL(clicked()),this,SLOT(onClickedPushButtonMyGroup()) );
     connect( ui->pushButtonMyContact,SIGNAL(clicked()),this,SLOT(onClickedPushButtonMyContact()) );
     connect( ui->pushButtonMySession,SIGNAL(clicked()),this,SLOT(onClickedPushButtonMySession()) );
@@ -277,6 +280,11 @@ DialogMainFrame::~DialogMainFrame()
         delete m_pDlgMsgTip;
         m_pDlgMsgTip = 0;
     }
+    /// 删除会有异常
+//    if (m_dialogFileManager!=0) {
+//        delete m_dialogFileManager;
+//        m_dialogFileManager = 0;
+//    }
 //    if (m_menuSysTray!=0) {
 //        delete m_menuSysTray;
 //        m_menuSysTray = 0;
@@ -1113,6 +1121,10 @@ bool DialogMainFrame::checkEventData(QEvent * e)
 
 void DialogMainFrame::checkOneSecond()
 {
+    if (m_dialogFileManager!=0) {
+        m_dialogFileManager->timerCheckState();
+    }
+
     static unsigned int theSeconedIndex = 0;
     theSeconedIndex++;
 
@@ -1398,13 +1410,31 @@ void DialogMainFrame::onTriggeredActionExitApp()
     this->accept();
 }
 
-//void DialogMainFrame::onClickedPushButtonFileManager(void)
-//{
-//    ui->pushButtonMyGroup->setChecked(false);
-//    ui->pushButtonMyCenter->setChecked(false);
-//    ui->pushButtonFileManager->setChecked(true);
-//    ui->pushButtonMyEnterprise->setChecked(false);
-//}
+void DialogMainFrame::onClickedPushButtonFileManager()
+{
+    if (m_dialogFileManager==0) {
+        m_dialogFileManager = new EbDialogFileManager;
+        m_dialogFileManager->setModal(false);
+        m_dialogFileManager->setWindowModality(Qt::WindowModal);
+        const int m_nScreenWidth = theApp->screenRect().width();
+        const int const_dlg_width = 480;
+        const int const_dlg_height = 380;
+        QRect rect;
+        rect.setLeft(m_nScreenWidth-const_dlg_width);
+        rect.setWidth(const_dlg_width);
+        rect.setTop(0);
+        rect.setHeight(const_dlg_height);
+        m_dialogFileManager->setGeometry(rect);
+    }
+    m_dialogFileManager->setVisible(true);
+
+//    if (m_dialogFileManager->IsEmpty())
+//    {
+//        //m_dialogFileManager->OnBnClickedButtonRefresh();
+//        m_dialogFileManager->OnBnClickedButtonTraned();
+//    }
+
+}
 
 void DialogMainFrame::onClickedPushButtonMyGroup(void)
 {
@@ -1455,8 +1485,8 @@ void DialogMainFrame::onClickedSubApp(const EB_SubscribeFuncInfo & subFunnInfo)
     openSubscribeFuncWindow( subFunnInfo );
 }
 
-bool DialogMainFrame::openSubscribeFuncWindow(
-            const EB_SubscribeFuncInfo &subFuncInfo, const std::string &/*postData*/, const std::string &sParameters)
+bool DialogMainFrame::openSubscribeFuncWindow(const EB_SubscribeFuncInfo &subFuncInfo,
+                                              const std::string &/*postData*/, const std::string &sParameters)
 {
     const QString sFullFuncurl = theApp->subscribeFuncUrl( subFuncInfo.m_nSubscribeId, sParameters );
     if ( sFullFuncurl.isEmpty() ) {
@@ -2177,8 +2207,8 @@ bool DialogMainFrame::onReceiveRich(QEvent *e)
 
 void DialogMainFrame::onSendingFile(QEvent *e)
 {
-    const CCrFileInfo * pCrFileInfo = (const CCrFileInfo*)e;
-    const EB_STATE_CODE state = (EB_STATE_CODE)pCrFileInfo->GetStateCode();
+    const CCrFileInfo * fileInfo = (const CCrFileInfo*)e;
+    const EB_STATE_CODE state = (EB_STATE_CODE)fileInfo->GetStateCode();
     if (EB_STATE_APPID_KEY_ERROR==state || EB_STATE_APP_ONLINE_KEY_TIMEOUT==state) {
         return;
     }
@@ -2240,12 +2270,12 @@ void DialogMainFrame::onSendingFile(QEvent *e)
     }
     }
 
-    const eb::bigint sCallId = pCrFileInfo->GetCallId();
-    const eb::bigint sResId = pCrFileInfo->m_sResId;
+    const eb::bigint sCallId = fileInfo->GetCallId();
+    const eb::bigint sResId = fileInfo->m_sResId;
     if (sResId>0 && sCallId==0) {
-//            ShowDlgFileManager();
-//            m_pDlgFileManager->OnSendingFile(pCrFileInfo);
-//            m_pDlgFileManager->OnBnClickedButtonTraning();
+            onClickedPushButtonFileManager();
+            m_dialogFileManager->onSendingFile(fileInfo);
+            m_dialogFileManager->onClickedButtonTraningFile();
     }
     EbcCallInfo::pointer pEbCallInfo;
     if (!theApp->m_pCallList.find(sCallId,pEbCallInfo)) {
@@ -2253,7 +2283,7 @@ void DialogMainFrame::onSendingFile(QEvent *e)
     }
     pEbCallInfo->m_tLastTime = time(0);
     DialogChatBase::pointer chatBase = getDialogChatBase(pEbCallInfo);
-    chatBase->onSendingFile(pCrFileInfo);
+    chatBase->onSendingFile(fileInfo);
 }
 
 void DialogMainFrame::onSentFile(QEvent *e)
@@ -2267,14 +2297,13 @@ void DialogMainFrame::onSentFile(QEvent *e)
     const eb::bigint sCallId = fileInfo->GetCallId();
     const eb::bigint sResId = fileInfo->m_sResId;
     if (sResId>0 && sCallId==0) {
-//        if (m_pDlgFileManager!=NULL && (pCrFileInfo->m_sReceiveAccount==0 || pCrFileInfo->m_sReceiveAccount==theEBAppClient.EB_GetLogonUserId()))
-//        {
-//            m_pDlgFileManager->DeleteDlgTranFile(pCrFileInfo->m_nMsgId);
-//            if (m_pDlgFileManager->IsEmpty())
-//            {
-//                m_pDlgFileManager->ShowWindow(SW_HIDE);
-//            }
-//        }
+        if (m_dialogFileManager!=0 &&
+                (fileInfo->m_sReceiveAccount==0 || fileInfo->m_sReceiveAccount==theApp->logonUserId()) ) {
+            m_dialogFileManager->deleteTranFile(fileInfo->m_nMsgId);
+            if (m_dialogFileManager->isEmpty()) {
+                m_dialogFileManager->setVisible(false);
+            }
+        }
     }
     //EbcCallInfo::pointer pEbCallInfo;
     //if (!theApp.m_pCallList.find(lpszCallId,pEbCallInfo))
@@ -2303,22 +2332,20 @@ void DialogMainFrame::onSentFile(QEvent *e)
 
 void DialogMainFrame::onCancelFile(QEvent *e)
 {
-    const CCrFileInfo * pCrFileInfo = (const CCrFileInfo*)e;
-    const int lParam = (int)pCrFileInfo->GetEventParameter();
+    const CCrFileInfo * fileInfo = (const CCrFileInfo*)e;
+    const int lParam = (int)fileInfo->GetEventParameter();
     const bool bChangeP2PSending = lParam==1?true:false;
-    const eb::bigint sCallId = pCrFileInfo->GetCallId();
-    const eb::bigint sResId = pCrFileInfo->m_sResId;
-    const eb::bigint nReceiveAccount = pCrFileInfo->m_sReceiveAccount;
+    const eb::bigint callId = fileInfo->GetCallId();
+    const eb::bigint resourceId = fileInfo->m_sResId;
+    const eb::bigint nReceiveAccount = fileInfo->m_sReceiveAccount;
     //const eb::bigint nSendToUid = pCrFileInfo->m_sSendTo;
-    if (sResId>0 && sCallId==0) {
-//        if (m_pDlgFileManager!=NULL && nReceiveAccount==0)
-//            m_pDlgFileManager->DeleteDlgTranFile(pCrFileInfo->m_nMsgId);
-
-//        if (sResId==pCrFileInfo->m_nMsgId)
-//        {
-//            delete pCrFileInfo;
-//            return 0;
-//        }
+    if (resourceId>0 && callId==0) {
+        if (m_dialogFileManager!=0 && nReceiveAccount==0) {
+            m_dialogFileManager->deleteTranFile(fileInfo->m_nMsgId);
+        }
+        if (resourceId==fileInfo->m_nMsgId) {
+            return;
+        }
     }
     //EbcCallInfo::pointer pEbCallInfo;
     //if (!theApp.m_pCallList.find(lpszCallId,pEbCallInfo))
@@ -2326,9 +2353,9 @@ void DialogMainFrame::onCancelFile(QEvent *e)
     //	return 1;
     //}
     //pEbCallInfo->m_tLastTime = time(0);
-    DialogChatBase::pointer chatBase = getDialogChatBase(sCallId);
+    DialogChatBase::pointer chatBase = getDialogChatBase(callId);
     if (chatBase.get()!=0) {
-        chatBase->onCancelFile(pCrFileInfo,bChangeP2PSending);
+        chatBase->onCancelFile(fileInfo,bChangeP2PSending);
         if (!chatBase->isVisible()) {
             if (lParam!=10) {
                 QSound::play( ":/wav/msg.wav" );
@@ -2338,8 +2365,8 @@ void DialogMainFrame::onCancelFile(QEvent *e)
 //    const tstring sFileName = libEbc::GetFileName(pCrFileInfo->m_sFileName);
 
     EbcCallInfo::pointer pEbCallInfo;
-    if (nReceiveAccount!=0 && theApp->m_pCallList.find(sCallId,pEbCallInfo))	/// sReceiveAccount==0是主动取消
-    {
+    if (nReceiveAccount!=0 && theApp->m_pCallList.find(callId,pEbCallInfo)) {
+        /// sReceiveAccount==0是主动取消
 //        if (chatBase.get()==0 || !chatBase->IsWindowVisible())
 //        {
 //            CString sFirstMsg;
@@ -2377,21 +2404,20 @@ void DialogMainFrame::onCancelFile(QEvent *e)
 bool DialogMainFrame::onReceivingFile(QEvent *e)
 {
     const CCrFileInfo * fileInfo = (const CCrFileInfo*)e;
-    const eb::bigint sResId = fileInfo->m_sResId;
+    const eb::bigint resourceId = fileInfo->m_sResId;
     const int lParam = (int)fileInfo->GetEventParameter();
-    if (sResId>0 && fileInfo->GetCallId()==0) {
+    if (resourceId>0 && fileInfo->GetCallId()==0) {
     //if (sResId>0 && (!pCrFileInfo->m_bOffFile || sResId==pCrFileInfo->m_nMsgId))
-//        ShowDlgFileManager();
-//        m_pDlgFileManager->OnReceivingFile(pCrFileInfo);
-//        m_pDlgFileManager->OnBnClickedButtonTraning();
-        if (sResId==fileInfo->m_nMsgId) {
-//            delete pCrFileInfo;
+        onClickedPushButtonFileManager();
+        m_dialogFileManager->onReceivingFile(fileInfo);
+        m_dialogFileManager->onClickedButtonTraningFile();
+        if (resourceId==fileInfo->m_nMsgId) {
             return true;
         }
     }
-    const eb::bigint sCallId = fileInfo->GetCallId();
+    const eb::bigint callId = fileInfo->GetCallId();
     EbcCallInfo::pointer pEbCallInfo;
-    if (!theApp->m_pCallList.find(sCallId,pEbCallInfo))
+    if (!theApp->m_pCallList.find(callId,pEbCallInfo))
     {
         return false;// -1;
     }
@@ -2408,7 +2434,7 @@ bool DialogMainFrame::onReceivingFile(QEvent *e)
         bool bRet = false;
         const EB_UI_STYLE_TYPE nDefaultUIStyleType = theApp->defaultUIStyleType();
         if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT && m_pDlgFrameList!=0) {
-            bRet = m_pDlgFrameList->addUnreadMsg(sCallId,0);
+            bRet = m_pDlgFrameList->addUnreadMsg(callId,0);
         }
         else if (!theApp->isHideMainFrame()) {
 //            const bool bRet = CFrameWndInfoProxy::AddUnreadMsg(sCallId,0);
@@ -2419,7 +2445,7 @@ bool DialogMainFrame::onReceivingFile(QEvent *e)
 //            }
         }
         else if (m_pDlgFrameList!=0) {
-            bRet = m_pDlgFrameList->addUnreadMsg(sCallId,0);
+            bRet = m_pDlgFrameList->addUnreadMsg(callId,0);
         }
         if ( bRet && m_pDlgFrameList!=0 && m_pDlgFrameList->isVisible() ) {
 //            ::FlashWindow(m_pDlgFrameList->GetSafeHwnd(), TRUE);
@@ -2452,38 +2478,33 @@ void DialogMainFrame::onReceivedFile(QEvent *e)
 {
     const CCrFileInfo * fileInfo = (const CCrFileInfo*)e;
     const int lParam = (int)fileInfo->GetEventParameter();
-    const eb::bigint sCallId = fileInfo->GetCallId();
-    const eb::bigint sResId = fileInfo->m_sResId;
-    if (sResId>0 && fileInfo->GetCallId()==0) {
+    const eb::bigint callId = fileInfo->GetCallId();
+    const eb::bigint resourceId = fileInfo->m_sResId;
+    if (resourceId>0 && fileInfo->GetCallId()==0) {
     //if (sResId>0)
-        const bool bIsHttpDownloadFile = sResId==fileInfo->m_nMsgId?true:false;
-//        if (m_pDlgFileManager!=NULL)
-//        {
-//            m_pDlgFileManager->OnReceivedFile(pCrFileInfo);
-//            if (!bIsHttpDownloadFile && m_pDlgFileManager->IsEmpty())
-//            {
-//                m_pDlgFileManager->ShowWindow(SW_HIDE);
-//            }
-//        }
-//        if (bIsHttpDownloadFile)
-//        {
-//            tstring sInFileName(pCrFileInfo->m_sFileName);
-//            theApp.m_pBoUsers->escape_string_in(sInFileName);
-//            CString sSql;
-//            sSql.Format(_T("INSERT INTO msg_record_t(msg_id,from_uid,from_name,to_uid,msg_type,msg_text) ")\
-//                _T("VALUES(%lld,%lld,'',%lld,%d,'%s')"),
-//                pCrFileInfo->m_nMsgId,pCrFileInfo->m_sSendFrom,
-//                pCrFileInfo->m_sSendTo,MRT_FILE,libEbc::ACP2UTF8(sInFileName.c_str()).c_str());
-//            theApp.m_pBoUsers->execute(sSql);
-//            delete pCrFileInfo;
-//            if (m_pDlgFileManager->IsWindowVisible() && m_pDlgFileManager->IsEmpty())
-//            {
-//                m_pDlgFileManager->OnBnClickedButtonRefresh();
-//                m_pDlgFileManager->OnBnClickedButtonTraned();
-//            }
-//            m_pDlgFileManager->FlashWindow(TRUE);
-//            return 0;
-//        }
+        const bool bIsHttpDownloadFile = resourceId==fileInfo->m_nMsgId?true:false;
+        if (m_dialogFileManager!=0) {
+            m_dialogFileManager->onReceivedFile(fileInfo);
+            if (!bIsHttpDownloadFile && m_dialogFileManager->isEmpty()) {
+                m_dialogFileManager->setVisible(false);
+            }
+        }
+        if (bIsHttpDownloadFile) {
+            tstring sInFileName(fileInfo->m_sFileName);
+            theApp->m_sqliteUser->escape_string_in(sInFileName);
+            char sql[1024];
+            sprintf( sql, "INSERT INTO msg_record_t(msg_id,from_uid,from_name,to_uid,msg_type,msg_text) "
+                          "VALUES(%lld,%lld,'',%lld,%d,'%s')",
+                     fileInfo->m_nMsgId,fileInfo->m_sSendFrom,fileInfo->m_sSendTo,(int)MRT_FILE,sInFileName.c_str());
+            theApp->m_sqliteUser->execute(sql);
+//            delete fileInfo;
+            if (m_dialogFileManager->isVisible() && m_dialogFileManager->isEmpty()) {
+                m_dialogFileManager->onClickedButtonRefresh();
+                m_dialogFileManager->onClickedButtonTranedFile();
+            }
+//            m_dialogFileManager->FlashWindow(TRUE);
+            return;
+        }
     }
     //CEBCCallInfo::pointer pEbCallInfo;
     //if (!theApp.m_pCallList.find(lpszCallId,pEbCallInfo))
@@ -2491,7 +2512,7 @@ void DialogMainFrame::onReceivedFile(QEvent *e)
     //	return 1;
     //}
     //pEbCallInfo->m_tLastTime = time(0);
-    DialogChatBase::pointer chatBase = getDialogChatBase(sCallId);
+    DialogChatBase::pointer chatBase = getDialogChatBase(callId);
     if (chatBase.get()!=0) {
         chatBase->onReceivedFile(fileInfo);
         if (!chatBase->isVisible()) {
@@ -2504,21 +2525,22 @@ void DialogMainFrame::onReceivedFile(QEvent *e)
 
 void DialogMainFrame::onFilePercent(QEvent *e)
 {
-    const CChatRoomFilePercent * pChatRoomFilePercent = (const CChatRoomFilePercent*)e;
-    const eb::bigint sCallId = pChatRoomFilePercent->GetCallId();
-    const eb::bigint sResId = pChatRoomFilePercent->m_sResId;
+    const CChatRoomFilePercent * filePercent = (const CChatRoomFilePercent*)e;
+    const eb::bigint sCallId = filePercent->GetCallId();
+    const eb::bigint sResId = filePercent->m_sResId;
     if (sResId>0 && sCallId==0) {
     //if (sResId>0)
-//        if (m_pDlgFileManager!=NULL)
-//            m_pDlgFileManager->SetFilePercent(pChatRoomFilePercent);
-        if (sResId==pChatRoomFilePercent->m_nMsgId) {
+        if (m_dialogFileManager!=0) {
+            m_dialogFileManager->onFilePercent(filePercent);
+        }
+        if (sResId==filePercent->m_nMsgId) {
 //            delete pChatRoomFilePercent;
             return;
         }
     }
     DialogChatBase::pointer chatBase = getDialogChatBase(sCallId);
     if (chatBase.get()!=0) {
-        chatBase->onFilePercent(pChatRoomFilePercent);
+        chatBase->onFilePercent(filePercent);
     }
 }
 

@@ -26,7 +26,7 @@ public:
     void updateLocaleInfo(void);
     void setSubUnreadMsg( mycp::bigint subId, size_t unreadMsgCount );
     void addSubUnreadMsg( mycp::bigint subId );
-    bool addSubscribeFuncInfo( const EB_SubscribeFuncInfo & pSubscribeFuncInfo );
+//    bool addSubscribeFuncInfo( const EB_SubscribeFuncInfo & pSubscribeFuncInfo );
 //    bool IsSubscribeFuncInfoEmpty(void) const {return m_pMainFuncButtonList.empty();}
     void addUrl(bool bSaveBrowseTitle, const QString& sAppUrl, const QString& sPostData="", int nInsertOffset=-1);
     void addUrl(bool bSaveBrowseTitle, const QString& sAppUrl, const QString& sPostData, const EB_SubscribeFuncInfo& pFuncInfo, bool nOpenNewClose=false, int nInsertOffset = -1);

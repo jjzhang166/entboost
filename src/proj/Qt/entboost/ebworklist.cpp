@@ -95,8 +95,9 @@ void EbWorkList::addWorkItem(bool saveUrl,const EbWorkItem::pointer &workItem, i
         }
     }
     int topButtonRightPos = -1;
+    int x = onMove();
     if (nInsertIndex>=0) {
-        topButtonRightPos = onMove();
+        topButtonRightPos = x;
     }
     else {
         nInsertIndex = (int)m_list.size();
@@ -104,7 +105,8 @@ void EbWorkList::addWorkItem(bool saveUrl,const EbWorkItem::pointer &workItem, i
     }
 
     workItem->buildButton( saveUrl,m_topHeight,m_pParent );
-    const int x = workItem->onResize( nInsertIndex,m_pParent->geometry(),m_topHeight,m_leftOffset );
+    x = workItem->onResize( x,m_pParent->geometry(),m_topHeight,m_leftOffset );
+//    const int x = workItem->onResize( nInsertIndex,m_pParent->geometry(),m_topHeight,m_leftOffset );
     showByIndex( nInsertIndex,false );
     if (topButtonRightPos>0)
         onItemSizeChange( workItem,(int)m_list.size(),topButtonRightPos );
@@ -390,26 +392,25 @@ void EbWorkList::checkShowHideCloseButton(const QPoint &pt)
 
 int EbWorkList::onResize(const QRect &rect)
 {
-    int result = 0;
+    int result = m_leftOffset;
     BoostReadLock rdLock(m_list.mutex());
     CLockList<EbWorkItem::pointer>::iterator pIter = m_list.begin();
-    int index = 0;
     for (; pIter!=m_list.end(); pIter++) {
         const EbWorkItem::pointer& frameInfo = *pIter;
-        result = frameInfo->onResize(index++, rect, m_topHeight, m_leftOffset);
+        result = frameInfo->onResize( result, rect, m_topHeight, m_leftOffset );
     }
     return result;
 }
 
 int EbWorkList::onMove(void)
 {
-    int result = 0;
+    int result = m_leftOffset;
     BoostReadLock rdLock(m_list.mutex());
     CLockList<EbWorkItem::pointer>::iterator pIter = m_list.begin();
     int index = 0;
     for (; pIter!=m_list.end(); pIter++) {
         const EbWorkItem::pointer& frameInfo = *pIter;
-        result = frameInfo->onMove( index++,m_leftOffset );
+        result = frameInfo->onMove( result );
     }
     return result;
 }

@@ -3,10 +3,10 @@
 
 const int const_TranFile_Height		= 60;
 
-EbWidgetFileTranList::EbWidgetFileTranList(const EbcCallInfo::pointer &callInfo,QWidget *parent) : QWidget(parent)
-  , m_callInfo(callInfo)
+EbWidgetFileTranList::EbWidgetFileTranList(QWidget *parent) : QWidget(parent)
+//  , m_callInfo(callInfo)
 {
-    assert( m_callInfo.get()!=0 );
+//    assert( m_callInfo.get()!=0 );
 
 }
 

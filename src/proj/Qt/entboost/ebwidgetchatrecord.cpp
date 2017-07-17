@@ -1,5 +1,6 @@
 #include "ebwidgetchatrecord.h"
 #include <iconhelper.h>
+#include <ebmessagebox.h>
 
 const int const_one_page_count = 50;	/// 一页显示多少条
 
@@ -35,9 +36,9 @@ EbWidgetChatRecord::EbWidgetChatRecord(const EbcCallInfo::pointer &callInfo,QWid
     m_lineEditSearch = new EbLineEdit(this);
     m_lineEditSearch->setMaxLength(64);
     connect( m_lineEditSearch,SIGNAL(textChanged(QString)),this,SLOT(onTextChangeLineEditSearch(QString)) );
-    m_buttonDeleteAll = new QPushButton(this);
-    m_buttonDeleteAll->setObjectName("BlackMainColorButton");
-    connect( m_buttonDeleteAll,SIGNAL(clicked()),this,SLOT(onClickedButtonDeleteAll()) );
+    m_buttonClearAll = new QPushButton(this);
+    m_buttonClearAll->setObjectName("BlackMainColorButton");
+    connect( m_buttonClearAll,SIGNAL(clicked()),this,SLOT(onClickedButtonClearAll()) );
 
     m_textBrowser = new EbTextBrowser(m_callInfo,this);
     m_textBrowser->setStyleSheet("border: none;");
@@ -90,8 +91,8 @@ void EbWidgetChatRecord::updateLocaleInfo()
     m_buttonViewText->setToolTip( theLocales.getLocalText("chat-record.button-view-text.tooltip","") );
     m_lineEditSearch->setPlaceholderText( theLocales.getLocalText("chat-record.edit-search.bg-text","Search Local Chat Message") );
     m_lineEditSearch->setToolTip( theLocales.getLocalText("chat-record.edit-search.tooltip","") );
-    m_buttonDeleteAll->setText( theLocales.getLocalText("chat-record.button-delete-all.text","Delete All") );
-    m_buttonDeleteAll->setToolTip( theLocales.getLocalText("chat-record.button-delete-all.tooltip","") );
+    m_buttonClearAll->setText( theLocales.getLocalText("chat-record.button-clear-all.text","Clear All") );
+    m_buttonClearAll->setToolTip( theLocales.getLocalText("chat-record.button-clear-all.tooltip","") );
     m_checkBoxOnlineMsg->setText( theLocales.getLocalText("chat-record.checkbox-online-msg.text","View Online Msg") );
     m_checkBoxOnlineMsg->setToolTip( theLocales.getLocalText("chat-record.checkbox-online-msg.tooltip","") );
     m_dateEdit->setDisplayFormat( theLocales.getLocalText("chat-record.date-search.format","") );
@@ -138,9 +139,50 @@ void EbWidgetChatRecord::onTextChangeLineEditSearch(const QString &text)
     }
 }
 
-void EbWidgetChatRecord::onClickedButtonDeleteAll()
+void EbWidgetChatRecord::onClickedButtonClearAll()
 {
+    if ( this->m_textBrowser->document()->isEmpty() ) {
+        return;
+    }
+    if (m_fromName.isEmpty()) {
+        m_fromName = m_callInfo->fromName().c_str();
+//        if (m_callInfo->isGroupCall()) {
+//            tstring groupName;
+//            theApp->m_ebum.EB_GetGroupName(m_callInfo->groupId(),groupName);
+//            m_fromName = groupName.c_str();
+//        }
+//        else if ( !m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sAccountName.empty() ) {
+//            m_fromName = m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sAccountName.c_str();
+//        }
+//        else if ( !m_callInfo->m_pFromAccountInfo.GetUserName().empty() ) {
+//            m_fromName = m_callInfo->m_pFromAccountInfo.GetUserName().c_str();
+//        }
+//        else {
+//            tstring memberName;
+//            theApp->m_ebum.EB_GetMemberNameByUserId2( m_callInfo->fromUserId(),memberName );
+//            m_fromName = memberName.c_str();
+//        }
+    }
 
+    QString title;
+    QString text;
+    if ( m_callInfo->isGroupCall() ) {
+        title = theLocales.getLocalText("message-box.clear-group-chat-record.title","Clear Chat Record");
+        text = theLocales.getLocalText("message-box.clear-group-chat-record.text","Confirm Clear:<br>[GROUP_NAME] Chat Record?");
+        text.replace("[GROUP_NAME]",m_fromName);
+    }
+    else {
+        title = theLocales.getLocalText("message-box.clear-user-chat-record.title","Clear Chat Record");
+        text = theLocales.getLocalText("message-box.clear-user-chat-record.text","Confirm Clear:<br>[USER_NAME](USER_ID) Chat Record?");
+        text.replace("[USER_NAME]",m_fromName);
+        text.replace("[USER_ID]",QString::number(m_callInfo->fromUserId()));
+    }
+    if (EbMessageBox::doExec( 0,title, QChar::Null, text, EbMessageBox::IMAGE_QUESTION )==QDialog::Accepted) {
+        const bool isAccount = m_callInfo->isGroupCall()?false:true;
+        const eb::bigint id = m_callInfo->isGroupCall()?m_callInfo->groupId():m_callInfo->fromUserId();
+        theApp->deleteDbRecord( id,isAccount);
+        this->m_textBrowser->clear();
+    }
 }
 
 void EbWidgetChatRecord::onClickedCheckBoxOnlineMsg()
@@ -164,7 +206,7 @@ void EbWidgetChatRecord::onClickedCheckBoxOnlineMsg()
         m_buttonViewAudio->setVisible(false);
         m_buttonViewText->setVisible(false);
         m_lineEditSearch->setVisible(false);
-        m_buttonDeleteAll->setVisible(false);
+        m_buttonClearAll->setVisible(false);
         m_dateEdit->setVisible(false);
         m_buttonMoveFirst->setVisible(false);
         m_buttonMovePrev->setVisible(false);
@@ -185,7 +227,7 @@ void EbWidgetChatRecord::onClickedCheckBoxOnlineMsg()
         m_buttonViewAudio->setVisible(true);
         m_buttonViewText->setVisible(true);
         m_lineEditSearch->setVisible(true);
-        m_buttonDeleteAll->setVisible(true);
+        m_buttonClearAll->setVisible(true);
         m_dateEdit->setVisible(true);
         m_buttonMoveFirst->setVisible(true);
         m_buttonMovePrev->setVisible(true);
@@ -503,8 +545,8 @@ void EbWidgetChatRecord::resizeEvent(QResizeEvent *event)
     m_buttonViewText->setGeometry(x, y+1,const_viewbtn_width,const_viewbtn_height);
     x += (const_viewbtn_width+5);
     const int const_btn_width = 60;
-    m_lineEditSearch->setGeometry(x,y,MIN(120,width()-m_buttonViewText->geometry().right()-const_btn_width-10-1),22);	/// 196
-    m_buttonDeleteAll->setGeometry(width()-const_btn_width-10,y+1,const_btn_width,const_viewbtn_height);
+    m_lineEditSearch->setGeometry(x,y,MIN(120,width()-m_buttonViewText->geometry().right()-const_btn_width-10-5),22);	/// 196
+    m_buttonClearAll->setGeometry(width()-const_btn_width-10,y+1,const_btn_width,const_viewbtn_height);
 
     const int const_interval = 1;
     if ( m_checkBoxOnlineMsg->isChecked() && m_widgetWorkView.get()!=0 ) {

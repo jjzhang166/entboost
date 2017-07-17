@@ -33,9 +33,6 @@ EbWidgetMyGroup::EbWidgetMyGroup(QWidget *parent) : QWidget(parent)
     /// “打开会话”按钮
     m_pushButtonCall = new QPushButton(this);
     m_pushButtonCall->setParent( m_treeWidgetMyGroup );
-    m_pushButtonCall->setCheckable(false);
-    m_pushButtonCall->setAutoDefault(false);
-    m_pushButtonCall->setFlat(true);
     m_pushButtonCall->setVisible(false);
     m_pushButtonCall->setObjectName("CallButton");
     m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
@@ -44,9 +41,6 @@ EbWidgetMyGroup::EbWidgetMyGroup(QWidget *parent) : QWidget(parent)
     /// “修改我的名片”
     m_pushButtonEdit = new QPushButton(this);
     m_pushButtonEdit->setParent( m_treeWidgetMyGroup );
-    m_pushButtonEdit->setCheckable(false);
-    m_pushButtonEdit->setAutoDefault(false);
-    m_pushButtonEdit->setFlat(true);
     m_pushButtonEdit->setVisible(false);
     m_pushButtonEdit->setObjectName("CallButton");
     m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );

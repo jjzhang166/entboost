@@ -31,7 +31,11 @@ public:
 #endif
 		, m_sCallId(0), m_sChatId(0)
 		, m_nState(EB_STATE_OK)
-	{
+#ifdef _QT_MAKE_
+        , m_nEventParameter(0)
+        , m_receiver(0), m_receiveKey(0)
+#endif
+    {
 	}
     //
     CCrInfo(unsigned long nParam,cr::bigint sCallId,cr::bigint sChatId,EB_STATE_CODE nState)

@@ -24,6 +24,7 @@ public:
     void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
     void getProcessing(bool& pVideoProcessing, bool& pFileProcessing, bool& pDesktopProcessing) const;
     void showMsgRecord(void);
+    void triggeredApps(int index);
 
 signals:
 

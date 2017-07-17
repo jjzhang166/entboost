@@ -18,6 +18,7 @@ EbcLocales theLocales;
 
 EbClientApp::EbClientApp(QObject *parent)
     : QObject(parent)
+    , m_nSelectCallId(0)
     , m_mainColor(0,162,232)
 //    , m_hotColor(m_mainColor), m_preColor(m_mainColor)
 
@@ -47,7 +48,8 @@ EbClientApp::EbClientApp(QObject *parent)
     , m_nOpenRegister(0)
     , m_bOpenVisitor(false)
 
-    , m_receiver(NULL)
+    , m_mainWnd(0)
+    , m_receiver(0)
     , m_dialogEmotionSelect(0)
 
 {
@@ -79,6 +81,21 @@ EbClientApp::~EbClientApp(void)
         delete m_dialogEmotionSelect;
         m_dialogEmotionSelect = 0;
     }
+}
+
+void EbClientApp::clearSubscribeSelectInfo()
+{
+    m_nSelectCallId = 0;
+}
+
+void EbClientApp::triggeredApps(int index)
+{
+    if ( index>=0 && index<(int)m_pSubscribeFuncList.size() ) {
+        ///
+        const EB_SubscribeFuncInfo funcInfo = m_pSubscribeFuncList[index];
+
+    }
+
 }
 
 bool EbClientApp::setDevAppId(QObject* receiver)
@@ -196,23 +213,29 @@ void EbClientApp::deleteDbRecord(eb::bigint sId, bool bIsAccount)
     }
     char sSql[256];
     if (bIsAccount) {
-        sprintf(sSql,"select msg_name FROM msg_record_t WHERE dep_code=0 AND (from_uid=%lld OR to_uid=%lld) AND msg_type>=%d",sId,sId,(int)MRT_JPG);
+        sprintf(sSql,"select msg_name,msg_text FROM msg_record_t WHERE dep_code=0 AND (from_uid=%lld OR to_uid=%lld) AND msg_type>=%d",sId,sId,(int)MRT_JPG);
     }
     else {
-        sprintf(sSql,"select msg_name FROM msg_record_t WHERE dep_code=%lld AND msg_type>=%d",sId,(int)MRT_JPG);
+        sprintf(sSql,"select msg_name,msg_text FROM msg_record_t WHERE dep_code=%lld AND msg_type>=%d",sId,(int)MRT_JPG);
     }
     const QString sUserImagePath(userImagePath());
+    const QString sUserFilePath(userFilePath());
     int nCookie = 0;
     m_sqliteUser->select( sSql, nCookie );
     cgcValueInfo::pointer pRecord = m_sqliteUser->first(nCookie);
     while (pRecord.get()!=0) {
         const QString sMsgName( pRecord->getVector()[0]->getStrValue().c_str() );
+        const QString sMsgText( pRecord->getVector()[1]->getStrValue().c_str() );
+        pRecord = m_sqliteUser->next(nCookie);
         /// 判断是临时图片，语音，文件目录
-        if (sMsgName.indexOf( sUserImagePath,Qt::CaseInsensitive )==0) {
+        if ( !sMsgName.isEmpty() && sMsgName.indexOf( sUserImagePath,Qt::CaseInsensitive )==0) {
             /// 删除临时目录图片
             QFile::remove(sMsgName);
         }
-        pRecord = m_sqliteUser->next(nCookie);
+        if ( !sMsgText.isEmpty() && sMsgText.indexOf( sUserFilePath,Qt::CaseInsensitive )==0) {
+            /// 删除临时目录图片
+            QFile::remove(sMsgText);
+        }
     }
     m_sqliteUser->reset(nCookie);
     /// 删除数据
@@ -232,20 +255,26 @@ void EbClientApp::deleteDbRecord(eb::bigint sMsgId)
         return;
     }
     char sSql[256];
-    sprintf( sSql, "select msg_name FROM msg_record_t WHERE msg_id=%lld AND msg_type>=%d", sMsgId, (int)MRT_JPG);
+    sprintf( sSql, "select msg_name,msg_text FROM msg_record_t WHERE msg_id=%lld AND msg_type>=%d", sMsgId, (int)MRT_JPG);
     const QString sUserImagePath(userImagePath());
+    const QString sUserFilePath(userFilePath());
     int nCookie = 0;
     m_sqliteUser->select(sSql, nCookie);
     cgcValueInfo::pointer pRecord = m_sqliteUser->first(nCookie);
     while (pRecord.get()!=NULL)
     {
         const QString sMsgName( pRecord->getVector()[0]->getStrValue().c_str() );
+        const QString sMsgText( pRecord->getVector()[1]->getStrValue().c_str() );
+        pRecord = m_sqliteUser->next(nCookie);
         /// 判断是临时图片，语音，文件目录
-        if (sMsgName.indexOf( sUserImagePath,Qt::CaseInsensitive )==0) {
+        if ( !sMsgName.isEmpty() && sMsgName.indexOf( sUserImagePath,Qt::CaseInsensitive )==0) {
             /// 删除临时目录图片
             QFile::remove(sMsgName);
         }
-        pRecord = m_sqliteUser->next(nCookie);
+        if ( !sMsgText.isEmpty() && sMsgText.indexOf( sUserFilePath,Qt::CaseInsensitive )==0) {
+            /// 删除临时目录图片
+            QFile::remove(sMsgText);
+        }
     }
     m_sqliteUser->reset(nCookie);
     /// 删除数据
@@ -808,7 +837,7 @@ void EbClientApp::updateColor(bool bUpdateDatabase)
 //    m_preColor.setGreen(GetGValue(m_preColorRgb));
 //    m_preColor.setBlue(GetBValue(m_preColorRgb));
 
-    const QString sQssFile = qApp->applicationDirPath()+"/datas/ebc.qss";
+    const QString sQssFile = qApp->applicationDirPath()+"/entboost.qss";
     QFile qssFile(sQssFile);
     if (qssFile.open(QFile::ReadOnly)) {
         m_styleSheet = QString::fromUtf8(qssFile.readAll());   // ** ok

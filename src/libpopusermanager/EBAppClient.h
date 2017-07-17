@@ -926,6 +926,7 @@ public:
 	功能：获取群组（部门）成员名称
 	====================================================================*/
 	bool EB_GetMemberNameByUserId(eb::bigint nGroupId,eb::bigint nMemberUserId,mycp::tstring& pOutMemberName) const;
+    bool EB_GetMemberNameByUserId2(eb::bigint nMemberUserId,mycp::tstring& pOutMemberName) const;
 
 	/****
 	功能：获取群组（部门）成员名称

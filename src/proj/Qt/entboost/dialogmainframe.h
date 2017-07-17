@@ -18,6 +18,7 @@ class DialogMyCenter;
 class EbWidgetAppBar;
 class EbLineEdit;
 class EbWidgetSearchResult;
+class EbDialogFileManager;
 
 //#define USES_EVENT_DATE_TIMER
 class DialogMainFrame : public EbDialogBase
@@ -41,6 +42,7 @@ public slots:
     void onTriggeredActionMyCollection(void);
     void onTriggeredActionLogout(void);
     void onTriggeredActionExitApp(void);
+    void onClickedPushButtonFileManager(void);
     void onClickedPushButtonMyGroup(void);
     void onClickedPushButtonMyContact(void);
     void onClickedPushButtonMySession(void);
@@ -62,8 +64,6 @@ public slots:
     void onClickedSearchResultUrl(const QString &url);
     void onListResultsKeyPressFirstItemUp(void);
     void onListResultsKeyPressEsc(void);
-
-//    void onClickedPushButtonFileManager(void);
 
     void processDatas(void);
 protected:
@@ -163,6 +163,7 @@ private:
     DialogMyCenter * m_pDlgMyCenter;
     DialogFrameList * m_pDlgFrameList;
     DialogMessageTip * m_pDlgMsgTip;
+    EbDialogFileManager * m_dialogFileManager;
     EbWidgetMyGroup*  m_widgetMyGroup;
     EbWidgetAppBar * m_widgetMainAppBar;
     EbLineEdit * m_lineEditSearch;

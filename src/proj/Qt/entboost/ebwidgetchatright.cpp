@@ -1,4 +1,5 @@
 #include "ebwidgetchatright.h"
+#include <dialogmainframe.h>
 
 const int const_top_button_width = 85;
 EbWidgetChatRight::EbWidgetChatRight(const EbcCallInfo::pointer& pCallInfo,QWidget *parent)
@@ -148,8 +149,36 @@ void EbWidgetChatRight::showMsgRecord()
 
 }
 
+void EbWidgetChatRight::triggeredApps(int index)
+{
+    if ( index>=0 && index<(int)theApp->m_pSubscribeFuncList.size() ) {
+        const EB_SubscribeFuncInfo funcInfo = theApp->m_pSubscribeFuncList[index];
+        const eb::bigint m_nSelectCallId = m_callInfo->callId();
+        const eb::bigint m_nSelectUserId = 0;
+        const tstring m_sSelectAccount;
+        const eb::bigint m_nSelectGroupId = m_callInfo->groupId();
+        if (funcInfo.m_nFunctionMode == EB_FUNC_MODE_WINDOW ||	/// 窗口模式；
+            funcInfo.m_nFunctionMode == EB_FUNC_MODE_MAINFRAME) {
+            const CEBString funcUrl = theApp->m_ebum.EB_GetSubscribeFuncUrl(funcInfo.m_nSubscribeId,
+                                                                             m_nSelectCallId,m_nSelectUserId,m_sSelectAccount,m_nSelectGroupId);
+            if (!funcUrl.empty()) {
+                /// 250,250,25=fafafa
+                char fullFuncUrl[260];
+                sprintf( fullFuncUrl, "%s&color=fafafa",funcUrl.c_str());
+                addUrl( false,fullFuncUrl,"", funcInfo );
+            }
+        }
+        else {
+            theApp->m_nSelectCallId = m_nSelectCallId;
+            theApp->mainWnd()->openSubscribeFuncWindow(funcInfo);
+        }
+    }
+
+}
+
 void EbWidgetChatRight::resizeEvent(QResizeEvent *e)
 {
+    const int nwidth = width();
 
     DialogWorkFrame::resizeEvent(e);
 }

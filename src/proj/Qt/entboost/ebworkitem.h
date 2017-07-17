@@ -57,9 +57,9 @@ public:
     /// * 检查按钮点击状态：1=点击关闭，2=左边点击，0=没有点击
     int checkTopButtonClickState(const QPushButton* button, const QPoint& pt) const;
 
-    int onResize(int index, const QRect& rect, int topHeight, int leftOffset);
+    int onResize(int x, const QRect& rect, int topHeight,int leftOffset);
     /// * 用于关闭某个ITEM，左右移动按钮位置
-    int onMove(int index,int leftOffset);
+    int onMove(int x);
     QRect topGeometry(void) const;
     void setChecked(bool checked, bool hideButton=false, bool bSearchFocus=false);
     bool isChecked(void) const;

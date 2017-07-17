@@ -131,6 +131,7 @@ DialogLogin::DialogLogin(QWidget *parent)
         ui->listWidgetLoginRecords->setGeometry( const_left_interval,y+const_common_edit_height+1,const_edit_width,96);
         ui->pushButtonDeleteAccount->raise();
         y += (const_common_edit_height + 10);
+        ui->lineEditPassword->installEventFilter(this);
         ui->lineEditPassword->setGeometry( const_left_interval, y,const_edit_width, const_common_edit_height );
         ui->labelPasswordIcon->move( const_edit_width-const_edit_icon_size-2,2 );
 //        ui->labelPasswordIcon->move( const_dialog_login_size.width()-const_left_interval-const_edit_icon_size-2,y+2 );
@@ -237,7 +238,7 @@ DialogLogin::~DialogLogin()
 
 void DialogLogin::updateLocaleInfo()
 {
-    // 显示右上角关闭按钮
+    /// 显示右上角关闭按钮
     this->showPushButtonSysClose( theLocales.getLocalText("base-dialog.close-button.tooltip","Close") );
     this->showPushButtonSysMin( theLocales.getLocalText("base-dialog.minimize-button.tooltip","Minimize") );
 
@@ -554,14 +555,19 @@ bool DialogLogin::eventFilter(QObject *obj, QEvent *e)
 //            }
 //        }
     }
+    else if (obj == ui->lineEditPassword) {
+        if (e->type() == QEvent::KeyPress) {
+            const QKeyEvent * event = (QKeyEvent*)e;
+            if ( (event->key()>=Qt::Key_0 && event->key()<=Qt::Key_9) ||
+                 (event->key()>=Qt::Key_A && event->key()<=Qt::Key_Z) ) {
+                /// 手工输入密码，清空 m_sOAuthKey
+                m_sOAuthKey.clear();
+            }
+        }
+    }
     else if (obj == ui->lineEditAccount) {
         if (e->type() == QEvent::KeyPress) {
             const QKeyEvent * event = (QKeyEvent*)e;
-                if ( (event->key()>=Qt::Key_0 && event->key()<=Qt::Key_9) ||
-                     (event->key()>=Qt::Key_A && event->key()<=Qt::Key_Z) ) {
-                    /// 手工输入密码，清空 m_sOAuthKey
-                    m_sOAuthKey.clear();
-                }
             switch (event->key()) {
             case Qt::Key_Down: {
                 /// 实现鼠标向下移动，切换到 listWidgetLoginRecords
@@ -593,10 +599,7 @@ bool DialogLogin::eventFilter(QObject *obj, QEvent *e)
         }
         return false;
     }
-    else {
-        // pass the event on to the parent class
-        return EbDialogBase::eventFilter(obj, e);
-    }
+    return EbDialogBase::eventFilter(obj, e);
 }
 
 //void DialogLogin::onUpdateProductName(QEvent* )

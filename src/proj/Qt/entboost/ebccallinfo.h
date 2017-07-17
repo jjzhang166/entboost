@@ -19,6 +19,7 @@ public:
     bool isGroupCall(void) const {return m_pCallInfo.m_sGroupCode>0?true:false;}
     mycp::bigint fromUserId(void) const {return m_pFromAccountInfo.GetUserId();}
     const tstring &fromUserAccount(void) const {return m_pFromAccountInfo.GetAccount();}
+    tstring fromName(void) const;
     EB_CallInfo m_pCallInfo;
     EB_AccountInfo m_pFromAccountInfo;
     bool m_bOffLineUser;

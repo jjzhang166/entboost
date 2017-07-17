@@ -79,6 +79,9 @@ public slots:
     void onClickedInputClose(void);
     void onClickedInputMsgRecord(void);
     void onClickedButtonSendFile(void);
+    void onTriggeredActionSendECard(void);
+    void onTriggeredActionChatApps(void);
+    void onClickedButtonChatApps(void);
     void exitChat(bool hangup);
     void onClickedButtonExitChat(void);
 
@@ -120,6 +123,7 @@ private:
     EB_USER_LINE_STATE m_nFromLineState;
     EB_GROUP_TYPE m_nGroupType;
 //    CLockMap<mycp::bigint,bool> m_pPrevReceivedFileMsgIdList;   /// msgid->
+    QMenu * m_menuChatApps;
 };
 const DialogChatBase::pointer DialogChatBaseNull;
 

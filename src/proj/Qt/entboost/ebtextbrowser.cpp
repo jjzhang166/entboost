@@ -440,14 +440,26 @@ void EbTextBrowser::addFileMsg(bool bReceive, const CCrFileInfo *fileInfo)
     CEBString fromUserName;
     CEBString toUserName;
     getFromToName( bReceive,fileInfo->m_sSendFrom,fileInfo->m_sSendTo,fromUserName,toUserName );
-    if (!bReceive || fileInfo->m_sSendFrom==theApp->logonUserId()) {
-        writeTitle( false,msgId,false,fileInfo->m_sSendFrom,fromUserName,fileInfo->m_sSendTo,toUserName,tMsgTime,0);
-        this->addChatMsgBlock( msgId,false );
-    }
-    else {
-        writeTitle( true,msgId,false,fileInfo->m_sSendFrom,fromUserName,fileInfo->m_sSendTo,toUserName,tMsgTime,0);
+    if (!bReceive && fileInfo->m_sSendFrom!=theApp->logonUserId()) {
+        writeTitle( true,msgId,false,fileInfo->m_sSendFrom,fromUserName,fileInfo->m_sSendTo,toUserName,tMsgTime,0 );
         this->addChatMsgBlock( msgId,true );
     }
+    else {
+        writeTitle( false,msgId,false,fileInfo->m_sSendTo,toUserName,fileInfo->m_sSendFrom,fromUserName,tMsgTime,EBC_READ_FLAG_RECEIPT );
+        this->addChatMsgBlock( msgId,false );
+    }
+//    if (!bReceive || fileInfo->m_sSendFrom==theApp->logonUserId()) {
+//        writeTitle( false,msgId,false,fileInfo->m_sSendFrom,fromUserName,fileInfo->m_sSendTo,toUserName,tMsgTime,0);
+//        this->addChatMsgBlock( msgId,false );
+//    }
+//    else if ( !this->m_callInfo->isGroupCall() && fileInfo->m_sResId>0) {
+//        writeTitle( false,msgId,false,fileInfo->m_sSendTo,toUserName,fileInfo->m_sSendFrom,fromUserName,tMsgTime,0);
+//        this->addChatMsgBlock( msgId,false );
+//    }
+//    else {
+//        writeTitle( true,msgId,false,fileInfo->m_sSendFrom,fromUserName,fileInfo->m_sSendTo,toUserName,tMsgTime,0);
+//        this->addChatMsgBlock( msgId,true );
+//    }
 //    if (bReceive)
 //        this->addChatMsgBlock( msgId,false );
 //    else
@@ -1431,7 +1443,7 @@ void EbTextBrowser::writeFileMessage(eb::bigint msgId, eb::bigint resourceId,con
     /// "上传群共享文件："
     char textTemp[128];
     memset( textTemp,0,sizeof(textTemp) );
-    if (resourceId>0) {
+    if ( m_callInfo->isGroupCall() && resourceId>0) {
         sprintf( textTemp, "%s: ", theLocales.getLocalStdString("chat-msg-text.send-group-file","Send Group File").c_str() );
     }
     EbTextBlockUserData * userData = updateBlockMsgId(msgId);

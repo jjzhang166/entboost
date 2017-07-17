@@ -19,6 +19,7 @@ DialogChatBase::DialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget *pa
   , m_bOwnerCall(false)
   , m_nFromLineState(EB_LINE_STATE_UNKNOWN)
   , m_nGroupType(EB_GROUP_TYPE_DEPARTMENT)
+  , m_menuChatApps(0)
 {
     assert(m_callInfo.get()!=0);
     ui->setupUi(this);
@@ -76,6 +77,7 @@ DialogChatBase::DialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget *pa
 //    ui->pushButtonGroupShare->setGeometry( x,y,const_chat_base_button_size.width(),const_chat_base_button_size.height() );
     x += const_chat_base_button_size.width();
     ui->pushButtonChatApps->setGeometry( x,y,const_chat_base_button_size.width(),const_chat_base_button_size.height() );
+    connect( ui->pushButtonChatApps,SIGNAL(clicked()),this,SLOT(onClickedButtonChatApps()) );
     x += const_chat_base_button_size.width();
     ui->pushButtonExitChat->setGeometry( x,y,const_chat_base_button_size.width(),const_chat_base_button_size.height() );
     connect( ui->pushButtonExitChat,SIGNAL(clicked()),this,SLOT(onClickedButtonExitChat()) );
@@ -642,30 +644,29 @@ void DialogChatBase::onReceivingFile(const CCrFileInfo *fileInfo, QString *sOutF
 void DialogChatBase::onReceivedFile(const CCrFileInfo *fileInfo)
 {
     m_textBrowserMessage->addFileMsg( true,fileInfo );
-
     if ( fileInfo->GetParam()==0 && theApp->isSaveConversationLocal() && !theApp->isLogonVisitor() ) {
-        tstring sFromName;
-        eb::bigint sSaveDbToAccount = fileInfo->m_sSendTo;
+        const eb::bigint sSaveDbToAccount = fileInfo->m_sSendTo;
+        tstring fromName;
         if ( !m_callInfo->isGroupCall() ) {
-            sFromName = m_sFromName.toStdString();
+            fromName = m_sFromName.toStdString();
         }
         else {
-            theApp->m_ebum.EB_GetMemberNameByUserId(m_callInfo->groupId(),fileInfo->m_sSendFrom,sFromName);
+            theApp->m_ebum.EB_GetMemberNameByUserId(m_callInfo->groupId(),fileInfo->m_sSendFrom,fromName);
         }
-        theApp->m_sqliteUser->escape_string_in(sFromName);
+        theApp->m_sqliteUser->escape_string_in(fromName);
         tstring sInFileName(fileInfo->m_sFileName);
         theApp->m_sqliteUser->escape_string_in(sInFileName);
         char sSql[1024];
         sprintf( sSql, "INSERT INTO msg_record_t(msg_id,dep_code,from_uid,from_name,to_uid,private,msg_type,msg_text) "
                        "VALUES(%lld,%lld,%lld,'%s',%lld,%d,%d,'%s')",
-                    fileInfo->m_nMsgId,m_callInfo->groupId(),fileInfo->m_sSendFrom,sFromName.c_str(),
+                    fileInfo->m_nMsgId,m_callInfo->groupId(),fileInfo->m_sSendFrom,fromName.c_str(),
                     sSaveDbToAccount,fileInfo->m_bPrivate?1:0,MRT_FILE,sInFileName.c_str());
         theApp->m_sqliteUser->execute(sSql);
     }
     if (m_widgetChatRight!=0) {
         m_widgetChatRight->onReceivedFile(fileInfo);
     }
-    //    ::FlashWindow(this->GetParent()->GetSafeHwnd(), TRUE);
+//    ::FlashWindow(this->GetParent()->GetSafeHwnd(), TRUE);
 }
 
 void DialogChatBase::onFilePercent(const CChatRoomFilePercent *pChatRoomFilePercent)
@@ -719,6 +720,72 @@ void DialogChatBase::onClickedButtonSendFile()
         const QString & filePath = paths.at(i);
         theApp->m_ebum.EB_SendFile( this->m_callInfo->callId(),filePath.toStdString().c_str() );
     }
+}
+
+void DialogChatBase::onTriggeredActionSendECard()
+{
+
+}
+
+void DialogChatBase::onTriggeredActionChatApps()
+{
+    bool ok = false;
+    const int index = ((QAction*)sender())->data().toInt(&ok);
+    if ( index>=0 && ok ) {
+        m_widgetChatRight->triggeredApps(index);
+    }
+}
+const QSize const_default_menu_image_size(24,24);
+
+void DialogChatBase::onClickedButtonChatApps()
+{
+    if (m_menuChatApps==0) {
+        m_menuChatApps = new QMenu(this);
+
+//        const QString selectText = theLocales.getLocalText("color-skin.select-color.text","选择色调");
+        /// 发送名片
+        QAction * action = m_menuChatApps->addAction( "Send ECard" );
+        action->setToolTip( theLocales.getLocalText("color-skin.select-color.tooltip","") );
+        action->setData( QVariant((int)0) );
+        connect( action, SIGNAL(triggered()), this, SLOT(onTriggeredActionSendECard()) );
+    }
+    else {
+        QList<QAction*> actions = m_menuChatApps->actions();
+        for ( int i=1;i<actions.size(); i++ ) {
+            m_menuChatApps->removeAction( actions.at(i) );
+        }
+    }
+
+    /// 应用功能菜单
+    const EB_FUNC_LOCATION nFuncLocation = m_callInfo->isGroupCall()?EB_FUNC_LOCATION_GROUP_CHAT_BTN1:EB_FUNC_LOCATION_USER_CHAT_BTN1;
+    theApp->clearSubscribeSelectInfo();
+    theApp->m_pSubscribeFuncList.clear();
+    theApp->m_ebum.EB_GetSubscribeFuncList(nFuncLocation, theApp->m_pSubscribeFuncList );
+    if ( !theApp->m_pSubscribeFuncList.empty() ) {
+        for (size_t i=0;i<theApp->m_pSubscribeFuncList.size();i++) {
+            const EB_SubscribeFuncInfo & pSubscribeFuncInfo = theApp->m_pSubscribeFuncList[i];
+            QAction * action = 0;
+            if ( !pSubscribeFuncInfo.m_sResFile.empty() && QFile::exists(pSubscribeFuncInfo.m_sResFile.c_str()) ) {
+
+                const QIcon icon( QPixmap(pSubscribeFuncInfo.m_sResFile.c_str())
+                                  .scaled(const_default_menu_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
+                action = m_menuChatApps->addAction( icon,pSubscribeFuncInfo.m_sFunctionName.c_str() );
+            }
+            else {
+                action = m_menuChatApps->addAction( pSubscribeFuncInfo.m_sFunctionName.c_str() );
+            }
+            action->setToolTip( pSubscribeFuncInfo.m_sFunctionName.c_str() );
+            action->setData( QVariant((int)i) );
+            connect( action, SIGNAL(triggered()), this, SLOT(onTriggeredActionChatApps()) );
+        }
+    }
+//    else {
+//        m_menuFunc.AppendMenu(MF_BYCOMMAND,0,_T("没有集成应用"));
+//        m_menuFunc.EnableMenuItem(0,MF_GRAYED);
+//    }
+
+    m_menuChatApps->exec( cursor().pos() );
+
 }
 
 void DialogChatBase::exitChat(bool hangup)

@@ -3059,7 +3059,7 @@ bool CEBAppClient::EB_GetMemberInfoByUserId2(EB_MemberInfo* pOutMemberInfo,eb::b
 		CLockMap<mycp::bigint, CEBGroupInfo::pointer>::iterator pIter1 = pManager->theDepartmentList.begin();
 		for (; pIter1!=pManager->theDepartmentList.end(); pIter1++)
 		{
-			CEBGroupInfo::pointer pDepartmentInfo = pIter1->second;
+            const CEBGroupInfo::pointer &pDepartmentInfo = pIter1->second;
 			CEBMemberInfo::pointer pEmployeeInfo;
 			if (pDepartmentInfo->m_pMemberList.find(nMemberUserId, pEmployeeInfo))
 			{
@@ -3080,7 +3080,7 @@ bool CEBAppClient::EB_GetMemberInfoByUserId2(EB_MemberInfo* pOutMemberInfo,EB_Gr
 		CLockMap<mycp::bigint, CEBGroupInfo::pointer>::iterator pIter1 = pManager->theDepartmentList.begin();
 		for (; pIter1!=pManager->theDepartmentList.end(); pIter1++)
 		{
-			CEBGroupInfo::pointer pDepartmentInfo = pIter1->second;
+            const CEBGroupInfo::pointer &pDepartmentInfo = pIter1->second;
 			CEBMemberInfo::pointer pEmployeeInfo;
 			if (pDepartmentInfo->m_pMemberList.find(nMemberUserId, pEmployeeInfo))
 			{
@@ -3108,12 +3108,12 @@ bool CEBAppClient::EB_GetMemberInfoByAccount2(EB_MemberInfo* pOutMemberInfo,cons
 		CLockMap<mycp::bigint, CEBGroupInfo::pointer>::iterator pIter1 = pManager->theDepartmentList.begin();
 		for (; pIter1!=pManager->theDepartmentList.end(); pIter1++)
 		{
-			CEBGroupInfo::pointer pDepartmentInfo = pIter1->second;
+            const CEBGroupInfo::pointer &pDepartmentInfo = pIter1->second;
 			BoostReadLock rdlock2(pDepartmentInfo->m_pMemberList.mutex());
 			CLockMap<mycp::bigint, CEBMemberInfo::pointer>::const_iterator pIter2 = pDepartmentInfo->m_pMemberList.begin();
 			for (; pIter2!=pDepartmentInfo->m_pMemberList.end(); pIter2++)
 			{
-				CEBMemberInfo::pointer pEmployeeInfo = pIter2->second;
+                const CEBMemberInfo::pointer &pEmployeeInfo = pIter2->second;
 				if (pEmployeeInfo->m_sMemberAccount == sInMemberAccount)
 				{
 					pOutMemberInfo->operator =(pEmployeeInfo.get());
@@ -3139,12 +3139,12 @@ bool CEBAppClient::EB_GetMemberInfoByAccount2(EB_MemberInfo* pOutMemberInfo,EB_G
 		CLockMap<mycp::bigint, CEBGroupInfo::pointer>::iterator pIter1 = pManager->theDepartmentList.begin();
 		for (; pIter1!=pManager->theDepartmentList.end(); pIter1++)
 		{
-			CEBGroupInfo::pointer pDepartmentInfo = pIter1->second;
+            const CEBGroupInfo::pointer &pDepartmentInfo = pIter1->second;
 			BoostReadLock rdlock2(pDepartmentInfo->m_pMemberList.mutex());
 			CLockMap<mycp::bigint, CEBMemberInfo::pointer>::const_iterator pIter2 = pDepartmentInfo->m_pMemberList.begin();
 			for (; pIter2!=pDepartmentInfo->m_pMemberList.end(); pIter2++)
 			{
-				CEBMemberInfo::pointer pEmployeeInfo = pIter2->second;
+                const CEBMemberInfo::pointer &pEmployeeInfo = pIter2->second;
 				if (pEmployeeInfo->m_sMemberAccount == sInMemberAccount)
 				{
 					pOutMemberInfo->operator =(pEmployeeInfo.get());
@@ -3324,7 +3324,29 @@ bool CEBAppClient::EB_GetMemberNameByUserId(eb::bigint nGroupId,eb::bigint nMemb
 			}
 		}
 	}
-	return false;
+    return false;
+}
+
+bool CEBAppClient::EB_GetMemberNameByUserId2(eb::bigint nMemberUserId, cgcSmartString &pOutMemberName) const
+{
+    CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
+    if (pManager != NULL)
+    {
+        if (nMemberUserId==0) return false;
+        BoostReadLock rdlock(pManager->theDepartmentList.mutex());
+        CLockMap<mycp::bigint, CEBGroupInfo::pointer>::iterator pIter1 = pManager->theDepartmentList.begin();
+        for (; pIter1!=pManager->theDepartmentList.end(); pIter1++)
+        {
+            const CEBGroupInfo::pointer &pDepartmentInfo = pIter1->second;
+            CEBMemberInfo::pointer pEmployeeInfo;
+            if (pDepartmentInfo->m_pMemberList.find(nMemberUserId, pEmployeeInfo))
+            {
+                pOutMemberName = pEmployeeInfo->m_sUserName;
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool CEBAppClient::EB_GetMemberNameByMemberCode(eb::bigint nMemberId,mycp::tstring& pOutMemberName) const

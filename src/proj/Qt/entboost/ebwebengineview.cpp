@@ -173,14 +173,25 @@ void EbWebEngineView::onDownloadRequested(QWebEngineDownloadItem * download)
 //    const QString memeType = download->mimeType();
 //    const QWebEngineDownloadItem::DownloadType downloadType = download->type();
     const QString path = download->path();
-    const QString caption = theLocales.getLocalText("change-head-dialog.saveas-file-dialog.caption","Save As");
+    QString fileExt;
+    const int lastExtIndex = path.lastIndexOf(".");
+    if (lastExtIndex>0) {
+        fileExt = path.mid(lastExtIndex);
+    }
+//    const QString caption = theLocales.getLocalText("change-head-dialog.saveas-file-dialog.caption","Save As");
 //    const QString filterImageFile = theLocales.getLocalText("change-head-dialog.open-file-dialog.filter","Image Files");
-    const QString newPath = QFileDialog::getSaveFileName(this, caption, path);
+    const QString newPath = QFileDialog::getSaveFileName(this, "", path);
     if (newPath.isEmpty()) {
         download->cancel();
     }
     else {
-        download->setPath(newPath);
+        if (!fileExt.isEmpty() && newPath.lastIndexOf(fileExt)<0) {
+            /// 加上扩展名
+            download->setPath(newPath+fileExt);
+        }
+        else {
+            download->setPath(newPath);
+        }
         EbWebEngineDownloadItem::pointer pDownloadItem;
         if ( !m_downloads.find(download->id(),pDownloadItem) ) {
             pDownloadItem = EbWebEngineDownloadItem::create(download);
