@@ -1,5 +1,6 @@
 #include "EbDialogBase.h"
 #include <QPainter>
+#include <QTimer>
 #include "ebclientapp.h"
 #include "iconhelper.h"
 #include "../../../include/ebc_public.h"
@@ -80,9 +81,9 @@ void EbDialogBase::showTitleBackground(int height,const QString& objectName)
         m_widgetTitleBackground->setObjectName(objectName);
     }
     m_widgetTitleBackground->lower();
-    // 显示高度
+    /// 显示高度
     m_widgetTitleBackground->setGeometry( 0, 0, rect().width(), height );
-//    // 显示背景颜色
+//    /// 显示背景颜色
 //    QPalette pal(m_widgetTitleBackground->palette());
 //    pal.setColor(QPalette::Background, color);
 //    m_widgetTitleBackground->setAutoFillBackground(true);
@@ -151,7 +152,6 @@ void EbDialogBase::showPushButtonSysClose(const QString& sTooltip,const QString&
         IconHelper::Instance()->SetIcon( m_pushButtonSysClose,QChar(0xf00d),9 );
         const int x = this->rect().width()-const_sys_button_size.width()-const_sys_button_right_interval;
         m_pushButtonSysClose->setGeometry( x,0,const_sys_button_size.width(),const_sys_button_size.height() );
-
         connect( m_pushButtonSysClose,SIGNAL(clicked()),this,SLOT(reject()) );
     }
 //    else {
@@ -195,7 +195,7 @@ void EbDialogBase::showPushButtonStdOkCancel(const QString& sOkText, const QStri
     if (m_pushButtonOk==NULL && !sOkText.isEmpty()) {
         m_pushButtonOk = new QPushButton(sOkText, this);
         m_pushButtonOk->resize(const_okcancel_button_size);
-        // 设置默认回车响应按键
+        /// 设置默认回车响应按键
 //        m_pushButtonOk->setShortcut(Qt::Key_Enter); //设置快捷键为enter键
 //        m_pushButtonOk->setShortcut(Qt::Key_Return); //设置快捷键为小键盘上的enter键
         m_pushButtonOk->setDefault(true);
@@ -254,7 +254,7 @@ void EbDialogBase::mousePressEvent(QMouseEvent *event)
     }
 
     if (isMouseEasyMove()) {
-        //窗口移动距离
+        /// 窗口移动距离
         move_point = event->globalPos() - this->pos();
     }
     QDialog::mousePressEvent(event);
@@ -390,11 +390,11 @@ void EbDialogBase::setMaxRestoreIcon(bool max)
         return;
     }
     if (max) {
-        // 还原按钮
+        /// 还原按钮
         IconHelper::Instance()->SetIcon( m_pushButtonSysMax,QChar(0xf2d0),9-2 );
     }
     else {
-        // 最大化按钮
+        /// 最大化按钮
         IconHelper::Instance()->SetIcon( m_pushButtonSysMax,QChar(0xf2d2),9-2 );
     }
 }
@@ -405,7 +405,7 @@ void EbDialogBase::onClickedPushButtonSysMax(void)
     }
     if (this->isMaximizedEb()) {
         this->setGeometry(m_windowRect);
-        // 还原窗口后，显示最大化按钮
+        /// 还原窗口后，显示最大化按钮
         setMaxRestoreIcon(true);
     }
     else {
@@ -414,8 +414,8 @@ void EbDialogBase::onClickedPushButtonSysMax(void)
         m_windowRect = QRect(point,rect.size());
         this->setGeometry(theApp->deskRect());
 //        this->showMaximized();
-        // 最大化窗口后，显示还原按钮
+        /// 最大化窗口后，显示还原按钮
         setMaxRestoreIcon(false);
     }
-
 }
+

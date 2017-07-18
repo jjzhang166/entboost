@@ -1427,9 +1427,8 @@ void EbTextBrowser::writeFileMessage(eb::bigint msgId, eb::bigint resourceId,con
         this->insertHtml(sTemp);
     }
     else if (resourceId==0){
-        QFileInfo file_info(filePath);
         QFileIconProvider icon_provider;
-        QIcon icon = icon_provider.icon(file_info);
+        QIcon icon = icon_provider.icon( QFileInfo(filePath) );
         this->document()->addResource(QTextDocument::ImageResource, QUrl(filePath), icon);
         this->textCursor().insertImage(filePath);
 //        QString sTemp = QString("<img src=\"%1\" alt=\"%2\"/><br>").arg(filePath).arg(filePath);

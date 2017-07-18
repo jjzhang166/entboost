@@ -5,7 +5,7 @@
 #include <QMenu>
 #include <QSystemTrayIcon>
 #include "ebwidgetmygroup.h"
-//#include "dialogmygroup.h"
+#include "ebwidgetmycontact.h"
 #include "dialogchatbase.h"
 #include <eblabel.h>
 
@@ -118,8 +118,11 @@ private:
     void onCallAlerting(QEvent *e);
     void onCallIncoming(QEvent *e);
     /// 联系人
+    void onUGInfo(QEvent *e);
+    void onUGDelete(QEvent *e);
     void onContactDelete(QEvent *e);
     void onContactInfo(QEvent *e);
+    void onContactStateChanged(QEvent *e);
     void onAcceptAddContact(QEvent *e);
     void onRejectAddContact(QEvent *e);
     void onRequestAddContact(QEvent *e);
@@ -164,7 +167,8 @@ private:
     DialogFrameList * m_pDlgFrameList;
     DialogMessageTip * m_pDlgMsgTip;
     EbDialogFileManager * m_dialogFileManager;
-    EbWidgetMyGroup*  m_widgetMyGroup;
+    EbWidgetMyGroup *  m_widgetMyGroup;
+    EbWidgetMyContact *  m_widgetMyContact;
     EbWidgetAppBar * m_widgetMainAppBar;
     EbLineEdit * m_lineEditSearch;
     EbWidgetSearchResult * m_widgetSearchResult;

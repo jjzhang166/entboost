@@ -13,6 +13,8 @@ public:
     explicit EbTreeWidgetItem(QTreeWidget * view, const QStringList &strings, int type = QTreeWidgetItem::Type);
     virtual ~EbTreeWidgetItem();
 
+//    void deleteChildItem(QTreeWidgetItem * childItem);
+
     EbWidgetItemInfo::pointer m_itemInfo;
 //    CTreeItemInfo::pointer m_itemInfo;
 protected:

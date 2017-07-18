@@ -36,6 +36,9 @@ public slots:
     void onTextChangedSearch(const QString &);
     void onItemDoubleClicked(QListWidgetItem *item);
     void onItemEntered(QListWidgetItem *item);
+    void onClickedButtonOpenFile(void);
+    void onClickedButtonOpenDir(void);
+    void onClickedButtonDeleteFile(void);
 
 protected:
     virtual void resizeEvent(QResizeEvent *);

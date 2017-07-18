@@ -142,10 +142,12 @@ public:
     int saveConversations(void) const {return m_nSaveConversations;}
     bool isSaveConversationLocal(void) const {return (m_nSaveConversations&1)==1;}
     bool isSaveConversationServer(void) const {return (m_nSaveConversations&2)==2;}
-    bool authContact(void) const {return m_bAuthContact;}
+    bool isAuthContact(void) const {return m_bAuthContact;}
     mycp::bigint deployId(void) const {return m_nDeployId;}
     int licenseType(void) const {return m_nLicenstType;}
     int ebServerVersion(void) const {return m_nEBServerVersion;}
+    eb::bigint groupMsgSugId(void);
+    eb::bigint findAppSugId(void);
     mycp::bigint autoOpenSubId(void) const {return m_nAutoOpenSubId;}
     mycp::bigint myCollectionSugId(void);
     bool isAutoHideMainFrame(void) const {return m_bAutoHideMainFrame;}
@@ -178,6 +180,7 @@ public:
     bool isLogonVisitor(void) const {return m_ebum.EB_IsLogonVisitor();}
     mycp::bigint logonUserId(void) const {return m_ebum.EB_GetLogonUserId();}
     tstring logonUserAccount(void) const {return m_ebum.EB_GetLogonAccount();}
+    void editContactInfo(mycp::bigint contactId,QWidget* parent=0);
     void editGroupInfo(mycp::bigint groupId,QWidget* parent=0);
     void newGroupInfo(EB_GROUP_TYPE groupType,QWidget* parent=0);
     void editMemberInfo(const EB_MemberInfo* pMemberInfo,QWidget* parent=0);
@@ -233,6 +236,8 @@ private:
     mycp::bigint m_nDeployId;
     int m_nLicenstType;         // 许可类型；0=未授权；1=终身授权；2=时间授权
     int m_nEBServerVersion;
+    eb::bigint m_nGroupMsgSubId;
+    eb::bigint m_nFindAppSubId;
     mycp::bigint m_nAutoOpenSubId;
     eb::bigint m_myCollectionSubId;
 

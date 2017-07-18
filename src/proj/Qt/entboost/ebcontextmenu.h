@@ -5,12 +5,15 @@
 #include <ebwidgetiteminfo.h>
 #include <stl/lockmap.h>
 
+const eb::bigint const_default_group_ugid = 0;
+
 class EbContextMenu : QObject
 {
     Q_OBJECT
 public:
     enum Type {
         MyGroup,
+        MyContact,
         UserList
     };
     EbContextMenu(Type type, QWidget * parent=0);
@@ -23,7 +26,17 @@ public:
     void onCallItem(const EbWidgetItemInfo::pointer &itemInfo);
     void onEditItem(const EbWidgetItemInfo::pointer &itemInfo);
 
+signals:
+    void addContactGroup(void);
+
 public slots:
+    void onTriggeredActionAddContact(void);
+    void onTriggeredActionEditContact(void);
+    void onTriggeredActionDeleteContact(void);
+    void onTriggeredActionAddContactGroup(void);
+    void onTriggeredActionRenameContactGroup(void);
+    void onTriggeredActionDeleteContactGroup(void);
+
     void onTriggeredActionNewGroup(void);
     void onTriggeredActionEditGroup(void);
     void onTriggeredActionDeleteGroup(void);

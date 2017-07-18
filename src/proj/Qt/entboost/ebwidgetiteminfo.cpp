@@ -30,6 +30,35 @@ EbWidgetItemInfo::EbWidgetItemInfo(EbWidgetItemInfo::ITEM_TYPE nItemType, QListW
 
 }
 
+EbWidgetItemInfo::EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QTreeWidgetItem *hItem)
+    : m_nItemType(EbWidgetItemInfo::ITEM_TYPE_CONTACT),m_nSubType(contactInfo->m_nContactType)
+    , m_hItem(hItem)
+    , m_listItem(0)
+    , m_nIndex(0)
+    , m_sEnterpriseCode(0),m_sGroupCode(0),m_sMemberCode(0)
+    , m_nUserId(contactInfo->m_nContactUserId),m_nBigId(0)
+    , m_sId(contactInfo->m_nContactId),m_sParentId(0)
+    , m_dwItemData(contactInfo->m_nLineState), m_nExtData(0)
+    , m_nCount1(0), m_nCount2(0)
+
+{
+    m_sName = contactInfo->m_sName;
+    m_sAccount = contactInfo->m_sContact;
+}
+
+EbWidgetItemInfo::EbWidgetItemInfo(const EB_GroupInfo *groupInfo, QTreeWidgetItem *hItem)
+    : m_nItemType(EbWidgetItemInfo::ITEM_TYPE_GROUP),m_nSubType(groupInfo->m_nGroupType)
+    , m_hItem(hItem)
+    , m_listItem(0)
+    , m_nIndex(0)
+    , m_sEnterpriseCode(groupInfo->m_sEnterpriseCode),m_sGroupCode(groupInfo->m_sGroupCode),m_sMemberCode(0)
+    , m_nUserId(0),m_nBigId(0)
+    , m_sId(0),m_sParentId(0)
+    , m_dwItemData(0), m_nExtData(0)
+    , m_nCount1(0), m_nCount2(0)
+{
+}
+
 EbWidgetItemInfo::EbWidgetItemInfo(EbWidgetItemInfo::ITEM_TYPE nItemType, QTreeWidgetItem *hItem)
     : m_nItemType(nItemType),m_nSubType(0)
     , m_hItem(hItem)
@@ -73,6 +102,16 @@ EbWidgetItemInfo::pointer EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE n
 EbWidgetItemInfo::pointer EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE nItemType, QTreeWidgetItem *hItem)
 {
     return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(nItemType,hItem));
+}
+
+EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_ContactInfo *contactInfo, QTreeWidgetItem *hItem)
+{
+    return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(contactInfo,hItem));
+}
+
+EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_GroupInfo *groupInfo, QTreeWidgetItem *hItem)
+{
+    return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(groupInfo,hItem));
 }
 
 void EbWidgetItemInfo::operator =(const EbWidgetItemInfo *pItemInfo)
@@ -328,5 +367,89 @@ void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
         this->m_hItem->setTextColor( 0, textColor );
     else if (this->m_listItem!=0)
         this->m_listItem->setTextColor( textColor );
+}
+
+void EbWidgetItemInfo::updateContactInfo(const EB_ContactInfo *contactInfo)
+{
+    const QString sImagePath = QString::fromStdString(contactInfo->m_sHeadResourceFile.string());
+    const EB_USER_LINE_STATE pOutLineState = contactInfo->m_nLineState;
+    const QString sHeadMd5 = QString::fromStdString(contactInfo->m_sHeadMd5.string());
+    /// 在线状态图标
+    bool viewGrayImage = false;
+    QImage imageLineState;
+    switch (pOutLineState)
+    {
+    case EB_LINE_STATE_UNKNOWN:
+    case EB_LINE_STATE_OFFLINE:
+        viewGrayImage = true;
+        break;
+    case EB_LINE_STATE_ONLINE_NEW:
+        break;
+    case EB_LINE_STATE_BUSY:
+        imageLineState = QImage(":/img/btnstatebusy.png");
+        break;
+    case EB_LINE_STATE_AWAY:
+        imageLineState = QImage(":/img/btnstateaway.png");
+        break;
+    default:
+        break;
+    }
+
+//    const QVariant variantFileMd5 = this->m_hItem->data( 0,EB_WIDGET_ITEM_USER_ROLE_FILE_MD5 );
+    if (!sImagePath.isEmpty() && QFile::exists(sImagePath)) {
+        if (contactInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
+                !m_headMd5.isValid() || m_headMd5.toString()!= sHeadMd5) {
+            m_headMd5 = QVariant(sHeadMd5);
+            QImage image = QImage(sImagePath).scaled(const_tree_icon_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            if (viewGrayImage) {
+                /// 离线状态，显示灰色头像
+                if (this->m_hItem!=0)
+                    this->m_hItem->setIcon( 0, QIcon( QPixmap::fromImage(libEbc::imageToGray(image))) );
+                else if (this->m_listItem!=0)
+                    this->m_listItem->setIcon( QIcon( QPixmap::fromImage(libEbc::imageToGray(image))) );
+            }
+            else {
+                if (!imageLineState.isNull()) {
+                    image = libEbc::imageAdd(image,imageLineState,image.width()-imageLineState.width()+3,image.height()-imageLineState.height()+3);
+                }
+                if (this->m_hItem!=0)
+                    this->m_hItem->setIcon( 0, QIcon(QPixmap::fromImage(image)) );
+                else if (this->m_listItem!=0)
+                    this->m_listItem->setIcon( QIcon(QPixmap::fromImage(image)) );
+            }
+        }
+    }
+    else {
+        if (contactInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
+                !m_headMd5.isValid() || !m_headMd5.toString().isEmpty()) {
+            m_headMd5 = QVariant("");
+            QImage image = QImage(":/img/defaultcontact.png").scaled(const_tree_icon_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            if (viewGrayImage) {
+                /// 离线状态，显示灰色头像
+                if (this->m_hItem!=0)
+                    this->m_hItem->setIcon( 0, QIcon(QPixmap::fromImage(libEbc::imageToGray(image))) );
+                else if (this->m_listItem!=0)
+                    this->m_listItem->setIcon( QIcon(QPixmap::fromImage(libEbc::imageToGray(image))) );
+            }
+            else {
+                if (!imageLineState.isNull()) {
+                    image = libEbc::imageAdd(image,imageLineState,image.width()-imageLineState.width()+3,image.height()-imageLineState.height()+3);
+                }
+                if (this->m_hItem!=0)
+                    this->m_hItem->setIcon( 0, QIcon(QPixmap::fromImage(image)) );
+                else if (this->m_listItem!=0)
+                    this->m_listItem->setIcon( QIcon(QPixmap::fromImage(image)) );
+            }
+        }
+    }
+
+    m_nSubType = contactInfo->m_nContactType;
+    m_nUserId = contactInfo->m_nContactUserId;
+    m_sId = contactInfo->m_nContactId;
+    m_sParentId = contactInfo->m_nUGId;
+    m_sGroupName = contactInfo->m_sGroupName;
+    m_dwItemData = contactInfo->m_nLineState;
+    m_sName = contactInfo->m_sName;
+    m_sAccount = contactInfo->m_sContact;
 }
 

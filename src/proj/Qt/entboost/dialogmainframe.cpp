@@ -27,6 +27,7 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
   , m_pDlgMsgTip(0)
   , m_dialogFileManager(0)
   , m_widgetMyGroup(0)
+  , m_widgetMyContact(0)
   , m_widgetSearchResult(0)
 //  , m_canSearch(false)
   , m_canUpdateSearchFirst(false)
@@ -184,7 +185,6 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
         ui->pushButtonMySession->setCheckable(true);
         ui->pushButtonMyEnterprise->setCheckable(true);
         ui->pushButtonMyApp->setCheckable(true);
-        onClickedPushButtonMyGroup();
         x = 1;
         y += 24;
         // 57*5=285+2=287
@@ -205,6 +205,10 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
         ui->pushButtonMyEnterprise->setObjectName("MainCheckButton");
         ui->pushButtonMyApp->setObjectName("MainCheckButton");
     }
+    m_widgetMyGroup = new EbWidgetMyGroup(this);
+    m_widgetMyContact = new EbWidgetMyContact(this);
+
+    onClickedPushButtonMyGroup();
     theApp->m_ebum.EB_SetMsgReceiver(this);
 
     /// 消息提醒界面
@@ -340,11 +344,14 @@ void DialogMainFrame::resizeEvent(QResizeEvent *e)
 
     const int const_bottom_app_bar_height = 29;
     ///
+    const QRect & buttonRect = ui->pushButtonMyGroup->geometry();
+    const int y = buttonRect.bottom()+1;
+    const int h = height()-y-const_bottom_app_bar_height;
     if (m_widgetMyGroup!=0) {
-        const QRect & buttonRect = ui->pushButtonMyGroup->geometry();
-        const int y = buttonRect.bottom()+1;
-        const int h = height()-y-const_bottom_app_bar_height;
         m_widgetMyGroup->setGeometry( 1,y,width()-2,h );
+    }
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->setGeometry( 1,y,width()-2,h );
     }
 
     m_widgetMainAppBar->setGeometry( 1,height()-const_bottom_app_bar_height,width(),const_bottom_app_bar_height-1);
@@ -384,14 +391,55 @@ void DialogMainFrame::customEvent(QEvent *e)
     }
 }
 
+void DialogMainFrame::onUGInfo(QEvent *e)
+{
+    const EB_UGInfo* pUGInfo = (const EB_UGInfo*)e;
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->onUGInfo(pUGInfo);
+    }
+}
+
+void DialogMainFrame::onUGDelete(QEvent *e)
+{
+    const EB_UGInfo* pUGInfo = (const EB_UGInfo*)e;
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->onUGDelete(pUGInfo);
+    }
+}
+
 void DialogMainFrame::onContactDelete(QEvent *e)
 {
-
+    const EB_ContactInfo* contactInfo = (const EB_ContactInfo*)e;
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->onContactDelete(contactInfo);
+    }
 }
 
 void DialogMainFrame::onContactInfo(QEvent *e)
 {
+    const EB_ContactInfo* contactInfo = (const EB_ContactInfo*)e;
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->onContactInfo(contactInfo);
+    }
+}
 
+void DialogMainFrame::onContactStateChanged(QEvent *e)
+{
+    const EB_ContactInfo* contactInfo = (const EB_ContactInfo*)e;
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->onContactInfo(contactInfo);
+    }
+    const EB_UI_STYLE_TYPE nDefaultUIStyleType = theApp->defaultUIStyleType();
+    if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT) {
+        /// **跑下面
+    }
+    else if (!theApp->isHideMainFrame()) {
+//        CFrameWndInfoProxy::UserLineStateChange(0, contactInfo->m_nContactUserId, contactInfo->m_nLineState);
+//        return 0;
+    }
+    if (m_pDlgFrameList!=0) {
+        m_pDlgFrameList->onUserLineStateChange(0, contactInfo->m_nContactUserId, contactInfo->m_nLineState);
+    }
 }
 void DialogMainFrame::onAcceptAddContact(QEvent *e)
 {
@@ -1018,11 +1066,20 @@ bool DialogMainFrame::checkEventData(QEvent * e)
             onCallIncoming(e);
             break;
             ///  联系人
+        case EB_WM_UG_INFO:
+            onUGInfo(e);
+            break;
+        case EB_WM_UG_DELETE:
+            onUGDelete(e);
+            break;
         case EB_WM_CONTACT_DELETE:
             onContactDelete(e);
             break;
         case EB_WM_CONTACT_INFO:
             onContactInfo(e);
+            break;
+        case EB_WM_CONTACT_STATE_CHANGE:
+            onContactStateChanged(e);
             break;
         case EB_WM_ACCEPT_ADDCONTACT:
             onAcceptAddContact(e);
@@ -1124,6 +1181,13 @@ void DialogMainFrame::checkOneSecond()
     if (m_dialogFileManager!=0) {
         m_dialogFileManager->timerCheckState();
     }
+    if (m_widgetMyGroup!=0) {
+        m_widgetMyGroup->timerCheckState();
+    }
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->timerCheckState();
+    }
+
 
     static unsigned int theSeconedIndex = 0;
     theSeconedIndex++;
@@ -1438,15 +1502,15 @@ void DialogMainFrame::onClickedPushButtonFileManager()
 
 void DialogMainFrame::onClickedPushButtonMyGroup(void)
 {
-    if (m_widgetMyGroup==NULL) {
-        m_widgetMyGroup = new EbWidgetMyGroup(this);
-        const QRect & clientRect = this->geometry();
-        const QRect & buttonRect = ui->pushButtonMyGroup->geometry();
-        const int y = buttonRect.bottom()+1;
-        const int h = clientRect.height()-y-22;
-        m_widgetMyGroup->setGeometry( 1,y,clientRect.width()-2,h );
-        m_widgetMyGroup->show();
-    }
+//    if (m_widgetMyGroup==0) {
+//        m_widgetMyGroup = new EbWidgetMyGroup(this);
+//        const QRect & clientRect = this->geometry();
+//        const QRect & buttonRect = ui->pushButtonMyGroup->geometry();
+//        const int y = buttonRect.bottom()+1;
+//        const int h = clientRect.height()-y-22;
+//        m_widgetMyGroup->setGeometry( 1,y,clientRect.width()-2,h );
+//        m_widgetMyGroup->show();
+//    }
     updateMyButton(ui->pushButtonMyGroup);
 }
 
@@ -1471,10 +1535,13 @@ void DialogMainFrame::onClickedPushButtonMyApp(void)
 void DialogMainFrame::updateMyButton(const QPushButton* fromButton)
 {
     ui->pushButtonMyGroup->setChecked(ui->pushButtonMyGroup==fromButton?true:false);
-    if (m_widgetMyGroup!=NULL) {
+    if (m_widgetMyGroup!=0) {
         m_widgetMyGroup->setVisible(ui->pushButtonMyGroup->isChecked());
     }
     ui->pushButtonMyContact->setChecked(ui->pushButtonMyContact==fromButton?true:false);
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->setVisible(ui->pushButtonMyContact->isChecked());
+    }
     ui->pushButtonMySession->setChecked(ui->pushButtonMySession==fromButton?true:false);
     ui->pushButtonMyEnterprise->setChecked(ui->pushButtonMyEnterprise==fromButton?true:false);
     ui->pushButtonMyApp->setChecked(ui->pushButtonMyApp==fromButton?true:false);
@@ -3007,6 +3074,7 @@ void DialogMainFrame::onCallIncoming(QEvent *e)
 //    pDlgIncomingCall->ShowWindow(SW_SHOW);
 //    //pDlgIncomingCall->SetActiveWindow();
 //    pDlgIncomingCall->SetForegroundWindow();
-//    m_pIncomingCallList.insert(pCallInfo->GetFromUserId(), pDlgIncomingCall);
+    //    m_pIncomingCallList.insert(pCallInfo->GetFromUserId(), pDlgIncomingCall);
 }
+
 

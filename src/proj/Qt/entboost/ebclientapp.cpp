@@ -10,6 +10,7 @@
 #include "dialogemotionselect.h"
 #include "dialogmemberinfo.h"
 #include "dialoggroupinfo.h"
+#include "ebdialogcontactinfo.h"
 
 EbClientApp::pointer theApp;
 EbcLocales theLocales;
@@ -31,6 +32,8 @@ EbClientApp::EbClientApp(QObject *parent)
     , m_nDeployId(0)
     , m_nLicenstType(0)
     , m_nEBServerVersion(0)
+    , m_nGroupMsgSubId(0)
+    , m_nFindAppSubId(0)
     , m_nAutoOpenSubId(0)
     , m_myCollectionSubId(0)
     , m_bAutoHideMainFrame(false)
@@ -152,6 +155,19 @@ DialogEmotionSelect* EbClientApp::showDialogEmotionSelect(const QPoint& pt,QObje
     m_dialogEmotionSelect->setFocus();
     m_dialogEmotionSelect->show();
     return m_dialogEmotionSelect;
+}
+
+void EbClientApp::editContactInfo(mycp::bigint contactId, QWidget *parent)
+{
+    EB_ContactInfo pContactInfo;
+    if (!this->m_ebum.EB_GetContactInfo1(contactId,&pContactInfo)) {
+        return;
+    }
+    EbDialogContactInfo dlgContactInfo(parent);
+    dlgContactInfo.m_contactInfo = pContactInfo;
+    if ( dlgContactInfo.exec()==QDialog::Accepted ) {
+        theApp->m_ebum.EB_EditContact(&dlgContactInfo.m_contactInfo);
+    }
 }
 
 void EbClientApp::editGroupInfo(mycp::bigint groupId, QWidget *parent)
@@ -365,12 +381,10 @@ void EbClientApp::onAppIdSuccess(QEvent * e)
     unsigned long nLicenseUser = 0;
     this->m_ebum.EB_GetSystemParameter(EB_SYSTEM_PARAMETER_LICENSE_USER,&nLicenseUser);
     m_bLicenseUser = nLicenseUser==0?false:true;
-    if (m_bLicenseUser)
-    {
+    if (m_bLicenseUser) {
         unsigned long pProductName = 0;
         this->m_ebum.EB_GetSystemParameter(EB_SYSTEM_PARAMETER_PRODUCT_NAME,&pProductName);
-        if (pProductName!=0 && strlen((const char*)pProductName)>0)
-        {
+        if (pProductName!=0 && strlen((const char*)pProductName)>0) {
             const std::string productName((const char*)pProductName);
             this->m_ebum.EB_FreeSystemParameter(EB_SYSTEM_PARAMETER_PRODUCT_NAME,pProductName);
             m_sProductName = QString::fromStdString(productName);
@@ -379,6 +393,10 @@ void EbClientApp::onAppIdSuccess(QEvent * e)
             m_sqliteEbc->execute(sql);
 //            if (m_receiver!=NULL)
 //                QApplication::postEvent(m_receiver, new QEvent((QEvent::Type)EB_COMMAND_UPDATE_PRODUCT_NAME));
+        }
+        else {
+            /// 没有配置，使用默认
+            this->m_sProductName = QString::fromStdString( this->m_setting.GetEnterprise() );
         }
     }
     unsigned long nSendRegMail = 0;
@@ -500,7 +518,7 @@ void EbClientApp::onAppIdSuccess(QEvent * e)
 //                    QApplication::postEvent(m_receiver, new QEvent((QEvent::Type)EB_COMMAND_UPDATE_ENT_LOGO));
             }
             else if ( m_httpFileDownload.getDownloadFinished() && m_httpFileDownload.getLastModified()==sOldLastModified) {
-                // 下载文件没有改变
+                /// 下载文件没有改变
             }
             else if (QFile::exists(sEntLogoImagePath)) {
                 QFile::remove(sEntLogoImagePath);
@@ -800,6 +818,32 @@ QString EbClientApp::lineStateText(EB_USER_LINE_STATE lineState) const
 QString EbClientApp::lineStateText(void) const
 {
     return lineStateText( m_ebum.EB_GetLineState() );
+}
+
+eb::bigint EbClientApp::groupMsgSugId()
+{
+    if (m_nGroupMsgSubId==0) {
+        unsigned long pGroupMsgSubId = 0;
+        theApp->m_ebum.EB_GetSystemParameter(EB_SYSTEM_PARAMETER_GROUP_MSG_SUBID,&pGroupMsgSubId);
+        if (pGroupMsgSubId!=0 && strlen((const char*)pGroupMsgSubId)>0) {
+            m_nGroupMsgSubId = eb_atoi64((const char*)pGroupMsgSubId);
+            theApp->m_ebum.EB_FreeSystemParameter(EB_SYSTEM_PARAMETER_GROUP_MSG_SUBID,pGroupMsgSubId);
+        }
+    }
+    return m_nGroupMsgSubId;
+}
+
+eb::bigint EbClientApp::findAppSugId()
+{
+    if (m_nFindAppSubId==0) {
+        unsigned long pFindAppSubId = 0;
+        theApp->m_ebum.EB_GetSystemParameter(EB_SYSTEM_PARAMETER_FIND_APP_SUBID,&pFindAppSubId);
+        if (pFindAppSubId!=0 && strlen((const char*)pFindAppSubId)>0) {
+            m_nFindAppSubId = eb_atoi64((const char*)pFindAppSubId);
+            theApp->m_ebum.EB_FreeSystemParameter(EB_SYSTEM_PARAMETER_FIND_APP_SUBID,pFindAppSubId);
+        }
+    }
+    return m_nFindAppSubId;
 }
 
 mycp::bigint EbClientApp::myCollectionSugId()

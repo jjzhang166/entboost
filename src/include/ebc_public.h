@@ -585,6 +585,7 @@ namespace libEbc
 	bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFileMd5);
 	void GetFileExt(const tstring & sFileName, tstring & sOutName, tstring & sOutExt);
 #ifdef _QT_MAKE_
+    QString fileExt(const QString & filePath);
     QString GBK2UTF8(const QString &inStr);
     QString UTF82GBK(const QString &inStr);
     std::string gbk2utf8(const QString &inStr);

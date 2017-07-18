@@ -173,11 +173,7 @@ void EbWebEngineView::onDownloadRequested(QWebEngineDownloadItem * download)
 //    const QString memeType = download->mimeType();
 //    const QWebEngineDownloadItem::DownloadType downloadType = download->type();
     const QString path = download->path();
-    QString fileExt;
-    const int lastExtIndex = path.lastIndexOf(".");
-    if (lastExtIndex>0) {
-        fileExt = path.mid(lastExtIndex);
-    }
+    const QString fileExt = libEbc::fileExt(path);
 //    const QString caption = theLocales.getLocalText("change-head-dialog.saveas-file-dialog.caption","Save As");
 //    const QString filterImageFile = theLocales.getLocalText("change-head-dialog.open-file-dialog.filter","Image Files");
     const QString newPath = QFileDialog::getSaveFileName(this, "", path);
@@ -209,7 +205,7 @@ void EbWebEngineView::onDownloadRequested(QWebEngineDownloadItem * download)
 
 void EbWebEngineView::onDownloadFinished(const EbWebEngineDownloadItem * download)
 {
-    m_downloads.remove(download->id());
+    m_downloads.remove(download->downloadId());
 }
 
 void EbWebEngineView::onLinkHovered(const QString &url)

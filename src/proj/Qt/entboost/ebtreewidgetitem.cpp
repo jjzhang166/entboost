@@ -24,6 +24,14 @@ EbTreeWidgetItem::~EbTreeWidgetItem()
     m_itemInfo.reset();
 }
 
+//void EbTreeWidgetItem::deleteChildItem(QTreeWidgetItem *childItem)
+//{
+//    QTreeWidgetItem * item = takeChild( indexOfChild(childItem) );
+//    if (item!=0) {
+//        delete item;
+//    }
+//}
+
 bool EbTreeWidgetItem::operator<(const QTreeWidgetItem &other) const
 {
     if (m_itemInfo.get()==0) {

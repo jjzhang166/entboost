@@ -129,6 +129,18 @@ void GetFileExt(const tstring & sFileName, tstring & sOutName, tstring & sOutExt
 }
 
 #ifdef _QT_MAKE_
+QString fileExt(const QString &filePath)
+{
+    QString fileExt;
+    const int lastExtIndex = filePath.lastIndexOf(".");
+    if (lastExtIndex>0) {
+        fileExt = filePath.mid(lastExtIndex);
+        if (fileExt.indexOf("/")>=0 || fileExt.indexOf("\\")>=0) {
+            fileExt.clear();
+        }
+    }
+    return fileExt;
+}
 QString GBK2UTF8(const QString &inStr)
 {
     // GB2312（1980年）、GBK（1995年）到GB18030（2000年）

@@ -28,6 +28,7 @@
         <file alias="workframe.png">res/workframe.png</file>
         <file alias="menucall.png">res/menucall.png</file>
         <file alias="menumsg.png">res/menumsg.png</file>
+        <file alias="menuadduser.png">res/menuadduser.png</file>
     </qresource>
     <qresource prefix="/qm">
         <file alias="qt_zh_CN.qm">res/qt_zh_CN.qm</file>

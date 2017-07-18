@@ -13,7 +13,8 @@ public:
     EbWebEngineDownloadItem(QWebEngineDownloadItem * download, QObject * parent);
     static EbWebEngineDownloadItem::pointer create(QWebEngineDownloadItem * download,QObject * parent=0);
 
-    quint32 id(void) const {return m_id;}
+    qint64 msgId(void) const {return m_msgId;}
+    quint32 downloadId(void) const {return m_downloadId;}
 //    void setState(QWebEngineDownloadItem::DownloadState state) {m_state=state;}
     QWebEngineDownloadItem::DownloadState state(void) const {return m_state;}
 //    void setTotalBytes(qint64 v) {m_totalBytes=v;}
@@ -38,7 +39,8 @@ public slots:
 
 private:
     QWebEngineDownloadItem * m_downloadItem;
-    quint32 m_id;
+    qint64 m_msgId;
+    quint32 m_downloadId;
     QWebEngineDownloadItem::DownloadState m_state;
     qint64 m_totalBytes;
     qint64 m_receivedBytes;

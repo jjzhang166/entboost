@@ -1,17 +1,25 @@
 #include "ebwebenginedownloaditem.h"
 #include "ebclientapp.h"
+#include <dialogmainframe.h>
 
+inline qint64 getNextBigFileId(void)
+{
+    static unsigned int theIndex = 0;
+    return (time(0)%89999999)*10000000+((++theIndex)%10000)*10000+(rand()%10000);
+}
 EbWebEngineDownloadItem::EbWebEngineDownloadItem(QWebEngineDownloadItem *download, QObject * parent)
     : QObject(parent)
     , m_downloadItem(download)
-    , m_id(0)
+    , m_msgId(0)
+    , m_downloadId(0)
     , m_state(QWebEngineDownloadItem::DownloadRequested)
     , m_totalBytes(0)
     , m_receivedBytes(0)
 //    , m_sendReceiving(false)
     , m_tCreateTime(0)
 {
-    m_id = download->id();
+    m_msgId = getNextBigFileId();
+    m_downloadId = download->id();
     m_state = download->state();
     m_totalBytes = download->totalBytes();
     m_receivedBytes = download->receivedBytes();
@@ -32,13 +40,13 @@ void EbWebEngineDownloadItem::onDownloadFinished()
     CCrFileInfo * fileInfo = new CCrFileInfo();
     fileInfo->SetQEventType((QEvent::Type)CR_WM_RECEIVED_FILE);
     fileInfo->SetEventParameter(10);
-    fileInfo->m_sResId = (cr::bigint)m_id;
+    fileInfo->m_sResId = (cr::bigint)m_msgId;
     fileInfo->m_nMsgId = fileInfo->m_sResId;
     fileInfo->m_nFileSize = (cr::bigint)m_totalBytes;
     fileInfo->m_sSendFrom = fileInfo->m_sResId;
     fileInfo->m_sFileName = m_path.toStdString();
     QCoreApplication::postEvent(theApp->mainWnd(),fileInfo);
-    theApp->m_pCancelFileList.remove((eb::bigint)m_id);
+    theApp->m_pCancelFileList.remove((eb::bigint)m_msgId);
 //    emit downloadFinished(this);
 }
 
@@ -52,11 +60,11 @@ void EbWebEngineDownloadItem::onDownLoadStateChanged(QWebEngineDownloadItem::Dow
         CCrFileInfo * fileInfo = new CCrFileInfo();
         fileInfo->SetQEventType((QEvent::Type)CR_WM_CANCEL_FILE);
         fileInfo->SetEventParameter(10);
-        fileInfo->m_sResId = (cr::bigint)m_id;
+        fileInfo->m_sResId = (cr::bigint)m_msgId;
         fileInfo->m_nMsgId = fileInfo->m_sResId;
         fileInfo->m_sSendFrom = fileInfo->m_sResId;
         QCoreApplication::postEvent(theApp->mainWnd(),fileInfo);
-        theApp->m_pCancelFileList.remove((eb::bigint)m_id);
+        theApp->m_pCancelFileList.remove((eb::bigint)m_msgId);
         break;
     }
     default:
@@ -76,7 +84,7 @@ void EbWebEngineDownloadItem::onDownloadProgress(qint64 bytesReceived, qint64 by
         CCrFileInfo * fileInfo = new CCrFileInfo();
         fileInfo->SetQEventType((QEvent::Type)CR_WM_RECEIVING_FILE);
         fileInfo->SetEventParameter(10);
-        fileInfo->m_sResId = (cr::bigint)m_id;
+        fileInfo->m_sResId = (cr::bigint)m_msgId;
         fileInfo->m_nMsgId = fileInfo->m_sResId;
         fileInfo->m_sSendFrom = fileInfo->m_sResId;
         fileInfo->m_nFileSize = (cr::bigint)m_totalBytes;
@@ -87,7 +95,7 @@ void EbWebEngineDownloadItem::onDownloadProgress(qint64 bytesReceived, qint64 by
     CChatRoomFilePercent * filePercent = new CChatRoomFilePercent();
     filePercent->SetQEventType((QEvent::Type)CR_WM_FILE_PERCENT);
     filePercent->SetEventParameter(10);
-    filePercent->m_sResId = (cr::bigint)m_id;
+    filePercent->m_sResId = (cr::bigint)m_msgId;
     filePercent->m_nMsgId = filePercent->m_sResId;
     if (m_totalBytes>0) {
         filePercent->m_percent = MAX(0.0,(m_receivedBytes*100.0)/(double)m_totalBytes);
@@ -102,7 +110,7 @@ void EbWebEngineDownloadItem::onDownloadProgress(qint64 bytesReceived, qint64 by
 //    pChatRoomFilePercent->m_nCurSpeed = nCurrentSpeed;
 //    pChatRoomFilePercent->m_nTranSeconds = nTranSeconds;
     QCoreApplication::postEvent(theApp->mainWnd(),filePercent);
-    if ( theApp->m_pCancelFileList.exist(m_id) ) {
+    if ( theApp->m_pCancelFileList.exist(m_msgId) ) {
         m_downloadItem->cancel();
     }
 //    emit downloadProgress(this);

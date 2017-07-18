@@ -2,6 +2,7 @@
 #include "ui_ebdialogfilemanager.h"
 #include <iconhelper.h>
 #include <eblistwidgetitem.h>
+#include <ebmessagebox.h>
 #include <QTimer>
 
 EbDialogFileManager::EbDialogFileManager(QWidget *parent) :
@@ -32,18 +33,21 @@ EbDialogFileManager::EbDialogFileManager(QWidget *parent) :
     connect( ui->listWidgetTranedFiles,SIGNAL(itemEntered(QListWidgetItem*)),this,SLOT(onItemEntered(QListWidgetItem*)) );
     connect( ui->listWidgetTranedFiles,SIGNAL(itemDoubleClicked(QListWidgetItem*)),this,SLOT(onItemDoubleClicked(QListWidgetItem*)) );
 
-//    ui->pushButtonOpenFile->setParent(ui->listWidgetTranedFiles);
-//    IconHelper::Instance()->SetIcon(ui->pushButtonOpenFile,QChar(0xf27a),12 );
-//    ui->pushButtonOpenFile->setObjectName("CallButton");
+    ui->pushButtonOpenFile->setParent(ui->listWidgetTranedFiles);
+    IconHelper::Instance()->SetIcon(ui->pushButtonOpenFile,QChar(0xf016),12 );
+    ui->pushButtonOpenFile->setObjectName("CallButton");
     ui->pushButtonOpenFile->setVisible(false);
+    connect( ui->pushButtonOpenFile,SIGNAL(clicked()),this,SLOT(onClickedButtonOpenFile()) );
     ui->pushButtonOpenDir->setParent(ui->listWidgetTranedFiles);
     IconHelper::Instance()->SetIcon(ui->pushButtonOpenDir,QChar(0xf07c),12 );
     ui->pushButtonOpenDir->setObjectName("CallButton");
     ui->pushButtonOpenDir->setVisible(false);
+    connect( ui->pushButtonOpenDir,SIGNAL(clicked()),this,SLOT(onClickedButtonOpenDir()) );
     ui->pushButtonDeleteFile->setParent(ui->listWidgetTranedFiles);
     IconHelper::Instance()->SetIcon(ui->pushButtonDeleteFile,QChar(0xf014),12 );
     ui->pushButtonDeleteFile->setObjectName("CallDelButton");
     ui->pushButtonDeleteFile->setVisible(false);
+    connect( ui->pushButtonDeleteFile,SIGNAL(clicked()),this,SLOT(onClickedButtonDeleteFile()) );
 
     updateLocaleInfo();
     onClickedButtonTranedFile();
@@ -75,13 +79,13 @@ void EbDialogFileManager::updateLocaleInfo()
     ui->pushButtonRefresh->setToolTip( theLocales.getLocalText("file-manager.button-refresh.tooltip","") );
     ui->pushButtonDeleteFile->setToolTip( theLocales.getLocalText("file-manager.button-delete-file.tooltip","Delete File") );
     ui->pushButtonOpenFile->setToolTip( theLocales.getLocalText("file-manager.button-open-file.tooltip","Open File") );
-    ui->pushButtonOpenDir->setToolTip( theLocales.getLocalText("file-manager.button-open-file.tooltip","Open Dir") );
+    ui->pushButtonOpenDir->setToolTip( theLocales.getLocalText("file-manager.button-open-dir.tooltip","Open Dir") );
 }
 
 void EbDialogFileManager::timerCheckState()
 {
     if ( ui->listWidgetTranedFiles->isVisible() &&
-         (ui->pushButtonOpenDir->isVisible() || ui->pushButtonDeleteFile->isVisible()) ) {
+         (ui->pushButtonOpenFile->isVisible() || ui->pushButtonOpenDir->isVisible() || ui->pushButtonDeleteFile->isVisible()) ) {
         /// 实现定期自动判断当前鼠标位置，并刷新 call/edit 按钮
         const QRect& rect = ui->listWidgetTranedFiles->geometry();
         const QPoint pointMouseToDialog = this->mapFromGlobal(this->cursor().pos());
@@ -217,9 +221,10 @@ void EbDialogFileManager::onRefreshTranedFile()
 
         EbWidgetItemInfo::pointer itemInfo;
         if (!m_pItemItemInfo.find(sMsgId,itemInfo)) {
-
-//            const QIcon icon;// = QIcon( QPixmap::fromImage(image).scaled(const_icon_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
-            EbListWidgetItem * item = new EbListWidgetItem( sItemName, ui->listWidgetTranedFiles );
+            QFileInfo fileInfo(sMsgText.c_str());
+            QFileIconProvider icon_provider;
+            QIcon icon = fileInfo.exists()?icon_provider.icon(fileInfo):icon_provider.icon(QFileIconProvider::File);
+            EbListWidgetItem * item = new EbListWidgetItem( icon, sItemName, ui->listWidgetTranedFiles );
             item->setToolTip(sItemName);
             ui->listWidgetTranedFiles->addItem(item);
             itemInfo = EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE_FILE,item);
@@ -232,6 +237,7 @@ void EbDialogFileManager::onRefreshTranedFile()
         }
         else {
             itemInfo->m_listItem->setText(sItemName);
+            itemInfo->m_listItem->setToolTip(sItemName);
         }
         itemInfo->m_nSubType = nSubType;
         itemInfo->m_sName = sMsgText;	/// 文件路径
@@ -268,14 +274,106 @@ void EbDialogFileManager::onItemEntered(QListWidgetItem *item)
     const int y = rectItem.y();
     /// -2（配合下面的 y+1）实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
-//    const EbListWidgetItem* itemEb = (EbListWidgetItem*)item;
     ui->pushButtonDeleteFile->setGeometry( rectItem.right()-buttonSize,y+1,buttonSize,buttonSize );
     ui->pushButtonDeleteFile->setProperty("track-item",QVariant((quint64)item));
     ui->pushButtonDeleteFile->setVisible(true);
     ui->pushButtonOpenDir->setGeometry( rectItem.right()-buttonSize*2,y+1,buttonSize,buttonSize );
     ui->pushButtonOpenDir->setProperty("track-item",QVariant((quint64)item));
     ui->pushButtonOpenDir->setVisible(true);
+    const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;
+    const QString filePath = ebitem->m_itemInfo->m_sName.c_str();
+    if ( QFile::exists(filePath) ) {
+        ui->pushButtonOpenFile->setGeometry( rectItem.right()-buttonSize*3,y+1,buttonSize,buttonSize );
+        ui->pushButtonOpenFile->setProperty("track-item",QVariant((quint64)item));
+        ui->pushButtonOpenFile->setVisible(true);
+    }
+    else {
+        ui->pushButtonOpenFile->setVisible(false);
+    }
 
+}
+
+void EbDialogFileManager::onClickedButtonOpenFile()
+{
+    /// 打开文件
+    bool ok = false;
+    const EbListWidgetItem* ebitem = (EbListWidgetItem*)ui->pushButtonOpenDir->property("track-item").toULongLong(&ok);
+    if ( !ok || ebitem==0 ) {
+        return;
+    }
+    ui->pushButtonOpenDir->setProperty("track-item",QVariant((qint64)0));
+
+    const QString filePath(ebitem->m_itemInfo->m_sName.c_str());
+    if ( QFileInfo::exists(filePath) ) {
+        QDesktopServices::openUrl( QUrl::fromLocalFile(filePath) );
+    }
+}
+
+void EbDialogFileManager::onClickedButtonOpenDir()
+{
+    /// 打开目录
+    bool ok = false;
+    const EbListWidgetItem* ebitem = (EbListWidgetItem*)ui->pushButtonOpenDir->property("track-item").toULongLong(&ok);
+    if ( !ok || ebitem==0 ) {
+        return;
+    }
+    ui->pushButtonOpenDir->setProperty("track-item",QVariant((qint64)0));
+
+    QString filePath(ebitem->m_itemInfo->m_sName.c_str());
+    const QFileInfo fileInfo(filePath);
+    if ( !fileInfo.exists() ) {
+        QDesktopServices::openUrl( QUrl(filePath, QUrl::TolerantMode) );
+    }
+    else {
+#ifdef WIN32
+        filePath.replace("/","\\");
+        const QString param = "/select, "+filePath;
+        QProcess::startDetached( "explorer "+param );
+#else
+        QDesktopServices::openUrl( QUrl(filePath, QUrl::TolerantMode) );
+#endif
+    }
+}
+
+void EbDialogFileManager::onClickedButtonDeleteFile()
+{
+    /// 删除消息（包括文件）
+    bool ok = false;
+    const EbListWidgetItem* ebitem = (EbListWidgetItem*)ui->pushButtonDeleteFile->property("track-item").toULongLong(&ok);
+    if ( !ok || ebitem==0 ) {
+        return;
+    }
+    ui->pushButtonDeleteFile->setProperty("track-item",QVariant((qint64)0));
+
+    const QString filePath = ebitem->m_itemInfo->m_sName.c_str();
+    if ( QFile::exists(filePath) ) {
+        QString title;
+        QString text;
+        if (ebitem->m_itemInfo->m_nUserId==ebitem->m_itemInfo->m_sId) {
+            /// 确定删除文件：\r\n%s 和下载记录吗？
+            title = theLocales.getLocalText("message-box.delete-download-file.title","Delete File");
+            text = theLocales.getLocalText("message-box.delete-download-file.text","Confirm delete:<br>[FILE_NAME] download file?");
+        }
+        else {
+            /// 确定删除文件：\r\n%s 和聊天记录吗？
+            title = theLocales.getLocalText("message-box.delete-chat-file.title","Delete File");
+            text = theLocales.getLocalText("message-box.delete-chat-file.text","Confirm delete:<br>[FILE_NAME] chat file?");
+        }
+        if (EbMessageBox::doExec( 0,title, QChar::Null, text, EbMessageBox::IMAGE_QUESTION )!=QDialog::Accepted) {
+            return;
+        }
+        QFile::remove(filePath);
+    }
+
+    const eb::bigint msgId = ebitem->m_itemInfo->m_sId;
+    m_pItemItemInfo.remove(msgId);
+    QListWidgetItem * item = ui->listWidgetTranedFiles->takeItem( ui->listWidgetTranedFiles->row(ebitem) );
+    if (item!=0) {
+        delete item;
+    }
+    char sql[128];
+    sprintf( sql, "DELETE FROM msg_record_t WHERE msg_id=%lld",msgId);
+    theApp->m_sqliteUser->execute(sql);
 }
 
 void EbDialogFileManager::resizeEvent(QResizeEvent *e)
