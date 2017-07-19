@@ -18,6 +18,7 @@ public:
     mycp::bigint groupId(void) const {return m_pCallInfo.m_sGroupCode;}
     bool isGroupCall(void) const {return m_pCallInfo.m_sGroupCode>0?true:false;}
     mycp::bigint fromUserId(void) const {return m_pFromAccountInfo.GetUserId();}
+    mycp::bigint fromMemberId(void) const {return m_pFromAccountInfo.m_pFromCardInfo.m_sMemberCode;}
     const tstring &fromUserAccount(void) const {return m_pFromAccountInfo.GetAccount();}
     tstring fromName(void) const;
     EB_CallInfo m_pCallInfo;

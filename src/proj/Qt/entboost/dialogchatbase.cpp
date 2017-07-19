@@ -1112,8 +1112,8 @@ void DialogChatBase::updateFromInfo()
         else {
             /// 普通用户聊天
             EB_MemberInfo pMemberInfo;
-            if (theApp->m_ebum.EB_GetMemberInfoByMemberCode(&pMemberInfo,m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sMemberCode) ||
-                theApp->m_ebum.EB_GetMemberInfoByUserId2(&pMemberInfo,m_callInfo->m_pFromAccountInfo.GetUserId())) {
+            if (theApp->m_ebum.EB_GetMemberInfoByMemberCode(&pMemberInfo,m_callInfo->fromMemberId()) ||
+                theApp->m_ebum.EB_GetMemberInfoByUserId2(&pMemberInfo,m_callInfo->fromUserId())) {
                 m_sFromName = pMemberInfo.m_sUserName.c_str();
                 m_sFullName = QString("%1(%2)").arg(m_sFromName).arg(pMemberInfo.m_nMemberUserId);
                 m_nFromLineState = pMemberInfo.m_nLineState;
@@ -1126,7 +1126,6 @@ void DialogChatBase::updateFromInfo()
             else if (m_callInfo->m_bOffLineUser) {
                 m_nFromLineState = EB_LINE_STATE_OFFLINE;
             }
-
             if (m_sFromName.isEmpty()) {
                 if (!m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sName.empty()) {
                     m_sFromName = m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sName.c_str();
@@ -1134,42 +1133,8 @@ void DialogChatBase::updateFromInfo()
                 else {
                     m_sFromName = m_callInfo->m_pFromAccountInfo.GetUserName().c_str();
                 }
-                m_sFullName = QString("%1(%2)").arg(m_sFromName).arg(m_callInfo->m_pFromAccountInfo.GetUserId());
+                m_sFullName = QString("%1(%2)").arg(m_sFromName).arg(m_callInfo->fromUserId());
             }
-
-//            LPCTSTR lpszCaption = m_sFromName.c_str();
-//            const size_t nLen = strlen(lpszCaption);
-//            if (nLen<=4)
-//                m_sShortName = m_sFromName.c_str();
-//            else if (nLen>0 && lpszCaption[0]>0)			// *** 英文开头取前面
-//            {
-//                for (size_t i=0;i<nLen;i++)
-//                {
-//                    m_sShortName.AppendChar(lpszCaption[i]);
-//                    if ((i+1)<nLen && lpszCaption[i]<0)		// 中文，需要取二个
-//                    {
-//                        m_sShortName.AppendChar(lpszCaption[++i]);
-//                    }
-//                    if (m_sShortName.GetLength()>=4)
-//                    {
-//                        break;
-//                    }
-//                }
-//            }else	// 中文开头取后面
-//            {
-//                for (int i=nLen-1;i>=0;i--)
-//                {
-//                    m_sShortName.Insert(0,lpszCaption[i]);
-//                    if ((i-1)>=0 && lpszCaption[i]<0)	// 中文，需要取二个
-//                    {
-//                        m_sShortName.Insert(0,lpszCaption[--i]);
-//                    }
-//                    if (m_sShortName.GetLength()>=4)
-//                    {
-//                        break;
-//                    }
-//                }
-//            }
         }
     }
 

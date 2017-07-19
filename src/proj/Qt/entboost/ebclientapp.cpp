@@ -191,33 +191,43 @@ void EbClientApp::editGroupInfo(mycp::bigint groupId, QWidget *parent)
     }
 }
 
-void EbClientApp::newGroupInfo(EB_GROUP_TYPE groupType, QWidget *parent)
+void EbClientApp::newGroupInfo(EB_GROUP_TYPE groupType, eb::bigint enterpriseId, eb::bigint parentGroupId, QWidget *parent)
 {
-    const eb::bigint sEntCode = 0;
     DialogGroupInfo pDlgGroupInfo(parent);
     pDlgGroupInfo.m_groupInfo.m_nGroupType = groupType;
+    pDlgGroupInfo.m_groupInfo.m_sEnterpriseCode = enterpriseId;
+    pDlgGroupInfo.m_groupInfo.m_sParentCode = parentGroupId;
     if (pDlgGroupInfo.exec()==QDialog::Accepted) {
-        EB_GroupInfo pPopDepartment(&pDlgGroupInfo.m_groupInfo);
-        m_ebum.EB_EditGroup(&pPopDepartment);
+        pDlgGroupInfo.m_groupInfo.m_nCreateUserId = theApp->logonUserId();
+        m_ebum.EB_EditGroup(&pDlgGroupInfo.m_groupInfo);
+    }
+}
+
+void EbClientApp::newMemberInfo(EB_GROUP_TYPE groupType, eb::bigint groupId, const QString &groupName, QWidget *parent)
+{
+    DialogMemberInfo dlg(parent);
+    dlg.m_memberInfo.m_sGroupCode = groupId;
+    dlg.m_groupType = groupType;
+    dlg.m_groupName = groupName;
+    if (dlg.exec()==QDialog::Accepted) {
+        m_ebum.EB_EditMember(&dlg.m_memberInfo);
     }
 }
 
 void EbClientApp::editMemberInfo(const EB_MemberInfo *pMemberInfo, QWidget *parent)
 {
     if (pMemberInfo==NULL) return;
-    tstring sDepartmentName;
-    if (!this->m_ebum.EB_GetGroupName(pMemberInfo->m_sGroupCode,sDepartmentName)) return;
+    tstring groupName;
+    if (!this->m_ebum.EB_GetGroupName(pMemberInfo->m_sGroupCode,groupName)) return;
     //EB_GROUP_TYPE nGroupType = EB_GROUP_TYPE_DEPARTMENT;
     //m_ebum.EB_GetGroupType(pMemberInfo->m_sGroupCode,nGroupType);
 
-    DialogMemberInfo pDlgMemberInfo(parent);
+    DialogMemberInfo dlg(parent);
     //pDlgMemberInfo.m_nGroupType = nGroupType;
-    pDlgMemberInfo.m_memberInfo = pMemberInfo;
-    pDlgMemberInfo.m_groupName = sDepartmentName;
-    //pDlgMemberInfo.m_sHeadResourceFile = pMemberInfo->m_sHeadResourceFile.c_str();
-    if (pDlgMemberInfo.exec()==QDialog::Accepted) {
-        EB_MemberInfo pEditPopMemberInfo(pDlgMemberInfo.m_memberInfo);
-        m_ebum.EB_EditMember(&pEditPopMemberInfo);
+    dlg.m_memberInfo = pMemberInfo;
+    dlg.m_groupName = groupName.c_str();
+    if (dlg.exec()==QDialog::Accepted) {
+        m_ebum.EB_EditMember(&dlg.m_memberInfo);
     }
 }
 
@@ -326,20 +336,110 @@ void EbClientApp::updateMsgReceiptData(eb::bigint nMsgId, eb::bigint nFromUserId
     m_sqliteUser->execute(sSql);
 }
 
-cgcSmartString EbClientApp::userHeadFilePath(mycp::bigint nUserId, const cgcSmartString &sAccount) const
+QImage EbClientApp::userHeadImage(eb::bigint userId, eb::bigint memberId, const cgcSmartString &account) const
 {
-//    EB_USER_LINE_STATE pOutLineState = EB_LINE_STATE_UNKNOWN;
     EB_MemberInfo pMemberInfo;
     bool findMemberInfo = false;
-    if (nUserId>0)
+    if (memberId>0)
+        findMemberInfo = this->m_ebum.EB_GetMemberInfoByMemberCode(&pMemberInfo,memberId);
+    if (!findMemberInfo && userId>0)
+        findMemberInfo = this->m_ebum.EB_GetMemberInfoByUserId2(&pMemberInfo,userId);
+    if (!findMemberInfo && !account.empty())
+        findMemberInfo = this->m_ebum.EB_GetMemberInfoByAccount2(&pMemberInfo,account.c_str());
+    if (findMemberInfo) {
+        return memberHeadImage(&pMemberInfo);
+    }
+    EB_ContactInfo contactInfo;
+    if (userId>0 && m_ebum.EB_GetContactInfo2(userId, &contactInfo)) {
+        if ( QFileInfo::exists(contactInfo.m_sHeadResourceFile.c_str()) ) {
+            return contactHeadImage(&contactInfo);
+        }
+    }
+    const tstring imagePath = memberId>0?":/img/defaultmember.png":":/img/defaultcontact.png";
+    return fromHeadImage(imagePath,EB_LINE_STATE_UNKNOWN);
+}
+
+cgcSmartString EbClientApp::userHeadFilePath(mycp::bigint nUserId, eb::bigint memberId, const cgcSmartString &sAccount) const
+{
+    EB_MemberInfo pMemberInfo;
+    bool findMemberInfo = false;
+    if (memberId>0)
+        findMemberInfo = this->m_ebum.EB_GetMemberInfoByMemberCode(&pMemberInfo,memberId);
+    if (!findMemberInfo && nUserId>0)
         findMemberInfo = this->m_ebum.EB_GetMemberInfoByUserId2(&pMemberInfo,nUserId);
     if (!findMemberInfo && !sAccount.empty())
         findMemberInfo = this->m_ebum.EB_GetMemberInfoByAccount2(&pMemberInfo,sAccount.c_str());
     if (findMemberInfo) {
-//        pOutLineState = pMemberInfo.m_nLineState;
         return memberHeadFilePath(&pMemberInfo);
     }
-    return ":/img/defaultcontact.png";
+    EB_ContactInfo contactInfo;
+    if (nUserId>0 && m_ebum.EB_GetContactInfo2(nUserId, &contactInfo)) {
+        if ( QFileInfo::exists(contactInfo.m_sHeadResourceFile.c_str()) ) {
+            return contactInfo.m_sHeadResourceFile;
+        }
+    }
+    return memberId>0?":/img/defaultmember.png":":/img/defaultcontact.png";
+}
+
+QImage EbClientApp::memberHeadImage(const EB_MemberInfo *memberInfo) const
+{
+    const EB_USER_LINE_STATE lineState = memberInfo==0?EB_LINE_STATE_UNKNOWN:memberInfo->m_nLineState;
+    tstring imagePath;
+    if ( memberInfo!=0 && QFileInfo::exists(memberInfo->m_sHeadResourceFile.c_str()) ) {
+        imagePath = memberInfo->m_sHeadResourceFile;
+    }
+    if (imagePath.empty()) {
+        imagePath = ":/img/defaultmember.png";
+    }
+    return fromHeadImage(imagePath,lineState);
+}
+
+QImage EbClientApp::contactHeadImage(const EB_ContactInfo *contactInfo) const
+{
+    const EB_USER_LINE_STATE lineState = contactInfo==0?EB_LINE_STATE_UNKNOWN:contactInfo->m_nLineState;
+    tstring imagePath;
+    if ( contactInfo!=0 && QFileInfo::exists(contactInfo->m_sHeadResourceFile.c_str()) ) {
+        imagePath = contactInfo->m_sHeadResourceFile;
+    }
+    if (imagePath.empty()) {
+        imagePath = ":/img/defaultcontact.png";
+    }
+    return fromHeadImage(imagePath,lineState);
+}
+
+QImage EbClientApp::fromHeadImage(const cgcSmartString &imagePath, EB_USER_LINE_STATE lineState) const
+{
+    QImage image(imagePath.c_str());
+    /// 在线状态图标
+    bool viewGrayImage = false;
+    QImage imageLineState;
+    switch (lineState)
+    {
+    case EB_LINE_STATE_UNKNOWN:
+    case EB_LINE_STATE_OFFLINE:
+        viewGrayImage = true;
+        break;
+    case EB_LINE_STATE_ONLINE_NEW:
+        break;
+    case EB_LINE_STATE_BUSY:
+        imageLineState = QImage(":/img/btnstatebusy.png");
+        break;
+    case EB_LINE_STATE_AWAY:
+        imageLineState = QImage(":/img/btnstateaway.png");
+        break;
+    default:
+        break;
+    }
+    if (viewGrayImage) {
+        /// 离线状态，显示灰色头像
+        image = libEbc::imageToGray(image);
+    }
+    else {
+        if (!imageLineState.isNull()) {
+            image = libEbc::imageAdd(image,imageLineState,image.width()-imageLineState.width()+3,image.height()-imageLineState.height()+3);
+        }
+    }
+    return image;
 }
 
 cgcSmartString EbClientApp::memberHeadFilePath(const EB_MemberInfo *memberInfo) const

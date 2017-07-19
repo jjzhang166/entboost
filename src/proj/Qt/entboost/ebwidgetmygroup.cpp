@@ -6,32 +6,32 @@
 EbWidgetMyGroup::EbWidgetMyGroup(QWidget *parent) : QWidget(parent)
   , m_contextMenu(0)
 {
-    //    m_treeWidgetMyGroup->setRootIsDecorated( false ); ///去掉虚线边框（这是去掉根ITEM前面图标）
-    m_treeWidgetMyGroup = new QTreeWidget(this);
-//    m_treeWidgetMyGroup->setSortingEnabled(false);
-//    m_treeWidgetMyGroup->header()->setSortIndicatorShown(false);
-//    m_treeWidgetMyGroup->header()->setSortIndicator(0, Qt::AscendingOrder);
-    m_treeWidgetMyGroup->setFrameStyle(QFrame::NoFrame); ///去掉边框
-    m_treeWidgetMyGroup->setHeaderHidden(true);
-    m_treeWidgetMyGroup->setIconSize(const_tree_icon_size);
-    m_treeWidgetMyGroup->setExpandsOnDoubleClick(false);
-    m_treeWidgetMyGroup->setMouseTracking(false);
-    m_treeWidgetMyGroup->setFrameShape(QFrame::NoFrame);
-    m_treeWidgetMyGroup->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_treeWidgetMyGroup->setAllColumnsShowFocus(false);
-    m_treeWidgetMyGroup->setWordWrap(true);
-    m_treeWidgetMyGroup->setColumnCount(1);
-    //    m_treeWidgetMyGroup->setSelectionMode(QAbstractItemView::ExtendedSelection);
-//    connect( m_treeWidgetMyGroup,SIGNAL(itemPressed(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
-    connect( m_treeWidgetMyGroup,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
-    m_treeWidgetMyGroup->setMouseTracking(true);
-    connect( m_treeWidgetMyGroup,SIGNAL(itemEntered(QTreeWidgetItem*,int)),this,SLOT(onItemEntered(QTreeWidgetItem*,int)) );
-    connect( m_treeWidgetMyGroup,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this,SLOT(onItemDoubleClicked(QTreeWidgetItem*,int)) );
-    //    connect( m_treeWidgetMyGroup,SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),this,SLOT(onCurrentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)) );
+    //    m_treeWidget->setRootIsDecorated( false ); ///去掉虚线边框（这是去掉根ITEM前面图标）
+    m_treeWidget = new QTreeWidget(this);
+//    m_treeWidget->setSortingEnabled(false);
+//    m_treeWidget->header()->setSortIndicatorShown(false);
+//    m_treeWidget->header()->setSortIndicator(0, Qt::AscendingOrder);
+    m_treeWidget->setFrameStyle(QFrame::NoFrame); ///去掉边框
+    m_treeWidget->setHeaderHidden(true);
+    m_treeWidget->setIconSize(const_tree_icon_size);
+    m_treeWidget->setExpandsOnDoubleClick(false);
+    m_treeWidget->setMouseTracking(false);
+    m_treeWidget->setFrameShape(QFrame::NoFrame);
+    m_treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_treeWidget->setAllColumnsShowFocus(false);
+    m_treeWidget->setWordWrap(true);
+    m_treeWidget->setColumnCount(1);
+    //    m_treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+//    connect( m_treeWidget,SIGNAL(itemPressed(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
+    connect( m_treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
+    m_treeWidget->setMouseTracking(true);
+    connect( m_treeWidget,SIGNAL(itemEntered(QTreeWidgetItem*,int)),this,SLOT(onItemEntered(QTreeWidgetItem*,int)) );
+    connect( m_treeWidget,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this,SLOT(onItemDoubleClicked(QTreeWidgetItem*,int)) );
+    //    connect( m_treeWidget,SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),this,SLOT(onCurrentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)) );
 
     /// “打开会话”按钮
     m_pushButtonCall = new QPushButton(this);
-    m_pushButtonCall->setParent( m_treeWidgetMyGroup );
+    m_pushButtonCall->setParent( m_treeWidget );
     m_pushButtonCall->setVisible(false);
     m_pushButtonCall->setObjectName("CallButton");
     m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
@@ -39,7 +39,7 @@ EbWidgetMyGroup::EbWidgetMyGroup(QWidget *parent) : QWidget(parent)
     IconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
     /// “修改我的名片”
     m_pushButtonEdit = new QPushButton(this);
-    m_pushButtonEdit->setParent( m_treeWidgetMyGroup );
+    m_pushButtonEdit->setParent( m_treeWidget );
     m_pushButtonEdit->setVisible(false);
     m_pushButtonEdit->setObjectName("CallButton");
     m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );
@@ -47,12 +47,12 @@ EbWidgetMyGroup::EbWidgetMyGroup(QWidget *parent) : QWidget(parent)
     IconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
 
     /// for test data
-    //    QTreeWidgetItem * topItem0 = new QTreeWidgetItem(m_treeWidgetMyGroup, QStringList(QString("Top Item 0")));
-    //    QTreeWidgetItem * topItem1 = new QTreeWidgetItem(m_treeWidgetMyGroup, QStringList(QString("Top Item 1")));
-    //    QTreeWidgetItem * topItem2 = new QTreeWidgetItem(m_treeWidgetMyGroup, QStringList(QString("Top Item 2")));
-    //    m_treeWidgetMyGroup->insertTopLevelItem( 0,topItem0 );
-    //    m_treeWidgetMyGroup->insertTopLevelItem( 1,topItem1 );
-    //    m_treeWidgetMyGroup->insertTopLevelItem( 2,topItem2 );
+    //    QTreeWidgetItem * topItem0 = new QTreeWidgetItem(m_treeWidget, QStringList(QString("Top Item 0")));
+    //    QTreeWidgetItem * topItem1 = new QTreeWidgetItem(m_treeWidget, QStringList(QString("Top Item 1")));
+    //    QTreeWidgetItem * topItem2 = new QTreeWidgetItem(m_treeWidget, QStringList(QString("Top Item 2")));
+    //    m_treeWidget->insertTopLevelItem( 0,topItem0 );
+    //    m_treeWidget->insertTopLevelItem( 1,topItem1 );
+    //    m_treeWidget->insertTopLevelItem( 2,topItem2 );
 
     //    const QSize const_tree_icon_size(32,32);
     ////    QIcon icon;
@@ -78,7 +78,7 @@ void EbWidgetMyGroup::timerCheckState()
 {
     if (m_pushButtonCall->isVisible()) {
         /// 实现定期自动判断当前鼠标位置，并刷新 call 按钮
-        const QRect& rect = m_treeWidgetMyGroup->geometry();
+        const QRect& rect = m_treeWidget->geometry();
         const QPoint pointMouseToDialog = this->mapFromGlobal(this->cursor().pos());
         if (!rect.contains(pointMouseToDialog)) {
             m_pushButtonCall->setVisible(false);
@@ -141,10 +141,10 @@ void EbWidgetMyGroup::onGroupInfo(const EB_GroupInfo * groupInfo)
     EbWidgetItemInfo::pointer groupItemInfo;
     if ( !m_pDepItemInfo.find(groupInfo->m_sGroupCode, groupItemInfo) ) {
         bSortItems = true;
-        EbTreeWidgetItem * item = new EbTreeWidgetItem(m_treeWidgetMyGroup, QStringList(sText));
+        EbTreeWidgetItem * item = new EbTreeWidgetItem(m_treeWidget, QStringList(sText));
         groupItemInfo = EbWidgetItemInfo::create(groupInfo,item);
         item->m_itemInfo = groupItemInfo;
-        m_treeWidgetMyGroup->addTopLevelItem(item);
+        m_treeWidget->addTopLevelItem(item);
         m_pDepItemInfo.insert(groupInfo->m_sGroupCode,groupItemInfo);
     }
     else {
@@ -171,7 +171,7 @@ void EbWidgetMyGroup::onGroupInfo(const EB_GroupInfo * groupInfo)
         sText = QString("%1 [%2]").arg(groupInfo->m_sGroupName.c_str()).arg(nMemberSize);
     groupItemInfo->m_hItem->setText(0,sText);
     if (bSortItems) {
-        m_treeWidgetMyGroup->sortItems( 0,Qt::AscendingOrder );
+        m_treeWidget->sortItems( 0,Qt::AscendingOrder );
     }
 
 //    if (m_treeDepartment.GetSelectedItem()==NULL)
@@ -224,7 +224,7 @@ void EbWidgetMyGroup::onRemoveGroup(const EB_GroupInfo *pGroupInfo)
 
     EbWidgetItemInfo::pointer pDepItemInfo;
     if (m_pDepItemInfo.find(pGroupInfo->m_sGroupCode, pDepItemInfo, true)) {
-        QTreeWidgetItem * item = m_treeWidgetMyGroup->takeTopLevelItem( m_treeWidgetMyGroup->indexOfTopLevelItem(pDepItemInfo->m_hItem) );
+        QTreeWidgetItem * item = m_treeWidget->takeTopLevelItem( m_treeWidget->indexOfTopLevelItem(pDepItemInfo->m_hItem) );
         if (item!=0) {
             delete item;
         }
@@ -233,7 +233,7 @@ void EbWidgetMyGroup::onRemoveGroup(const EB_GroupInfo *pGroupInfo)
 
 void EbWidgetMyGroup::deleteMemberInfo(const EB_GroupInfo *pGroupInfo, eb::bigint nMemberCode, bool fromDeleteGroup)
 {
-    eb::bigint nGroupCode = pGroupInfo->m_sGroupCode;
+    const eb::bigint nGroupCode = pGroupInfo->m_sGroupCode;
     EbWidgetItemInfo::pointer pDepItemInfo;
     if (m_pDepItemInfo.find(nGroupCode, pDepItemInfo)) {
         EbWidgetItemInfo::pointer pEmpItemInfo;
@@ -282,7 +282,7 @@ void EbWidgetMyGroup::onItemDoubleClicked(QTreeWidgetItem *item, int /*column*/)
 
 void EbWidgetMyGroup::resizeEvent(QResizeEvent * e)
 {
-    m_treeWidgetMyGroup->setGeometry( 0,0,width(),height() );
+    m_treeWidget->setGeometry( 0,0,width(),height() );
     QWidget::resizeEvent(e);
 }
 
@@ -296,7 +296,7 @@ void EbWidgetMyGroup::createMenuData()
 void EbWidgetMyGroup::contextMenuEvent(QContextMenuEvent *e)
 {
     createMenuData();
-    const EbTreeWidgetItem* item = (EbTreeWidgetItem*)m_treeWidgetMyGroup->itemAt(e->pos());
+    const EbTreeWidgetItem* item = (EbTreeWidgetItem*)m_treeWidget->itemAt(e->pos());
     const EbWidgetItemInfo::pointer itemInfo = item==0?EbWidgetItemInfoNull:item->m_itemInfo;
     if (!m_contextMenu->updateMenuItem(itemInfo)) {
         return;
@@ -306,32 +306,31 @@ void EbWidgetMyGroup::contextMenuEvent(QContextMenuEvent *e)
 
 void EbWidgetMyGroup::onItemClicked(QTreeWidgetItem *item, int column)
 {
-    const EbTreeWidgetItem* itemEb = (EbTreeWidgetItem*)item;
-    const EbWidgetItemInfo::ITEM_TYPE itemType = itemEb->m_itemInfo->m_nItemType;
+    const EbTreeWidgetItem* ebitem = (EbTreeWidgetItem*)item;
+    const EbWidgetItemInfo::ITEM_TYPE itemType = ebitem->m_itemInfo->m_nItemType;
     if (itemType==EbWidgetItemInfo::ITEM_TYPE_GROUP) {
-        theApp->m_ebum.EB_LoadGroup(itemEb->m_itemInfo->m_sGroupCode,true);
+        theApp->m_ebum.EB_LoadGroup(ebitem->m_itemInfo->m_sGroupCode,true);
         if (item->isExpanded()) {
-            m_treeWidgetMyGroup->collapseItem(item);
+            m_treeWidget->collapseItem(item);
         }
         else {
-            m_treeWidgetMyGroup->expandItem(item);
+            m_treeWidget->expandItem(item);
         }
     }
 }
-void EbWidgetMyGroup::onItemEntered(QTreeWidgetItem *item, int column)
+void EbWidgetMyGroup::onItemEntered(QTreeWidgetItem *item, int /*column*/)
 {
-    if (!m_treeWidgetMyGroup->hasFocus()) {
-        m_treeWidgetMyGroup->setFocus();
+    if (!m_treeWidget->hasFocus()) {
+        m_treeWidget->setFocus();
     }
-//    m_treeWidgetMyGroup->setCurrentItem(item);
     /// 滚动条能正常显示
-    const QRect rectItem = m_treeWidgetMyGroup->visualItemRect(item);
-    const QPoint pointItem = m_treeWidgetMyGroup->mapToParent(rectItem.topRight());
+    const QRect rectItem = m_treeWidget->visualItemRect(item);
+    const QPoint pointItem = m_treeWidget->mapToParent(rectItem.topRight());
     const int y = pointItem.y();
     /// -2（配合下面的 y+1）实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
-    const EbTreeWidgetItem* itemEb = (EbTreeWidgetItem*)item;
-    if ( itemEb->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
+    const EbTreeWidgetItem* ebitem = (EbTreeWidgetItem*)item;
+    if ( ebitem->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
         m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
         m_pushButtonEdit->setProperty("track-item",QVariant((quint64)item));
         m_pushButtonEdit->setVisible(true);
@@ -347,12 +346,12 @@ void EbWidgetMyGroup::onItemEntered(QTreeWidgetItem *item, int column)
 
 //void EbWidgetMyGroup::onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 //{
-//    const QRect rectItem = m_treeWidgetMyGroup->visualItemRect(current);
-//    const QPoint pointItem = m_treeWidgetMyGroup->mapToParent(rectItem.topRight());
+//    const QRect rectItem = m_treeWidget->visualItemRect(current);
+//    const QPoint pointItem = m_treeWidget->mapToParent(rectItem.topRight());
 //    const int rowIndexItem = 0;
 ////    const int rowIndexItem = listWidgetLoginRecords->row(item);
-//    const QRect& rect = m_treeWidgetMyGroup->geometry();
-//    const int y = rect.top()+rowIndexItem*rectItem.height()+0;  // 0表示 m_treeWidgetMyGroup 没有边框
+//    const QRect& rect = m_treeWidget->geometry();
+//    const int y = rect.top()+rowIndexItem*rectItem.height()+0;  // 0表示 m_treeWidget 没有边框
 //    // -2（配合下面的 buttonSize-1和y+1）实现删除按钮显示时，保留ITEM边框，
 //    const int buttonSize = rectItem.height()-2;
 //    m_pushButtonCall->setGeometry( rect.right()-buttonSize-1,y+1,buttonSize,buttonSize );
@@ -369,7 +368,7 @@ void EbWidgetMyGroup::onClickedPushButtonCall(void)
     }
     m_pushButtonCall->hide();
     m_pushButtonCall->setProperty("track-item",QVariant((quint64)0));
-    m_treeWidgetMyGroup->setFocus();
+    m_treeWidget->setFocus();
 }
 
 void EbWidgetMyGroup::onClickedPushButtonEdit()
@@ -380,7 +379,7 @@ void EbWidgetMyGroup::onClickedPushButtonEdit()
     }
     m_pushButtonEdit->hide();
     m_pushButtonEdit->setProperty("track-item",QVariant((quint64)0));
-    m_treeWidgetMyGroup->setFocus();
+    m_treeWidget->setFocus();
     createMenuData();
     m_contextMenu->onEditItem(item->m_itemInfo);
 }

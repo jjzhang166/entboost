@@ -146,22 +146,6 @@ void EbWidgetChatRecord::onClickedButtonClearAll()
     }
     if (m_fromName.isEmpty()) {
         m_fromName = m_callInfo->fromName().c_str();
-//        if (m_callInfo->isGroupCall()) {
-//            tstring groupName;
-//            theApp->m_ebum.EB_GetGroupName(m_callInfo->groupId(),groupName);
-//            m_fromName = groupName.c_str();
-//        }
-//        else if ( !m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sAccountName.empty() ) {
-//            m_fromName = m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sAccountName.c_str();
-//        }
-//        else if ( !m_callInfo->m_pFromAccountInfo.GetUserName().empty() ) {
-//            m_fromName = m_callInfo->m_pFromAccountInfo.GetUserName().c_str();
-//        }
-//        else {
-//            tstring memberName;
-//            theApp->m_ebum.EB_GetMemberNameByUserId2( m_callInfo->fromUserId(),memberName );
-//            m_fromName = memberName.c_str();
-//        }
     }
 
     QString title;

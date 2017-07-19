@@ -14,6 +14,7 @@ public:
     explicit EbWidgetMyContact(QWidget *parent = nullptr);
     virtual ~EbWidgetMyContact(void);
 
+    void updateLocaleInfo(void);
     void timerCheckState(void);
     const EbWidgetItemInfo::pointer onUGInfo(const EB_UGInfo* ugInfo);
     void onUGDelete(const EB_UGInfo* ugInfo);

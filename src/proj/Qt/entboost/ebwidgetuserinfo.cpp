@@ -1,4 +1,5 @@
 #include "ebwidgetuserinfo.h"
+#include <ebdialogrequestaddcontact.h>
 
 const QSize const_user_image_size(80,80);
 EbWidgetUserInfo::EbWidgetUserInfo(const EbcCallInfo::pointer &callInfo, QWidget *parent) : QWidget(parent)
@@ -7,7 +8,7 @@ EbWidgetUserInfo::EbWidgetUserInfo(const EbcCallInfo::pointer &callInfo, QWidget
     assert (m_callInfo.get()!=0);
     m_labelImage = new QLabel(this);
     m_labelImage->resize(const_user_image_size);
-    const QString imageFile = theApp->userHeadFilePath( m_callInfo->fromUserId(), m_callInfo->fromUserAccount().c_str() );
+    const QString imageFile = theApp->userHeadFilePath( m_callInfo->fromUserId(),m_callInfo->fromMemberId(),m_callInfo->fromUserAccount().c_str() );
     m_labelImage->setPixmap( QPixmap(imageFile).scaled(const_user_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     m_labelUserName = new QLabel(this);
     m_lineEditUserName = new QLineEdit(this);
@@ -59,7 +60,7 @@ EbWidgetUserInfo::EbWidgetUserInfo(const EbcCallInfo::pointer &callInfo, QWidget
     m_buttonReqeustAddContact->setObjectName("RequestAddContact");
 
     this->m_lineEditUserName->setText(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sName.c_str());
-    this->m_lineEditAccount->setText(m_callInfo->m_pFromAccountInfo.GetAccount().c_str());
+    this->m_lineEditAccount->setText(m_callInfo->fromUserAccount().c_str());
     this->m_lineEditTel->setText(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sTel.c_str());
     this->m_lineEditPhone->setText(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sPhone.c_str());
     this->m_lineEditEmail->setText(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sEmail.c_str());
@@ -67,10 +68,12 @@ EbWidgetUserInfo::EbWidgetUserInfo(const EbcCallInfo::pointer &callInfo, QWidget
     this->m_lineEditGroupName->setText(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sGroupName.c_str());
     this->m_lineEditEnterprise->setText(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sEnterprise.c_str());
     this->m_lineEditAddress->setText(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sAddress.c_str());
-    if (theApp->m_ebum.EB_IsMyContactAccount2(m_callInfo->m_pFromAccountInfo.GetUserId()))
+    if (m_callInfo->fromUserId()==0 || theApp->m_ebum.EB_IsMyContactAccount2(m_callInfo->fromUserId()))
         m_buttonReqeustAddContact->setVisible(false);
-    else
+    else {
         m_buttonReqeustAddContact->setVisible(true);
+        connect( m_buttonReqeustAddContact,SIGNAL(clicked()),this,SLOT(onClickedButtonAddContact()) );
+    }
 
     updateLocaleInfo();
 }
@@ -93,6 +96,17 @@ void EbWidgetUserInfo::updateLocaleInfo()
 //    else
 //        m_btnRequestAddContact.SetToolTipText(_T("添加到我的联系人"));
     m_buttonReqeustAddContact->setToolTip( theLocales.getLocalText("user-info.button-add-contact.tooltip","Request Add Contact") );
+}
+
+void EbWidgetUserInfo::onClickedButtonAddContact()
+{
+    EbDialogRequestAddContact dlg;
+    dlg.m_headFilePath = theApp->userHeadFilePath( m_callInfo->fromUserId(),m_callInfo->fromMemberId(),m_callInfo->fromUserAccount() );
+    dlg.m_fromName = m_callInfo->fromName().c_str();
+    dlg.m_fromUserId = m_callInfo->fromUserId();
+    dlg.m_fromAccount = m_callInfo->fromUserAccount().c_str();
+    dlg.exec();
+
 }
 
 void EbWidgetUserInfo::resizeEvent(QResizeEvent *event)

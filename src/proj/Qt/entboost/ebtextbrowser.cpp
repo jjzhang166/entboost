@@ -1551,7 +1551,7 @@ bool EbTextBrowser::writeCardDataMessage( mycp::bigint msgId, const char *cardDa
                 //                "<hr style=\"margin:0px;height:1px;border:0px;background-color:#D5D5D5;color:#D5D5D5;\"/></div>";
         /// <HR align=left width=50 SIZE=2>
 //        const QString line = "<div style=\"margin:0;padding:0; width:80px;height:1px;background-color:#EFEFEF;overflow:hidden;margin-top: 15px;\"></div>";
-        const tstring sFilePath = theApp->userHeadFilePath(pUserECard.m_nMemberUserId,"");
+        const tstring sFilePath = theApp->userHeadFilePath(pUserECard.m_nMemberUserId,pUserECard.m_sMemberCode,"");
         const QString html = QString("<table width=\"200\" border=\"0\" style=\"margin-left:10px; margin-right:10px;\">"
                              "<tr>"
                              "<td width=\"36\"><a href=\"%1:///%2\" ><img src=\"%3\" width=\"32\" height=\"32\" /></a></td>"

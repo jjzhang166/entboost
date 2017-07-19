@@ -37,14 +37,14 @@ DialogMemberInfo::DialogMemberInfo(QWidget *parent) :
     int nX = 123;
     int nY = const_y1;
     ui->labelAccount->setAlignment( Qt::AlignRight );
-    ui->labelAccount->setGeometry(nX,nY,const_static_width-30,const_edit_height);
-    nX += (const_x_interval-20);
+    ui->labelAccount->setGeometry(nX,nY,const_static_width-20,const_edit_height);
+    nX += (const_x_interval-10);
     ui->lineEditAccount->setGeometry( nX,nY,const_edit_width1,const_edit_height );
     nX = 123;
     nY += const_y_interval;
     ui->labelGroupName->setAlignment( Qt::AlignRight );
-    ui->labelGroupName->setGeometry(nX,nY,const_static_width-30,const_edit_height);
-    nX += (const_x_interval-20);
+    ui->labelGroupName->setGeometry(nX,nY,const_static_width-20,const_edit_height);
+    nX += (const_x_interval-10);
     ui->lineEditGroupName->setGeometry( nX,nY,const_edit_width1,const_edit_height );
     ui->lineEditGroupName->setReadOnly(true);
 //    ui->pushButtonUserHead->setGeometry( 123,const_y1+(const_edit_height+2)*2+5,60,22 );

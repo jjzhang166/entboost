@@ -91,6 +91,9 @@ EbDialogContactInfo::EbDialogContactInfo(QWidget *parent) :
     nX += const_x_interval;
     ui->plainTextEditDescription->setGeometry(nX,nY,const_edit_width2,70);
 
+    nY += 85;
+    ui->pushButtonAddContact->setGeometry(nX,nY,60,22);
+
 }
 
 EbDialogContactInfo::~EbDialogContactInfo()

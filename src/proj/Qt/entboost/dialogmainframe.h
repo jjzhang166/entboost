@@ -6,6 +6,8 @@
 #include <QSystemTrayIcon>
 #include "ebwidgetmygroup.h"
 #include "ebwidgetmycontact.h"
+#include "ebwidgetmysession.h"
+#include "ebwidgetmyenterprise.h"
 #include "dialogchatbase.h"
 #include <eblabel.h>
 
@@ -51,6 +53,7 @@ public slots:
     void updateMyButton(const QPushButton* fromButton);
 
     void onClickedSubApp(const EB_SubscribeFuncInfo &);
+    void openUrl( bool bSaveBrowseTitle, const QString& sAppUrl, const QString& sPostData="", int nInsertOffset=-1 );
     bool openSubscribeFuncWindow( const EB_SubscribeFuncInfo& pSubscribeFuncInfo, const std::string& sPostData="", const std::string& sParameters="" );
 
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -154,6 +157,8 @@ private:
 
     void checkOneSecond(void);
     void checkCallExit(void);
+    void saveCallRecord(eb::bigint callId,eb::bigint groupId, const EB_AccountInfo & fromAccountInfo);
+
 private:
     Ui::DialogMainFrame *ui;
     EbLabel* m_labelUserImage;
@@ -169,6 +174,8 @@ private:
     EbDialogFileManager * m_dialogFileManager;
     EbWidgetMyGroup *  m_widgetMyGroup;
     EbWidgetMyContact *  m_widgetMyContact;
+    EbWidgetMySession *  m_widgetMySession;
+    EbWidgetMyEnterprise * m_widgetMyEnterprise;
     EbWidgetAppBar * m_widgetMainAppBar;
     EbLineEdit * m_lineEditSearch;
     EbWidgetSearchResult * m_widgetSearchResult;

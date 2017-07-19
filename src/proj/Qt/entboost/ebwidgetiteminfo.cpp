@@ -11,6 +11,8 @@ EbWidgetItemInfo::EbWidgetItemInfo(EbWidgetItemInfo::ITEM_TYPE nItemType, int nI
     , m_dwItemData(0), m_nExtData(0)
     , m_nCount1(0), m_nCount2(0)
 //        , m_pHeadImage(NULL)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
 {
 
 }
@@ -26,6 +28,8 @@ EbWidgetItemInfo::EbWidgetItemInfo(EbWidgetItemInfo::ITEM_TYPE nItemType, QListW
     , m_dwItemData(0), m_nExtData(0)
     , m_nCount1(0), m_nCount2(0)
 //        , m_pHeadImage(NULL)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
 {
 
 }
@@ -40,6 +44,8 @@ EbWidgetItemInfo::EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QTreeWidge
     , m_sId(contactInfo->m_nContactId),m_sParentId(0)
     , m_dwItemData(contactInfo->m_nLineState), m_nExtData(0)
     , m_nCount1(0), m_nCount2(0)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
 
 {
     m_sName = contactInfo->m_sName;
@@ -52,10 +58,12 @@ EbWidgetItemInfo::EbWidgetItemInfo(const EB_GroupInfo *groupInfo, QTreeWidgetIte
     , m_listItem(0)
     , m_nIndex(0)
     , m_sEnterpriseCode(groupInfo->m_sEnterpriseCode),m_sGroupCode(groupInfo->m_sGroupCode),m_sMemberCode(0)
-    , m_nUserId(0),m_nBigId(0)
-    , m_sId(0),m_sParentId(0)
+    , m_nUserId(0),m_nBigId(groupInfo->m_nMyEmpId)
+    , m_sId(0),m_sParentId(groupInfo->m_sParentCode)
     , m_dwItemData(0), m_nExtData(0)
     , m_nCount1(0), m_nCount2(0)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
 {
 }
 
@@ -70,6 +78,8 @@ EbWidgetItemInfo::EbWidgetItemInfo(EbWidgetItemInfo::ITEM_TYPE nItemType, QTreeW
     , m_dwItemData(0), m_nExtData(0)
     , m_nCount1(0), m_nCount2(0)
 //        , m_pHeadImage(NULL)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
 {
 
 }
@@ -85,6 +95,8 @@ EbWidgetItemInfo::EbWidgetItemInfo()
     , m_dwItemData(0), m_nExtData(0)
     , m_nCount1(0), m_nCount2(0)
 //        , m_pHeadImage(NULL)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
 {
 
 }
@@ -154,6 +166,9 @@ bool EbWidgetItemInfo::operator <(const EbWidgetItemInfo *pItemInfo)
 {
     if (pItemInfo==0) {
         return false;
+    }
+    if (m_sortFlag==SORT_BY_TIME && pItemInfo->m_sortFlag==SORT_BY_TIME) {
+        return m_time<pItemInfo->m_time?true:false;
     }
     if (this->m_nItemType==CTreeItemInfo::ITEM_TYPE_DIR && pItemInfo->m_nItemType==CTreeItemInfo::ITEM_TYPE_DIR) {
 //            const bool bAppFrameShowed = theApp.GetWorkFrameShowed();

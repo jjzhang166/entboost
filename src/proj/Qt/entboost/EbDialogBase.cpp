@@ -208,6 +208,13 @@ void EbDialogBase::showPushButtonStdOkCancel(const QString& sOkText, const QStri
     }
 }
 
+void EbDialogBase::setButtonStdOkTooltip(const QString &tooltip)
+{
+    if (m_pushButtonOk!=0) {
+        m_pushButtonOk->setToolTip(tooltip);
+    }
+}
+
 void EbDialogBase::setMouseEasyMove(bool bEnable)
 {
     if (bEnable) {

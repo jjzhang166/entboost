@@ -31,7 +31,6 @@ EbWidgetMyContact::EbWidgetMyContact(QWidget *parent) : QWidget(parent)
     m_pushButtonCall->setParent( m_treeWidgetMyContact );
     m_pushButtonCall->setVisible(false);
     m_pushButtonCall->setObjectName("CallButton");
-    m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
     connect( m_pushButtonCall, SIGNAL(clicked()),this,SLOT(onClickedPushButtonCall()) );
     IconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
     /// “修改我的名片”
@@ -39,7 +38,6 @@ EbWidgetMyContact::EbWidgetMyContact(QWidget *parent) : QWidget(parent)
     m_pushButtonEdit->setParent( m_treeWidgetMyContact );
     m_pushButtonEdit->setVisible(false);
     m_pushButtonEdit->setObjectName("CallButton");
-    m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );
     connect( m_pushButtonEdit, SIGNAL(clicked()),this,SLOT(onClickedPushButtonEdit()) );
     IconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
 
@@ -59,12 +57,20 @@ EbWidgetMyContact::EbWidgetMyContact(QWidget *parent) : QWidget(parent)
 //    m_treeContacts.SetItemData(pGroupTreeItem,(DWORD)pContactInfo.get());
 //    m_pGroupItemInfo.insert(const_default_group_ugid, pContactInfo);
 
+    updateLocaleInfo();
 }
 
 EbWidgetMyContact::~EbWidgetMyContact()
 {
     m_pGroupItemInfo.clear();
     m_pContactItemInfo.clear();
+
+}
+
+void EbWidgetMyContact::updateLocaleInfo()
+{
+    m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
+    m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );
 
 }
 

@@ -14,6 +14,8 @@ public:
     enum Type {
         MyGroup,
         MyContact,
+        MySession,
+        MyEnterprise,
         UserList
     };
     EbContextMenu(Type type, QWidget * parent=0);
@@ -28,14 +30,24 @@ public:
 
 signals:
     void addContactGroup(void);
+    void deleteSession(const EbWidgetItemInfo::pointer &itemInfo);
+    void clearSession(void);
 
 public slots:
+    void onTriggeredActionDeleteSession();
+    void onTriggeredActionClearSession();
+
     void onTriggeredActionAddContact(void);
     void onTriggeredActionEditContact(void);
     void onTriggeredActionDeleteContact(void);
     void onTriggeredActionAddContactGroup(void);
     void onTriggeredActionRenameContactGroup(void);
     void onTriggeredActionDeleteContactGroup(void);
+
+    void onTriggeredActionSystemManager(void);
+    void onTriggeredActionNewSubDepartment(void);
+    void onTriggeredActionNewSubProject(void);
+    void onTriggeredActionNewMember(void);
 
     void onTriggeredActionNewGroup(void);
     void onTriggeredActionEditGroup(void);

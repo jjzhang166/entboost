@@ -19,6 +19,7 @@ public:
     explicit DialogMemberInfo(QWidget *parent = 0);
     ~DialogMemberInfo();
 
+    EB_GROUP_TYPE m_groupType;
     QString m_groupName;
     EB_MemberInfo m_memberInfo;
 
@@ -38,7 +39,6 @@ private:
     Ui::DialogMemberInfo *ui;
     EbLabel * m_labelUserHead;
     tstring m_oldFileMd5;
-    EB_GROUP_TYPE m_groupType;
     bool m_newEemployee;
     DialogChangeHead * m_dialogChangeHead;
 };

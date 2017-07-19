@@ -1670,7 +1670,7 @@ bool CUserManagerApp::GetGroupMemberSize(eb::bigint nGroupId, int nGetType,int& 
 		pOutOnlineSize = pDepartmentInfo->m_nOnlineSize;
 		if(nGetType==2 || (nGetType==0 && (m_nSystemSetting&CEBSysInfo::SYSTEM_SETTING_VALUE_DISABLE_STATSUB_GROUP_MEMBER)==0))
 		{
-			// 统计子部门人数
+            /// 统计子部门人数
 			GetSubGroupMemberSize(nGroupId, pOutMemberSize, pOutOnlineSize);
 		}
 		return true;

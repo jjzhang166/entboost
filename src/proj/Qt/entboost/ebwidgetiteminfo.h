@@ -10,6 +10,11 @@ class EbWidgetItemInfo
 {
 public:
     typedef boost::shared_ptr<EbWidgetItemInfo> pointer;
+    enum SORT_FLAG {
+        SORT_BY_DEFAULT,
+        SORT_BY_TIME        /// for MySession
+    };
+
     enum ITEM_TYPE {
         ITEM_TYPE_ENTERPRISE
         , ITEM_TYPE_GROUP
@@ -70,6 +75,8 @@ public:
     int m_nCount2;
 //    QImage* m_pHeadImage;
     QVariant m_headMd5;
+    SORT_FLAG m_sortFlag;
+    time_t m_time;
 //    void UpdateHead(QImage* pHeadImage,const tstring& sHeadMd5)
 //    {
 //        if (m_pHeadImage!=NULL)

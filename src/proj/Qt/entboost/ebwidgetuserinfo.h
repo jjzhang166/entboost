@@ -17,6 +17,7 @@ public:
 signals:
 
 public slots:
+    void onClickedButtonAddContact(void);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);

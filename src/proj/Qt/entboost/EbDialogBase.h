@@ -40,6 +40,7 @@ public:
     void showPushButtonSysClose(const QString& sTooltip, const QString& objectName="SysCloseButton");
     int getSysButtonWidth(void) const;
     void showPushButtonStdOkCancel(const QString& sOkText, const QString& okObjectName="OkButton", const QString& sCancelText="", const QString& cancelObjectName="CancelButton");
+    void setButtonStdOkTooltip(const QString& tooltip);
 
     bool isMouseEasyMove(void) const {return (m_dialogFlags&EB_DIALOG_FLAG_EASY_MOVE)==0?false:true;}
     void setMouseEasyMove(bool bEnable);
