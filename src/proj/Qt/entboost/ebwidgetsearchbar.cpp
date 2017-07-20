@@ -56,7 +56,7 @@ EbWidgetSearchBar::EbWidgetSearchBar(QWidget *parent) : QWidget(parent)
     m_actionClearChromeCache->setData( QVariant((int)EB_COMMAND_CLEAR_CHROME_TEMPFILE) );
     connect( m_actionClearChromeCache, SIGNAL(triggered()), this, SLOT(onClickedMenuOptions()) );
 
-    m_widgetSearchResult = new EbWidgetSearchResult(parent);
+    m_widgetSearchResult = new EbWidgetSearchResult(EB_SEARCH_FROM_SEARCH_BAR,parent);
     m_widgetSearchResult->setVisible(false);
     connect( m_widgetSearchResult,SIGNAL(searchFirst(QString)),this,SLOT(onSearchFirst(QString)) );
     connect( m_widgetSearchResult,SIGNAL(clickedSearchResultUrl(QString)),this,SLOT(onClickedSearchResultUrl(QString)) );

@@ -37,14 +37,20 @@ public:
     EbWidgetItemInfo(ITEM_TYPE nItemType,int nIndex);
     EbWidgetItemInfo(ITEM_TYPE nItemType,QListWidgetItem* hItem);
     EbWidgetItemInfo(ITEM_TYPE nItemType,QTreeWidgetItem* hItem);
+    EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QListWidgetItem* hItem);
     EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QTreeWidgetItem* hItem);
     EbWidgetItemInfo(const EB_GroupInfo * groupInfo, QTreeWidgetItem* hItem);
+    EbWidgetItemInfo(const EB_MemberInfo * memberInfo, QListWidgetItem* hItem);
+    EbWidgetItemInfo(const EB_SubscribeFuncInfo * funcInfo, QListWidgetItem* hItem);
     EbWidgetItemInfo(void);
     static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType,int nIndex);
     static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType,QListWidgetItem* hItem);
     static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType,QTreeWidgetItem* hItem);
+    static EbWidgetItemInfo::pointer create(const EB_ContactInfo *contactInfo,QListWidgetItem* hItem);
     static EbWidgetItemInfo::pointer create(const EB_ContactInfo *contactInfo,QTreeWidgetItem* hItem);
     static EbWidgetItemInfo::pointer create(const EB_GroupInfo * groupInfo,QTreeWidgetItem* hItem);
+    static EbWidgetItemInfo::pointer create(const EB_MemberInfo * memberInfo,QListWidgetItem* hItem);
+    static EbWidgetItemInfo::pointer create(const EB_SubscribeFuncInfo * funcInfo,QListWidgetItem* hItem);
 
     void operator =(const EbWidgetItemInfo* pItemInfo);
     bool operator <(const EbWidgetItemInfo* pItemInfo);

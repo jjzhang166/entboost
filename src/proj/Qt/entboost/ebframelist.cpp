@@ -19,6 +19,18 @@ EbFrameList::~EbFrameList()
     m_close.clear();
 }
 
+void EbFrameList::timerCheckState()
+{
+    BoostReadLock rdLock(m_list.mutex());
+    CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
+    for (; pIter!=m_list.end(); pIter++) {
+        const EbFrameItem::pointer& frameInfo = *pIter;
+        if (frameInfo->timerCheckState()) {
+            return ;
+        }
+    }
+}
+
 DialogWorkFrame *EbFrameList::getWorkFrame() const
 {
     AUTO_CONST_RLOCK(m_list);
@@ -245,7 +257,7 @@ void EbFrameList::onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUserI
     }
 }
 
-void EbFrameList::onMemberInfo(const EB_MemberInfo *pMemberInfo, bool bSort)
+void EbFrameList::onMemberInfo(const EB_MemberInfo *pMemberInfo, bool bChangeLineState)
 {
     BoostReadLock rdLock(m_list.mutex());
     CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
@@ -253,24 +265,32 @@ void EbFrameList::onMemberInfo(const EB_MemberInfo *pMemberInfo, bool bSort)
         const EbFrameItem::pointer& pFrameWndInfo = *pIter;
         const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
         if (chatBase.get()!=0) {
-            chatBase->onMemberInfo(pMemberInfo,bSort);
+            chatBase->onMemberInfo(pMemberInfo,bChangeLineState);
         }
     }
 }
 
 void EbFrameList::onGroupInfo(const EB_GroupInfo *pGroupInfo)
 {
-    BoostReadLock rdLock(m_list.mutex());
-    CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
-    for (; pIter!=m_list.end(); pIter++) {
-        const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-        if (pFrameWndInfo->onGroupInfo(pGroupInfo)) {
-            break;
+    {
+        BoostReadLock rdLock(m_list.mutex());
+        CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
+        for (; pIter!=m_list.end(); pIter++) {
+            const EbFrameItem::pointer& pFrameWndInfo = *pIter;
+            pFrameWndInfo->onGroupInfo(pGroupInfo);
+        }
+    }
+    {
+        BoostReadLock rdLock(m_hide.mutex());
+        CLockList<EbFrameItem::pointer>::iterator pIter = m_hide.begin();
+        for (; pIter!=m_hide.end(); pIter++) {
+            const EbFrameItem::pointer& pFrameWndInfo = *pIter;
+            pFrameWndInfo->onGroupInfo(pGroupInfo);
         }
     }
 }
 
-void EbFrameList::onRemoveGroup(eb::bigint nGroupId)
+void EbFrameList::onRemoveGroup(const EB_GroupInfo* groupInfo)
 {
     {
         BoostReadLock rdLock(m_list.mutex());
@@ -279,7 +299,7 @@ void EbFrameList::onRemoveGroup(eb::bigint nGroupId)
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
             const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
-                chatBase->onRemoveGroup(nGroupId);
+                chatBase->onRemoveGroup(groupInfo);
             }
         }
     }
@@ -290,13 +310,13 @@ void EbFrameList::onRemoveGroup(eb::bigint nGroupId)
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
             const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
-                chatBase->onRemoveGroup(nGroupId);
+                chatBase->onRemoveGroup(groupInfo);
             }
         }
     }
 }
 
-void EbFrameList::onRemoveMember(eb::bigint nGroupId, eb::bigint nMemberId, mycp::bigint memberUserId)
+void EbFrameList::onRemoveMember(const EB_GroupInfo* groupInfo, eb::bigint nMemberId, mycp::bigint memberUserId)
 {
     {
         BoostReadLock rdLock(m_list.mutex());
@@ -305,7 +325,7 @@ void EbFrameList::onRemoveMember(eb::bigint nGroupId, eb::bigint nMemberId, mycp
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
             const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
-                chatBase->onRemoveMember( nGroupId,nMemberId,memberUserId );
+                chatBase->onRemoveMember( groupInfo,nMemberId,memberUserId );
             }
         }
     }
@@ -317,7 +337,7 @@ void EbFrameList::onRemoveMember(eb::bigint nGroupId, eb::bigint nMemberId, mycp
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
             const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
-                chatBase->onRemoveMember( nGroupId,nMemberId,memberUserId );
+                chatBase->onRemoveMember( groupInfo,nMemberId,memberUserId );
             }
         }
     }

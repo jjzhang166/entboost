@@ -295,7 +295,9 @@ void EbWidgetMySession::onItemEntered(QListWidgetItem *item)
     }
     /// 滚动条能正常显示
     const QRect rectItem = m_listWidget->visualItemRect(item);
+    /// EB_VIEW_SELECT_USER 模式，有一条边框
     const int y = rectItem.y();
+//    const int y = (m_viewMode==EB_VIEW_SELECT_USER)?(rectItem.y()+1):rectItem.y();
     /// -2（配合下面的 y+1）实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
     const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;

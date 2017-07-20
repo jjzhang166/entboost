@@ -3,66 +3,25 @@
 #include "ebtreewidgetitem.h"
 #include "ebmessagebox.h"
 
-EbWidgetMyEnterprise::EbWidgetMyEnterprise(QWidget *parent) : QWidget(parent)
+EbWidgetMyEnterprise::EbWidgetMyEnterprise(EB_VIEW_MODE viewMode, QWidget *parent) : EbWidgetTreeSelectBase(viewMode, parent)
   , m_contextMenu(0)
   , m_timerIdUpdateEnterpriseCount(0)
   , m_timerIdUpdateGroupCount(0)
 {
-    m_treeWidget = new QTreeWidget(this);
-//    m_treeWidget->setSortingEnabled(false);
-//    m_treeWidget->header()->setSortIndicatorShown(false);
-//    m_treeWidget->header()->setSortIndicator(0, Qt::AscendingOrder);
-    m_treeWidget->setFrameStyle(QFrame::NoFrame); ///去掉边框
-    m_treeWidget->setHeaderHidden(true);
-    m_treeWidget->setIconSize(const_tree_icon_size);
-    m_treeWidget->setExpandsOnDoubleClick(false);
-    m_treeWidget->setMouseTracking(false);
-    m_treeWidget->setFrameShape(QFrame::NoFrame);
-    m_treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_treeWidget->setAllColumnsShowFocus(false);
-    m_treeWidget->setWordWrap(true);
-    m_treeWidget->setColumnCount(1);
-    //    m_treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-//    connect( m_treeWidget,SIGNAL(itemPressed(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
     connect( m_treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
-    m_treeWidget->setMouseTracking(true);
     connect( m_treeWidget,SIGNAL(itemEntered(QTreeWidgetItem*,int)),this,SLOT(onItemEntered(QTreeWidgetItem*,int)) );
     connect( m_treeWidget,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this,SLOT(onItemDoubleClicked(QTreeWidgetItem*,int)) );
-    //    connect( m_treeWidget,SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),this,SLOT(onCurrentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)) );
 
+    /// “添加”按钮
+    connect( m_pushButtonSelect, SIGNAL(clicked()),this,SLOT(onClickedPushButtonSelect()) );
     /// “打开会话”按钮
-    m_pushButtonCall = new QPushButton(this);
-    m_pushButtonCall->setParent( m_treeWidget );
-    m_pushButtonCall->setVisible(false);
-    m_pushButtonCall->setObjectName("CallButton");
-    m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
     connect( m_pushButtonCall, SIGNAL(clicked()),this,SLOT(onClickedPushButtonCall()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
     /// “修改我的名片”
-    m_pushButtonEdit = new QPushButton(this);
-    m_pushButtonEdit->setParent( m_treeWidget );
-    m_pushButtonEdit->setVisible(false);
-    m_pushButtonEdit->setObjectName("CallButton");
-    m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );
     connect( m_pushButtonEdit, SIGNAL(clicked()),this,SLOT(onClickedPushButtonEdit()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
 }
 
 EbWidgetMyEnterprise::~EbWidgetMyEnterprise()
 {
-
-}
-
-void EbWidgetMyEnterprise::timerCheckState()
-{
-    if (m_pushButtonCall->isVisible()) {
-        /// 实现定期自动判断当前鼠标位置，并刷新 call 按钮
-        const QRect& rect = m_treeWidget->geometry();
-        const QPoint pointMouseToDialog = this->mapFromGlobal(this->cursor().pos());
-        if (!rect.contains(pointMouseToDialog)) {
-            m_pushButtonCall->setVisible(false);
-        }
-    }
 }
 
 void EbWidgetMyEnterprise::onEnterpriseInfo(const EB_EnterpriseInfo *pEnterpriseInfo)
@@ -92,7 +51,7 @@ void EbWidgetMyEnterprise::onEnterpriseInfo(const EB_EnterpriseInfo *pEnterprise
     }
 }
 
-void EbWidgetMyEnterprise::SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemInfo, const EB_MemberInfo* memberInfo, SORT_ITEMS_FLAG nSortItems)
+void EbWidgetMyEnterprise::SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemInfo, const EB_MemberInfo* memberInfo, EB_SORT_ITEMS_FLAG nSortItems)
 {
     if (pGroupItemInfo.get()==0 || memberInfo==0 || memberInfo->m_sMemberCode==0) {
         return;
@@ -112,25 +71,25 @@ void EbWidgetMyEnterprise::SetMemberInfo(const EbWidgetItemInfo::pointer& pGroup
         item->m_itemInfo = widgetItemInfo;
         pGroupItemInfo->m_hItem->addChild(item);
         m_pEmpItemInfo.insert(memberInfo->m_sMemberCode, widgetItemInfo);
-        if (nSortItems==AUTO_SORT) {
-            nSortItems=FORCE_SORT;
+        if (nSortItems==EB_AUTO_SORT) {
+            nSortItems=EB_FORCE_SORT;
         }
     }
     else {
         widgetItemInfo->m_hItem->setText(0,sText);
-        if ( nSortItems==AUTO_SORT &&
+        if ( nSortItems==EB_AUTO_SORT &&
              (memberInfo->m_nLineState!=(EB_USER_LINE_STATE)widgetItemInfo->m_dwItemData ||
               widgetItemInfo->m_nIndex!=memberInfo->m_nDisplayIndex ||
               widgetItemInfo->m_sName!=memberInfo->m_sUserName) ||
              widgetItemInfo->m_nSubType!=nSubType) {
-            nSortItems=FORCE_SORT;
+            nSortItems=EB_FORCE_SORT;
         }
     }
 
     widgetItemInfo->updateMemberInfo(memberInfo);
 
     /// ?? 这里要实现，状况改变
-    if (nSortItems==FORCE_SORT) {
+    if (nSortItems==EB_FORCE_SORT) {
         pGroupItemInfo->m_hItem->sortChildren( 0,Qt::AscendingOrder );
     }
 }
@@ -293,7 +252,6 @@ void EbWidgetMyEnterprise::deleteMemberInfo(const EB_GroupInfo *pGroupInfo, eb::
             pDepItemInfo->m_hItem->removeChild(pEmpItemInfo->m_hItem);
         }
         if (!fromDeleteGroup) {
-            pDepItemInfo->m_nCount1 = -1;
             setGroupCount(pDepItemInfo, pGroupInfo, true);
         }
     }
@@ -440,19 +398,19 @@ void EbWidgetMyEnterprise::setGroupCount(const EbWidgetItemInfo::pointer &pGroup
     }
     if (pGroupItem->m_nCount1==-1 || !theApp->isStatSubGroupMember()) {
         /// 统计当前部门人数
-        int nMemberSize = 0;
-        int nOnlineSize = 0;
-        theApp->m_ebum.EB_GetGroupMemberSize(pGroupInfo->m_sGroupCode,1,nMemberSize,nOnlineSize);
-        if (nMemberSize==pGroupItem->m_nCount1 && nOnlineSize==pGroupItem->m_nCount2) {
+        int memberSize = 0;
+        int onlineSize = 0;
+        theApp->m_ebum.EB_GetGroupMemberSize(pGroupInfo->m_sGroupCode,1,memberSize,onlineSize);
+        if (memberSize==pGroupItem->m_nCount1 && onlineSize==pGroupItem->m_nCount2) {
             return;
         }
-        pGroupItem->m_nCount1 = nMemberSize;
-        pGroupItem->m_nCount2 = nOnlineSize;
+        pGroupItem->m_nCount1 = memberSize;
+        pGroupItem->m_nCount2 = onlineSize;
         QString sText;
-        if (nOnlineSize>=0 && nMemberSize>0)
-            sText = QString("%1 [%2/%3]").arg(pGroupInfo->m_sGroupName.c_str()).arg(nOnlineSize).arg(nMemberSize);
-        else if (nMemberSize>0)
-            sText = QString("%1 [%2]").arg(pGroupInfo->m_sGroupName.c_str()).arg(nMemberSize);
+        if (onlineSize>=0 && memberSize>0)
+            sText = QString("%1 [%2/%3]").arg(pGroupInfo->m_sGroupName.c_str()).arg(onlineSize).arg(memberSize);
+        else if (memberSize>0)
+            sText = QString("%1 [%2]").arg(pGroupInfo->m_sGroupName.c_str()).arg(memberSize);
         else
             sText = pGroupInfo->m_sGroupName.c_str();
         pGroupItem->m_hItem->setText( 0,sText );
@@ -491,38 +449,68 @@ void EbWidgetMyEnterprise::onItemEntered(QTreeWidgetItem *item, int /*column*/)
     /// 滚动条能正常显示
     const QRect rectItem = m_treeWidget->visualItemRect(item);
     const QPoint pointItem = m_treeWidget->mapToParent(rectItem.topRight());
-    const int y = pointItem.y();
+    /// EB_VIEW_SELECT_USER 模式，有一条边框
+    const int y = (m_viewMode==EB_VIEW_SELECT_USER)?(pointItem.y()+1):pointItem.y();
     /// -2（配合下面的 y+1）实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
     const EbTreeWidgetItem* ebitem = (EbTreeWidgetItem*)item;
-    if ( ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_ENTERPRISE ) {
-        m_pushButtonEdit->setVisible(false);
-        m_pushButtonCall->setVisible(false);
+    if (m_viewMode==EB_VIEW_SELECT_USER) {
+        m_pushButtonCall->hide();
+        m_pushButtonEdit->hide();
+        const bool isSelectedUser = m_selectedUserCallback==0?false:m_selectedUserCallback->isSelectedUser(ebitem->m_itemInfo);
+        if ( !isSelectedUser &&
+             ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_MEMBER &&
+             ebitem->m_itemInfo->m_nUserId!=theApp->m_ebum.EB_GetLogonUserId() ) {
+            m_pushButtonSelect->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
+            m_pushButtonSelect->setProperty("track-item",QVariant((quint64)item));
+            m_pushButtonSelect->setVisible(true);
+        }
+        else {
+            m_pushButtonSelect->setVisible(false);
+        }
     }
-    else if ( ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_GROUP ) {
-        m_pushButtonEdit->setVisible(false);
-        const eb::bigint myMemberId = ebitem->m_itemInfo->m_nBigId;
-        if (myMemberId>0) {
+    else {
+        m_pushButtonSelect->setVisible(false);
+        if ( ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_ENTERPRISE ) {
+            m_pushButtonEdit->setVisible(false);
+            m_pushButtonCall->setVisible(false);
+        }
+        else if ( ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_GROUP ) {
+            m_pushButtonEdit->setVisible(false);
+            const eb::bigint myMemberId = ebitem->m_itemInfo->m_nBigId;
+            if (myMemberId>0) {
+                m_pushButtonCall->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
+                m_pushButtonCall->setProperty("track-item",QVariant((quint64)item));
+                m_pushButtonCall->setVisible(true);
+            }
+            else {
+                m_pushButtonCall->setVisible(false);
+            }
+        }
+        else if ( ebitem->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
+            m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
+            m_pushButtonEdit->setProperty("track-item",QVariant((quint64)item));
+            m_pushButtonEdit->setVisible(true);
+            m_pushButtonCall->hide();
+        }
+        else {
             m_pushButtonCall->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
             m_pushButtonCall->setProperty("track-item",QVariant((quint64)item));
             m_pushButtonCall->setVisible(true);
-        }
-        else {
-            m_pushButtonCall->setVisible(false);
+            m_pushButtonEdit->hide();
         }
     }
-    else if ( ebitem->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
-        m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
-        m_pushButtonEdit->setProperty("track-item",QVariant((quint64)item));
-        m_pushButtonEdit->setVisible(true);
-        m_pushButtonCall->hide();
+}
+
+void EbWidgetMyEnterprise::onClickedPushButtonSelect()
+{
+    const EbTreeWidgetItem * ebitem = (EbTreeWidgetItem*)m_pushButtonSelect->property("track-item").toULongLong();
+    if (ebitem!=0 && ebitem->m_itemInfo.get()!=0) {
+        emit selectedItemInfo(ebitem->m_itemInfo);
     }
-    else {
-        m_pushButtonCall->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
-        m_pushButtonCall->setProperty("track-item",QVariant((quint64)item));
-        m_pushButtonCall->setVisible(true);
-        m_pushButtonEdit->hide();
-    }
+    m_pushButtonSelect->hide();
+    m_pushButtonSelect->setProperty("track-item",QVariant((quint64)0));
+    m_treeWidget->setFocus();
 }
 
 //void EbWidgetMyEnterprise::onCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)

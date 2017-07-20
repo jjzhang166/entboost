@@ -9,6 +9,7 @@ public:
     EbFrameList(QWidget* parent);
     virtual ~EbFrameList(void);
 
+    void timerCheckState(void);
     DialogWorkFrame * getWorkFrame(void) const;
     DialogChatBase::pointer getDialogChatBase(mycp::bigint nCallId, bool bRemove, bool bAutoCall);
     bool addUnreadMsg(eb::bigint nCallId, eb::bigint nMsgId);
@@ -17,10 +18,10 @@ public:
     bool existFrameItem(eb::bigint nCallId) const;
 
     void onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUserId, EB_USER_LINE_STATE nLineState);
-    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
-    void onGroupInfo(const EB_GroupInfo* pGroupInfo);
-    void onRemoveGroup(eb::bigint nGroupId);
-    void onRemoveMember(eb::bigint nGroupId, eb::bigint nMemberId, mycp::bigint memberUserId);
+    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bChangeLineState);
+    void onGroupInfo(const EB_GroupInfo* groupInfo);
+    void onRemoveGroup(const EB_GroupInfo* groupInfo);
+    void onRemoveMember(const EB_GroupInfo* groupInfo, eb::bigint nMemberId, mycp::bigint memberUserId);
     void onMemberHeadChange(const EB_MemberInfo * pMemberInfo);
     void onContactHeadChange(const EB_ContactInfo* pContactInfo);
 

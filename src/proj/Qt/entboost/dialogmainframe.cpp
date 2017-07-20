@@ -165,16 +165,16 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
         y += 30;    /// 28
         m_lineEditSearch->raise();
         m_lineEditSearch->setGeometry( 0,y,const_main_frame_width,24 );
-        /// 搜索用户、浏览记录、集成应用(/)
-        IconHelper::Instance()->SetIcon(ui->labelSearchIcon,QChar(0xf002),9);
-        ui->labelSearchIcon->raise();
-        ui->labelSearchIcon->setGeometry( 4,y+2,18,18 );
-        ui->labelSearchIcon->setObjectName("SearchIcon");
         m_lineEditSearch->installEventFilter(this);
         connect( m_lineEditSearch,SIGNAL(keyPressEnter(QString)),this,SLOT(onSearchEditKeyPressEnter(QString)) );
         connect( m_lineEditSearch,SIGNAL(keyPressEsc()),this,SLOT(onSearchEditKeyPressEsc()) );
         connect( m_lineEditSearch,SIGNAL(textChanged(QString)),this,SLOT(onSearchEditTextChange(QString)) );
         connect( m_lineEditSearch,SIGNAL(keyPressDown()),this,SLOT(onSearchEditKeyPressDown()) );
+        /// 搜索用户、浏览记录、集成应用(/)
+        IconHelper::Instance()->SetIcon(ui->labelSearchIcon,QChar(0xf002),9);
+        ui->labelSearchIcon->raise();
+        ui->labelSearchIcon->setGeometry( 4,y+2,18,18 );
+        ui->labelSearchIcon->setObjectName("SearchIcon");
 
         /// 显示“我的部门/联系人/最近会话/公司组织结构/集成应用”
         IconHelper::Instance()->SetIcon(ui->pushButtonMyGroup,QChar(0xf0c0),14);
@@ -207,10 +207,10 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
         ui->pushButtonMyEnterprise->setObjectName("MainCheckButton");
         ui->pushButtonMyApp->setObjectName("MainCheckButton");
     }
-    m_widgetMyGroup = new EbWidgetMyGroup(this);
-    m_widgetMyContact = new EbWidgetMyContact(this);
+    m_widgetMyGroup = new EbWidgetMyGroup(EB_VIEW_MAIN_FRAME,this);
+    m_widgetMyContact = new EbWidgetMyContact(EB_VIEW_MAIN_FRAME,this);
     m_widgetMySession = new EbWidgetMySession(this);
-    m_widgetMyEnterprise = new EbWidgetMyEnterprise(this);
+    m_widgetMyEnterprise = new EbWidgetMyEnterprise(EB_VIEW_MAIN_FRAME,this);
 
     onClickedPushButtonMyGroup();
     theApp->m_ebum.EB_SetMsgReceiver(this);
@@ -222,7 +222,7 @@ DialogMainFrame::DialogMainFrame(QWidget *parent) :
     m_pDlgMsgTip->setWindowModality(Qt::WindowModal);
 
     /// 主界面搜索结果列表
-    m_widgetSearchResult = new EbWidgetSearchResult(this);
+    m_widgetSearchResult = new EbWidgetSearchResult(EB_SEARCH_FROM_MAIN_FRAME,this);
     m_widgetSearchResult->setVisible(false);
     connect( m_widgetSearchResult,SIGNAL(searchFirst(QString)),this,SLOT(onSearchFirst(QString)) );
     connect( m_widgetSearchResult,SIGNAL(clickedSearchResultUrl(QString)),this,SLOT(onClickedSearchResultUrl(QString)) );
@@ -618,7 +618,7 @@ void DialogMainFrame::onMemberInfo(QEvent *e)
 //        return 0;
     }
     if (m_pDlgFrameList!=0) {
-        m_pDlgFrameList->onMemberInfo(memberInfo,true);
+        m_pDlgFrameList->onMemberInfo(memberInfo,false);
     }
 
 }
@@ -651,13 +651,13 @@ void DialogMainFrame::onExitGroup(QEvent *e)
     {
         theApp->m_pCallList.remove(groupInfo->m_sGroupCode);
         if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT && m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveGroup(groupInfo->m_sGroupCode);
+            m_pDlgFrameList->onRemoveGroup(groupInfo);
         }
         else if (!theApp->isHideMainFrame()) {
 //            CFrameWndInfoProxy::OnRemoveGroup(pGroupInfo->m_sGroupCode);
         }
         else if (m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveGroup(groupInfo->m_sGroupCode);
+            m_pDlgFrameList->onRemoveGroup(groupInfo);
         }
 
         /// 删除会话
@@ -674,14 +674,14 @@ void DialogMainFrame::onExitGroup(QEvent *e)
     }
     else {
         if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT && m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveMember( groupInfo->m_sGroupCode, memberInfo->m_sMemberCode, sExitUserId );
+            m_pDlgFrameList->onRemoveMember( groupInfo, memberInfo->m_sMemberCode, sExitUserId );
         }
         else if (!theApp->isHideMainFrame())
          {
 //            CFrameWndInfoProxy::OnRemoveMember(pGroupInfo->m_sGroupCode, pMemberInfo->m_sMemberCode);
         }
         else if (m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveMember( groupInfo->m_sGroupCode, memberInfo->m_sMemberCode, sExitUserId );
+            m_pDlgFrameList->onRemoveMember( groupInfo, memberInfo->m_sMemberCode, sExitUserId );
         }
 
         /// 放在 m_pDlgFrameList->onRemoveMember 一起处理
@@ -710,47 +710,47 @@ void DialogMainFrame::onExitGroup(QEvent *e)
 }
 void DialogMainFrame::onRemoveGroup(QEvent *e)
 {
-    const EB_GroupInfo* pGroupInfo = (const EB_GroupInfo*)e;
-    const EB_MemberInfo* pMemberInfo = (const EB_MemberInfo*)pGroupInfo->GetEventData();
+    const EB_GroupInfo* groupInfo = (const EB_GroupInfo*)e;
+    const EB_MemberInfo* pMemberInfo = (const EB_MemberInfo*)groupInfo->GetEventData();
 
     /// 删除本地群组聊天记录
-    theApp->deleteDbRecord(pGroupInfo->m_sGroupCode,false);
+    theApp->deleteDbRecord(groupInfo->m_sGroupCode,false);
 
     const EB_UI_STYLE_TYPE nDefaultUIStyleType = theApp->defaultUIStyleType();
     const eb::bigint sRemoveUserId(pMemberInfo->m_nMemberUserId);
     /// 找到现在会话，移除用户数据
     if (sRemoveUserId == theApp->logonUserId()) {
-        theApp->m_pCallList.remove(pGroupInfo->m_sGroupCode);
+        theApp->m_pCallList.remove(groupInfo->m_sGroupCode);
         if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT && m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveGroup(pGroupInfo->m_sGroupCode);
+            m_pDlgFrameList->onRemoveGroup(groupInfo);
         }
         else if (!theApp->isHideMainFrame()) {
 //            CFrameWndInfoProxy::OnRemoveGroup(pGroupInfo->m_sGroupCode);
         }
         else if (m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveGroup(pGroupInfo->m_sGroupCode);
+            m_pDlgFrameList->onRemoveGroup(groupInfo);
         }
 
 //        DialogChatBase::pointer pDlgDialog = getDialogChatBase(pGroupInfo->m_sGroupCode,true);
         if (m_widgetMyGroup!=0) {
-            m_widgetMyGroup->onRemoveGroup(pGroupInfo);
+            m_widgetMyGroup->onRemoveGroup(groupInfo);
         }
 
         /// 你被管理员移除出：\r\n%s
         QString text = theLocales.getLocalText("message-show.remove-from-group","Remove From Group");
-        text.replace( "[GROUP_NAME]", pGroupInfo->m_sGroupName.c_str() );
-        text.replace( "[GROUP_ID]", QString::number(pGroupInfo->m_sGroupCode) );
+        text.replace( "[GROUP_NAME]", groupInfo->m_sGroupName.c_str() );
+        text.replace( "[GROUP_ID]", QString::number(groupInfo->m_sGroupCode) );
         EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_INFORMATION,default_warning_auto_close );
     }
     else {
         if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT && m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveMember( pGroupInfo->m_sGroupCode,pMemberInfo->m_sMemberCode,sRemoveUserId );
+            m_pDlgFrameList->onRemoveMember( groupInfo,pMemberInfo->m_sMemberCode,sRemoveUserId );
         }
         else if (!theApp->isHideMainFrame()) {
 //            CFrameWndInfoProxy::OnRemoveMember(pGroupInfo->m_sGroupCode, pMemberInfo->m_sMemberCode);
         }
         else if (m_pDlgFrameList!=0) {
-            m_pDlgFrameList->onRemoveMember(pGroupInfo->m_sGroupCode, pMemberInfo->m_sMemberCode, sRemoveUserId);
+            m_pDlgFrameList->onRemoveMember(groupInfo, pMemberInfo->m_sMemberCode, sRemoveUserId);
         }
 
         /// 放在 m_pDlgFrameList->onRemoveMember 一起处理
@@ -759,24 +759,24 @@ void DialogMainFrame::onRemoveGroup(QEvent *e)
 //            pDlgDialog->UserExitRoom(sRemoveUserId,true);
 //        }
         if (m_widgetMyGroup != 0) { /// && theEBAppClient.EB_IsMyGroup(pMemberInfo->m_sGroupCode))
-            m_widgetMyGroup->deleteMemberInfo(pGroupInfo,pMemberInfo->m_sMemberCode,false);
+            m_widgetMyGroup->deleteMemberInfo(groupInfo,pMemberInfo->m_sMemberCode,false);
         }
     }
-    if (pGroupInfo->m_sEnterpriseCode>0 && m_widgetMyEnterprise!=0) {
+    if (groupInfo->m_sEnterpriseCode>0 && m_widgetMyEnterprise!=0) {
         /// * 不能填 true
-        m_widgetMyEnterprise->deleteMemberInfo(pGroupInfo,pMemberInfo->m_sMemberCode,false);
+        m_widgetMyEnterprise->deleteMemberInfo(groupInfo,pMemberInfo->m_sMemberCode,false);
     }
 }
 void DialogMainFrame::onGroupEditResponse(QEvent *e)
 {
-    const EB_GroupInfo* pGroupInfo = (const EB_GroupInfo*)e;
-    const EB_STATE_CODE stateCode = (EB_STATE_CODE)pGroupInfo->GetEventParameter();
+    const EB_GroupInfo* groupInfo = (const EB_GroupInfo*)e;
+    const EB_STATE_CODE stateCode = (EB_STATE_CODE)groupInfo->GetEventParameter();
     QString text;
     EbMessageBox::IMAGE_TYPE imageType = EbMessageBox::IMAGE_WARNING;
     switch (stateCode) {
     case EB_STATE_OK: {
         /// 操作成功
-        const bool bNewGroup = pGroupInfo->GetEventBigParameter()==1?true:false;
+        const bool bNewGroup = groupInfo->GetEventBigParameter()==1?true:false;
         imageType = EbMessageBox::IMAGE_INFORMATION;
         if (bNewGroup)
             text = theLocales.getLocalText("on-group-edit-response.new-state-ok.text","");
@@ -796,60 +796,60 @@ void DialogMainFrame::onGroupEditResponse(QEvent *e)
     }
     }
     if (!text.isEmpty()) {
-        text.replace( "[GROUP_NAME]",pGroupInfo->m_sGroupName.c_str() );
-        text.replace( "[GROUP_ID]",QString::number(pGroupInfo->m_sGroupCode) );
+        text.replace( "[GROUP_NAME]",groupInfo->m_sGroupName.c_str() );
+        text.replace( "[GROUP_ID]",QString::number(groupInfo->m_sGroupCode) );
         text.replace( "[STATE_CODE]",QString::number((int)stateCode) );
         EbMessageBox::doShow( NULL, "", QChar::Null, text, imageType,default_warning_auto_close );
     }
 }
 void DialogMainFrame::onGroupDelete(QEvent *e)
 {
-    const EB_GroupInfo* pGroupInfo = (const EB_GroupInfo*)e;
-    const eb::bigint sGroupCode = pGroupInfo->m_sGroupCode;
+    const EB_GroupInfo* groupInfo = (const EB_GroupInfo*)e;
+    const eb::bigint groupId = groupInfo->m_sGroupCode;
 //    bool bIsMyDepartment = (pGroupInfo->GetEventParameter()==1)?true:false;
     if (m_widgetMyEnterprise!=0) {
-        m_widgetMyEnterprise->onRemoveGroup(pGroupInfo);
+        m_widgetMyEnterprise->onRemoveGroup(groupInfo);
 //        m_widgetMyEnterprise->DeleteDepartmentInfo(pGroupInfo->m_sGroupCode);
     }
     if (m_widgetMyGroup != 0) {
-        m_widgetMyGroup->onRemoveGroup(pGroupInfo);
+        m_widgetMyGroup->onRemoveGroup(groupInfo);
 //        m_widgetMyGroup->DeleteDepartmentInfo(pGroupInfo);
     }
 
     /// 关闭现在会话窗口
-    theApp->m_pCallList.remove(pGroupInfo->m_sGroupCode);
+    theApp->m_pCallList.remove(groupInfo->m_sGroupCode);
 
     const EB_UI_STYLE_TYPE nDefaultUIStyleType = theApp->defaultUIStyleType();
     if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT && m_pDlgFrameList!=0) {
-        m_pDlgFrameList->onRemoveGroup(pGroupInfo->m_sGroupCode);
+        m_pDlgFrameList->onRemoveGroup(groupInfo);
     }
     else if (!theApp->isHideMainFrame()) {
 //        CFrameWndInfoProxy::OnRemoveGroup(pGroupInfo->m_sGroupCode);
     }
     else if (m_pDlgFrameList!=0) {
-        m_pDlgFrameList->onRemoveGroup(pGroupInfo->m_sGroupCode);
+        m_pDlgFrameList->onRemoveGroup(groupInfo);
     }
 
-    getDialogChatBase(pGroupInfo->m_sGroupCode, true);
+    getDialogChatBase(groupInfo->m_sGroupCode, true);
 
     /// %s\r\n已经被解散！
     QString text = theLocales.getLocalText("message-show.delete-group","Delete Group");
-    text.replace( "[GROUP_NAME]", pGroupInfo->m_sGroupName.c_str() );
-    text.replace( "[GROUP_ID]", QString::number(pGroupInfo->m_sGroupCode) );
+    text.replace( "[GROUP_NAME]", groupInfo->m_sGroupName.c_str() );
+    text.replace( "[GROUP_ID]", QString::number(groupInfo->m_sGroupCode) );
     EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_INFORMATION,default_information_auto_close );
 
-    theApp->deleteDbRecord(sGroupCode,false);
+    theApp->deleteDbRecord(groupId,false);
 }
 
 void DialogMainFrame::onGroupInfo(QEvent *e)
 {
-    const EB_GroupInfo * pGroupInfo = (EB_GroupInfo*)e;
+    const EB_GroupInfo * groupInfo = (EB_GroupInfo*)e;
 
     if (m_widgetMyEnterprise!=0) {
-        m_widgetMyEnterprise->onGroupInfo(pGroupInfo);
+        m_widgetMyEnterprise->onGroupInfo(groupInfo);
     }
-    if (pGroupInfo->m_nMyEmpId>0 && this->m_widgetMyGroup!=0) {
-        this->m_widgetMyGroup->onGroupInfo(pGroupInfo);
+    if (groupInfo->m_nMyEmpId>0 && this->m_widgetMyGroup!=0) {
+        this->m_widgetMyGroup->onGroupInfo(groupInfo);
     }
     const EB_UI_STYLE_TYPE nDefaultUIStyleType = theApp->defaultUIStyleType();
     if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT) {
@@ -861,7 +861,7 @@ void DialogMainFrame::onGroupInfo(QEvent *e)
     }
 
     if (m_pDlgFrameList!=0) {
-        m_pDlgFrameList->onGroupInfo(pGroupInfo);
+        m_pDlgFrameList->onGroupInfo(groupInfo);
     }
 }
 
@@ -1209,6 +1209,9 @@ void DialogMainFrame::checkOneSecond()
     }
     if (m_widgetMyEnterprise!=0) {
         m_widgetMyEnterprise->timerCheckState();
+    }
+    if (m_pDlgFrameList!=0) {
+        m_pDlgFrameList->timerCheckState();
     }
 
     static unsigned int theSeconedIndex = 0;
@@ -2100,7 +2103,7 @@ void DialogMainFrame::onBroadcastMsg(QEvent *e)
                 const eb::bigint nEmailSubId = eb_atoi64(sMsgName.c_str());
                 /// 新邮件:%s<%s> %s:\n%s
                 const QString newEmailTip = theLocales.getLocalText( "message-show.new-email-tip", "New Email:" );
-                const QString msgTip = QString("%1%2<%3> %4:<br>%5").arg(newEmailTip).arg(sFromName.c_str())
+                const QString msgTip = QString("%1%2<%3> %4:\n%5").arg(newEmailTip).arg(sFromName.c_str())
                         .arg(sFromMail.c_str()).arg(sMailDate.c_str()).arg(sSubject.c_str());
                 m_pDlgMsgTip->addEmailMsgTip(nMailContentId, nEmailSubId, msgTip, sParam.c_str());
                 addSubUnreadMsg( nEmailSubId,true );

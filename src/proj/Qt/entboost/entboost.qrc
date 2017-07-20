@@ -29,6 +29,7 @@
         <file alias="menucall.png">res/menucall.png</file>
         <file alias="menumsg.png">res/menumsg.png</file>
         <file alias="menuadduser.png">res/menuadduser.png</file>
+        <file alias="defaultapp.png">res/defaultapp.png</file>
     </qresource>
     <qresource prefix="/qm">
         <file alias="qt_zh_CN.qm">res/qt_zh_CN.qm</file>

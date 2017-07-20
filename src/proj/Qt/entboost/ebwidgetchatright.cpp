@@ -109,11 +109,11 @@ void EbWidgetChatRight::deleteTranFile(eb::bigint msgId)
     }
 }
 
-void EbWidgetChatRight::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
+void EbWidgetChatRight::onMemberInfo(const EB_MemberInfo *memberInfo, bool bChangeLineState)
 {
     EbWidgetUserList * userList = widgetUserList();
     if (userList!=0) {
-        userList->onMemberInfo(memberInfo,bSort);
+        userList->onMemberInfo(memberInfo,bChangeLineState);
     }
 }
 

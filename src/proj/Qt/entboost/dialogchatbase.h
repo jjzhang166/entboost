@@ -14,6 +14,7 @@ class DialogChatBase;
 class EbTextBrowser;
 class EbWidgetChatInput;
 class EbWidgetChatRight;
+class EbDialogSelectUser;
 
 class DialogChatBase : public EbDialogBase
 {
@@ -28,6 +29,7 @@ public:
     }
 
     void updateLocaleInfo(void);
+    void timerCheckState(void);
     /// 设置输入框 focus
     void setFocusInput(void);
     void scrollToEnd(void);
@@ -46,12 +48,12 @@ public:
     void onSendRich(const CCrRichInfo * pCrMsgInfo,EB_STATE_CODE nState);
     void onReceiveRich(const CCrRichInfo * pCrMsgInfo,QString* sOutFirstMsg1,QString* sOutFirstMsg2);
     void onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUserId, EB_USER_LINE_STATE bLineState);
-    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
+    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bChangeLineState);
     bool onMemberHeadChange(const EB_MemberInfo * pMemberInfo);
     bool onContactHeadChange(const EB_ContactInfo* pContactInfo);
     void onGroupInfo(const EB_GroupInfo* pGroupInfo);
-    void onRemoveGroup(mycp::bigint nGroupId);
-    void onRemoveMember(mycp::bigint nGroupId, mycp::bigint nMemberId, mycp::bigint memberUserId);
+    void onRemoveGroup(const EB_GroupInfo* pGroupInfo);
+    void onRemoveMember(const EB_GroupInfo* pGroupInfo, mycp::bigint nMemberId, mycp::bigint memberUserId);
     void onMsgReceipt(const CCrRichInfo * pCrMsgInfo,int nAckType);
     void updateMsgReceiptData(eb::bigint nMsgId, eb::bigint nFromUserId, int nAckType, EB_STATE_CODE nState);
 
@@ -78,6 +80,7 @@ public:
 public slots:
     void onClickedInputClose(void);
     void onClickedInputMsgRecord(void);
+    void onClickedButtonAddUser(void);
     void onClickedButtonSendFile(void);
     void onTriggeredActionSendECard(void);
     void onTriggeredActionChatApps(void);
@@ -106,8 +109,9 @@ private:
 
 private:
     Ui::DialogChatBase *ui;
-    QSplitter * m_splitterMain;     // 先把主界面，分左右二边
-    QSplitter * m_splitterInput;    // 再把左边分上下
+    QSplitter * m_splitterMain;     /// 先把主界面，分左右二边
+    QSplitter * m_splitterInput;    /// 再把左边分上下
+    EbDialogSelectUser * m_dialogSelectUser;
     EbTextBrowser* m_textBrowserMessage;
     EbWidgetChatInput* m_widgetChatInput;
     EbWidgetChatRight* m_widgetChatRight;

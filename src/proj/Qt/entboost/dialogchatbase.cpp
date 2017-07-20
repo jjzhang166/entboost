@@ -3,6 +3,7 @@
 #include "dialogframelist.h"
 #include "iconhelper.h"
 //#include "ebwidgetchatmessage.h"
+#include "ebdialogselectuser.h"
 #include "ebwidgetchatinput.h"
 #include "EbTextBrowser.h"
 #include "ebwidgetchatright.h"
@@ -13,8 +14,9 @@
 DialogChatBase::DialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget *parent) :
     EbDialogBase(parent),
     ui(new Ui::DialogChatBase)
-  , m_splitterMain(NULL), m_splitterInput(NULL)
-  , m_widgetChatRight(NULL)
+  , m_splitterMain(0), m_splitterInput(0)
+  , m_dialogSelectUser(0)
+  , m_widgetChatRight(0)
   , m_callInfo(pCallInfo)
   , m_bOwnerCall(false)
   , m_nFromLineState(EB_LINE_STATE_UNKNOWN)
@@ -66,6 +68,7 @@ DialogChatBase::DialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget *pa
     y += 22;
     const QSize const_chat_base_button_size(36,26);
     ui->pushButtonAddUser->setGeometry( x,y,const_chat_base_button_size.width(),const_chat_base_button_size.height() );
+    connect( ui->pushButtonAddUser,SIGNAL(clicked()),this,SLOT(onClickedButtonAddUser()) );
     x += const_chat_base_button_size.width();
     ui->pushButtonSendFile->setGeometry( x,y,const_chat_base_button_size.width(),const_chat_base_button_size.height() );
     connect( ui->pushButtonSendFile,SIGNAL(clicked()),this,SLOT(onClickedButtonSendFile()) );
@@ -116,6 +119,10 @@ DialogChatBase::DialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget *pa
 
 DialogChatBase::~DialogChatBase()
 {
+//    if (m_dialogSelectUser!=0) {
+//        delete m_dialogSelectUser;
+//        m_dialogSelectUser = 0;
+//    }
     delete ui;
 }
 
@@ -138,6 +145,13 @@ void DialogChatBase::updateLocaleInfo()
     ui->pushButtonChatApps->setToolTip( theLocales.getLocalText("chat-base-dialog.button-chat-apps.tooltip","chat apps") );
     ui->pushButtonExitChat->setToolTip( theLocales.getLocalText("chat-base-dialog.button-exit-chat.tooltip","exit chat") );
 
+}
+
+void DialogChatBase::timerCheckState()
+{
+    if (m_dialogSelectUser!=0) {
+        m_dialogSelectUser->timerCheckState();
+    }
 }
 
 void DialogChatBase::setFocusInput()
@@ -277,10 +291,11 @@ void DialogChatBase::onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUs
 
 }
 
-void DialogChatBase::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
+void DialogChatBase::onMemberInfo(const EB_MemberInfo *memberInfo, bool bChangeLineState)
 {
-//    if (m_pDlgSelectUser.GetSafeHwnd()!=NULL)
-//        m_pDlgSelectUser.onMemberInfo(pMemberInfo);
+    if (m_dialogSelectUser!=0) {
+        m_dialogSelectUser->onMemberInfo(memberInfo,bChangeLineState);
+    }
 
     if ( m_widgetChatInput!=0 &&
          memberInfo->m_sGroupCode==this->m_callInfo->groupId() &&
@@ -294,7 +309,7 @@ void DialogChatBase::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
     }
 
     if ( m_widgetChatRight!=0) {
-        m_widgetChatRight->onMemberInfo(memberInfo,bSort);
+        m_widgetChatRight->onMemberInfo(memberInfo,bChangeLineState);
     }
 }
 
@@ -328,9 +343,13 @@ bool DialogChatBase::onContactHeadChange(const EB_ContactInfo *pContactInfo)
 
 void DialogChatBase::onGroupInfo(const EB_GroupInfo *groupInfo)
 {
+    if (m_dialogSelectUser!=0) {
+        m_dialogSelectUser->onGroupInfo(groupInfo);
+    }
     if (m_callInfo->groupId()!=groupInfo->m_sGroupCode) {
         return;
     }
+
     if (m_widgetChatInput!=0) {
         QString sForbidMessage;
         m_widgetChatInput->checkMyForbidSpeechState(true,false,&sForbidMessage);
@@ -353,18 +372,19 @@ void DialogChatBase::onGroupInfo(const EB_GroupInfo *groupInfo)
 //    ui->labelDescription->setText(m_sFromDescription);
 }
 
-void DialogChatBase::onRemoveGroup(mycp::bigint nGroupId)
+void DialogChatBase::onRemoveGroup(const EB_GroupInfo* groupInfo)
 {
-//    if (m_pDlgSelectUser.GetSafeHwnd()!=NULL)
-//        m_pDlgSelectUser.OnRemoveGroup(nGroupId);
-
+    if (m_dialogSelectUser!=0) {
+        m_dialogSelectUser->onRemoveGroup(groupInfo);
+    }
 }
 
-void DialogChatBase::onRemoveMember(mycp::bigint nGroupId, mycp::bigint nMemberId, mycp::bigint memberUserId)
+void DialogChatBase::onRemoveMember(const EB_GroupInfo* groupInfo, mycp::bigint nMemberId, mycp::bigint memberUserId)
 {
-//    if (m_pDlgSelectUser.GetSafeHwnd()!=NULL)
-//		m_pDlgSelectUser.OnRemoveMember(nGroupId, nMemberId);
-    if ( this->groupId()==nGroupId ) {
+    if (m_dialogSelectUser!=0) {
+        m_dialogSelectUser->deleteMemberInfo(groupInfo,nMemberId,false);
+    }
+    if ( this->groupId()==groupInfo->m_sGroupCode ) {
         onUserExitRoom( memberUserId,true );
     }
 }
@@ -713,6 +733,79 @@ void DialogChatBase::onClickedInputMsgRecord()
     }
 }
 
+void DialogChatBase::onClickedButtonAddUser()
+{
+    std::vector<tstring> pExistUserList;
+    if ( m_callInfo->isGroupCall() ) {
+        if ( m_nGroupType==EB_GROUP_TYPE_DEPARTMENT || m_nGroupType==EB_GROUP_TYPE_PROJECT ) {
+            /// 部门及项目组，不能随意添加成员
+            return;
+        }
+        if ( m_nGroupType!=EB_GROUP_TYPE_TEMP && !theApp->m_ebum.EB_IsGroupAdminLevel(m_callInfo->groupId()) ) {
+            /// 没有管理员权限：\t\n不能邀请好友！
+            const QString text = theLocales.getLocalText("message-show.add-user-not-auth","Add user not auth");
+            EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_WARNING, default_warning_auto_close );
+            return;
+        }
+        theApp->m_ebum.EB_GetGroupMemberAccountList(m_callInfo->groupId(),pExistUserList);
+    }
+    else {
+        theApp->m_ebum.EB_GetCallAccountList(m_callInfo->callId(),pExistUserList);
+    }
+
+    if (m_dialogSelectUser==0) {
+        m_dialogSelectUser = new EbDialogSelectUser;
+        m_dialogSelectUser->setModal(true);
+//        m_dialogSelectUser->setWindowModality(Qt::WindowModal);
+    }
+    m_dialogSelectUser->setSingleSelect(false);
+    m_dialogSelectUser->setSelectedGroupId(-1);
+    for (size_t i=0; i<pExistUserList.size(); i++) {
+        m_dialogSelectUser->m_existedUser.insert(pExistUserList[i],true,false);
+    }
+
+    if (m_dialogSelectUser->exec()==QDialog::Accepted) {
+        AUTO_RLOCK(m_dialogSelectUser->m_selectedList);
+        CLockMap<tstring,EbWidgetItemInfo::pointer>::iterator iter = m_dialogSelectUser->m_selectedList.begin();
+        for (; iter!=m_dialogSelectUser->m_selectedList.end(); iter++) {
+            const EbWidgetItemInfo::pointer & itemInfo = iter->second;
+            const tstring& sSelAccount = itemInfo->m_sAccount;
+            const eb::bigint nToUserId = itemInfo->m_nUserId;
+            /// 判断是否已经存在该会话
+            if (m_dialogSelectUser->m_existedUser.exist(sSelAccount)) {
+                continue;
+            }
+//            bool bExistAccount = false;
+//            for (size_t i=0; i<pExistUserList.size(); i++) {
+//                if (pExistUserList[i] == sSelAccount)
+//                {
+//                    bExistAccount = true;
+//                    break;
+//                }
+//            }
+//            if (bExistAccount) {
+//                continue;
+//            }
+            if (!m_callInfo->isGroupCall()) {
+                theApp->m_ebum.EB_Call2Group( m_callInfo->callId(), sSelAccount.c_str());
+            }
+            else if (nToUserId>0) {
+                theApp->m_ebum.EB_CallUserId( nToUserId, m_callInfo->callId() );
+            }
+            else {
+                theApp->m_ebum.EB_CallAccount( sSelAccount.c_str(), m_callInfo->callId() );
+            }
+        }
+    }
+    m_dialogSelectUser->clearSelected();
+
+//    const QRect & rect = m_dialogSelectUser->geometry();
+//    m_dialogSelectUser->move(pt.x()-rect.width()/3,pt.y()-rect.height());
+//    m_dialogSelectUser->setFocus();
+//    m_dialogSelectUser->show();
+
+}
+
 void DialogChatBase::onClickedButtonSendFile()
 {
     const QStringList paths = QFileDialog::getOpenFileNames(this);
@@ -916,7 +1009,17 @@ bool DialogChatBase::requestClose(bool checkOnly)
             return true;
         }
     }
-
+//    if (m_waitForSelectUserDialog) {
+//        m_deleteSelectUserDialog = true;
+//        EbDialogSelectUser * temp = m_dialogSelectUser;
+//        m_dialogSelectUser = 0;
+//        temp->hide();
+//        delete temp;
+//        while (m_waitForSelectUserDialog) {
+//            QCoreApplication::processEvents();
+//            QThread::msleep (5);
+//        }
+//    }
     theApp->m_ebum.EB_CallExit( this->m_callInfo->callId() );
     theApp->m_pCallList.remove( this->m_callInfo->callId() );
     return true;
@@ -940,11 +1043,11 @@ void DialogChatBase::resizeEvent(QResizeEvent * e)
     updateSize();
     DialogFrameList* parent = (DialogFrameList*)this->parentWidget();
     if (parent->isMaximizedEb()) {
-        // 当前窗口最大化，显示还原按钮
+        /// 当前窗口最大化，显示还原按钮
         EbDialogBase::setMaxRestoreIcon(false);
     }
     else {
-        // 当前窗口还原，显示最大化按钮
+        /// 当前窗口还原，显示最大化按钮
         EbDialogBase::setMaxRestoreIcon(true);
     }
     EbDialogBase::resizeEvent(e);

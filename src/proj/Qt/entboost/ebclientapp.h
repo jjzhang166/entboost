@@ -23,6 +23,7 @@ using namespace mycp;
 #include "../include/boost_ini.h"
 using namespace entboost;
 #include "ebclocales.h"
+#include "ebdefines.h"
 #include "httpfiledownload.h"
 #include "ebccallinfo.h"
 #include <boost/shared_ptr.hpp>
@@ -66,6 +67,7 @@ typedef enum EB_MSG_RECORD_TYPE
     , MRT_USER_DATA	= 200
 }EB_MSG_RECORD_TYPE;
 inline bool isCanCollectRecordType(EB_MSG_RECORD_TYPE nType) {return (nType==MRT_FILE || nType==MRT_RESOURCE)?false:true;}
+
 
 class DialogEmotionSelect;
 class DialogMainFrame;
@@ -191,6 +193,7 @@ public:
     void updateMsgReceiptData(eb::bigint nMsgId, eb::bigint nFromUserId, int nAckType);
     QImage userHeadImage(eb::bigint userId,eb::bigint memberId,const tstring& account) const;
     tstring userHeadFilePath(eb::bigint userId,eb::bigint memberId,const tstring& account) const;
+    QImage funcImage(const EB_SubscribeFuncInfo * funcInfo) const;
     QImage memberHeadImage(const EB_MemberInfo * memberInfo) const;
     QImage contactHeadImage(const EB_ContactInfo * contactInfo) const;
     QImage fromHeadImage(const tstring &imagePath, EB_USER_LINE_STATE lineState) const;

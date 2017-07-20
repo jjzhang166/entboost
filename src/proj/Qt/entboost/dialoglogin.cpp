@@ -983,10 +983,10 @@ void DialogLogin::onItemEnteredLoginRecords(QListWidgetItem* item)
     /// 滚动条能正常显示
     const QRect rectItem = ui->listWidgetLoginRecords->visualItemRect(item);
     const QPoint pointItem = ui->listWidgetLoginRecords->mapToParent(rectItem.topRight());
-    const int y = pointItem.y()+1;  // 1是 listWidgetLoginRecords 边框
-    // -1(配合下面的 buttonSize+1和y+2)实现删除按钮显示时，保留ITEM边框，
+    const int y = pointItem.y()+1;  /// 1是 listWidgetLoginRecords 边框
+    /// -1(配合下面的 buttonSize+1和y+1)实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
-    ui->pushButtonDeleteAccount->setGeometry( pointItem.x()-buttonSize+2,y+2,buttonSize,buttonSize );
+    ui->pushButtonDeleteAccount->setGeometry( pointItem.x()-buttonSize+2,y+1,buttonSize,buttonSize );
     ui->pushButtonDeleteAccount->setProperty( "track-row",QVariant(ui->listWidgetLoginRecords->row(item)) );
     ui->pushButtonDeleteAccount->setVisible(true);
 }

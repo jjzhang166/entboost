@@ -738,37 +738,47 @@ void EbContextMenu::onTriggeredActionEditGroup()
 
 void EbContextMenu::onTriggeredActionDeleteGroup()
 {
-    if (m_itemInfo.get()==0 || m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_GROUP) return;
-
-    EB_GroupInfo pGroupInfo;
-    if (!theApp->m_ebum.EB_GetGroupInfo(m_itemInfo->m_sGroupCode,&pGroupInfo)) {
+    if (m_itemInfo.get()==0 || m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_GROUP) {
         return;
     }
-    if ( pGroupInfo.m_nCreateUserId != theApp->logonUserId() ) {
+    const eb::bigint groupId = m_itemInfo->m_sGroupCode;
+    const tstring groupName = m_itemInfo->m_sName;
+    const EB_GROUP_TYPE groupType = (EB_GROUP_TYPE)m_itemInfo->m_nSubType;
+    if (!theApp->m_ebum.EB_CanDeleteGroupInfo(groupId)) {
+//    if ( pGroupInfo.m_nCreateUserId!=theApp->logonUserId() ) {
+        /// *没有删除权限
         /// 不是部门创建者，不能删除
         return;
     }
-    else if (pGroupInfo.m_nGroupType == EB_GROUP_TYPE_DEPARTMENT			/// 企业部门
-        && theApp->m_ebum.EB_GetGroupMemberSize(m_itemInfo->m_sGroupCode,1)>0) {		/// 不为空，不能删除
+    else if (groupType==EB_GROUP_TYPE_DEPARTMENT && theApp->m_ebum.EB_GetGroupMemberSize(groupId,1)>0) {
+        /// 企业部门, 不为空，不能删除
+        QString text = theLocales.getLocalText("message-show.delete-group-has-member","Delete group has member");
+        text.replace( "[GROUP_TYPE_MEMBER]", theLocales.getGroupTypeName((int)groupType)->member().c_str() );
+        EbMessageBox::doShow( NULL, "", QChar::Null,text,EbMessageBox::IMAGE_WARNING,default_warning_auto_close );
         return;
     }
 //    if (this->m_pViewContactInfo && m_pViewContactInfo->IsWindowVisible()) {
 //        m_pViewContactInfo->HideReset();
 //    }
 
+    if (theApp->m_ebum.EB_HasSubGroup(groupId)) {
+        QString text = theLocales.getLocalText("message-show.delete-has-sub-group","Delete has sub group");
+        text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)groupType)->name().c_str() );
+        EbMessageBox::doShow( NULL, "", QChar::Null,text,EbMessageBox::IMAGE_WARNING,default_warning_auto_close );
+        return;
+    }
     QString title = theLocales.getLocalText("message-box.delete-group.title","Delete Group");
     if (title.isEmpty())
         title = theApp->productName();
     else {
-        title.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)pGroupInfo.m_nGroupType)->name().c_str() );
+        title.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)groupType)->name().c_str() );
     }
     /// 确定解散：\r\n%s 吗？
     QString text = theLocales.getLocalText("message-box.delete-group.text","Confirm Delete Group?");
-    text.replace( "[GROUP_NAME]", pGroupInfo.m_sGroupName.c_str() );
-    text.replace( "[GROUP_ID]", QString::number(pGroupInfo.m_sGroupCode) );
-    const int ret = EbMessageBox::doExec( 0,title, QChar::Null, text, EbMessageBox::IMAGE_QUESTION );
-    if (ret==QDialog::Accepted) {
-        theApp->m_ebum.EB_DeleteGroup(m_itemInfo->m_sGroupCode);
+    text.replace( "[GROUP_NAME]", groupName.c_str() );
+    text.replace( "[GROUP_ID]", QString::number(groupId) );
+    if (EbMessageBox::doExec( 0,title, QChar::Null, text, EbMessageBox::IMAGE_QUESTION )==QDialog::Accepted) {
+        theApp->m_ebum.EB_DeleteGroup(groupId);
     }
 }
 

@@ -19,8 +19,8 @@ EbMessageBox::EbMessageBox(QWidget *parent) :
 
 {
     ui->setupUi(this);
-    // 去掉标题栏
-    this->setWindowFlags( Qt::FramelessWindowHint );
+    /// 去掉标题栏
+    this->setWindowFlags( Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint );
 //    this->setWindowFlags( Qt::Dialog|Qt::FramelessWindowHint |Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint );
 //    // 设置位置，显示在上面
 //    this->showTitleBackground(theDefaultBgColorTitleHeight);
@@ -71,7 +71,7 @@ EbMessageBox::~EbMessageBox()
 //     pEbMessageBox->m_autoClose = autoClose;
      pEbMessageBox->setModal(false);
      pEbMessageBox->setWindowModality(Qt::WindowModal);
-     pEbMessageBox->setWindowFlags(pEbMessageBox->windowFlags()|Qt::WindowStaysOnTopHint);
+//     pEbMessageBox->setWindowFlags(pEbMessageBox->windowFlags()|Qt::WindowStaysOnTopHint);
      pEbMessageBox->setFocus();
      pEbMessageBox->init();
      pEbMessageBox->show();

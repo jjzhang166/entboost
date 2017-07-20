@@ -17,7 +17,7 @@ public:
 
     void onEnterUser(eb::bigint nUserId, bool bSort);
     void onExitUser(eb::bigint nUserId,bool bExitDep);
-    int onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
+    int onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bChangeLineState);
 
 signals:
     void memberOnlineSizeChange(int memberSize, int onlineSize);

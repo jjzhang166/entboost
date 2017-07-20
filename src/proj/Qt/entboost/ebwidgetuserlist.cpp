@@ -74,7 +74,7 @@ void EbWidgetUserList::onExitUser(eb::bigint userId, bool exitGroup)
     }
 }
 
-int EbWidgetUserList::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
+int EbWidgetUserList::onMemberInfo(const EB_MemberInfo *memberInfo, bool bChangeLineState)
 {
     if (memberInfo==NULL) {
         return -1;
@@ -104,29 +104,7 @@ int EbWidgetUserList::onMemberInfo(const EB_MemberInfo *memberInfo, bool bSort)
     }
     itemInfo->updateMemberInfo(memberInfo);
 
-//    itemInfo->m_nUserId = memberInfo->m_nMemberUserId;
-//    itemInfo->m_sGroupCode = memberInfo->m_sGroupCode;
-//    itemInfo->m_sMemberCode = memberInfo->m_sMemberCode;
-//    itemInfo->m_sAccount = memberInfo->m_sMemberAccount;
-//    itemInfo->m_sName = memberInfo->m_sUserName;
-//    itemInfo->m_dwItemData = memberInfo->m_nLineState;
-//    itemInfo->m_nIndex = memberInfo->m_nDisplayIndex;
-//    if ((memberInfo->m_nManagerLevel&EB_LEVEL_FORBID_SPEECH)==0)
-//        itemInfo->m_nExtData &= ~EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
-//    else
-//        itemInfo->m_nExtData |= EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
-//    if (theApp->isEnterpriseCreateUserId(memberInfo->m_nMemberUserId))
-//        itemInfo->m_nSubType = 11;
-//    else if (theApp->m_ebum.EB_IsGroupCreator(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
-//        itemInfo->m_nSubType = 10;
-//    else if (theApp->m_ebum.EB_IsGroupAdminLevel(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId))
-//        itemInfo->m_nSubType = 9;
-//    else if (theApp->logonUserId()==memberInfo->m_nMemberUserId)
-//        itemInfo->m_nSubType = 1;
-//    else
-//        itemInfo->m_nSubType = 0;
-
-    if (bSort) {
+    if (bChangeLineState) {
         m_listWidgetUsers->sortItems();
     }
     updateGroupMemberSize();

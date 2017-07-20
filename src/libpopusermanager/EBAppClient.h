@@ -869,6 +869,12 @@ public:
 	====================================================================*/
 	bool EB_IsMyGroup(eb::bigint nGroupId) const;
 
+    /****
+    功能：判断是否有子部门
+    参数：sGroupCode 群组（部门）代码
+    ====================================================================*/
+    bool EB_HasSubGroup(eb::bigint nGroupId) const;
+
 	/****
 	功能：修改或新建群组（部门）成员信息，主要用于添加部门员工或修改员工资料
 	描述：pMemberInfo->m_sMemberCode成员编号为空，表示新建

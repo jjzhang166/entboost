@@ -435,27 +435,43 @@ void EbFrameItem::onContactHeadChange(const EB_ContactInfo *pContactInfo)
     }
 }
 
-bool EbFrameItem::onGroupInfo(const EB_GroupInfo *pGroupInfo)
+void EbFrameItem::onGroupInfo(const EB_GroupInfo *pGroupInfo)
 {
-    if (groupId()!=pGroupInfo->m_sGroupCode) {
-        return false;
-    }
+//    if (groupId()!=pGroupInfo->m_sGroupCode) {
+//        return false;
+//    }
 
     if (m_dialogChatBase.get()!=0) {
+        /// Select User 界面需要
         m_dialogChatBase->onGroupInfo(pGroupInfo);
-        m_itemText = m_dialogChatBase->fromName();
-        if ( m_pushButtonLeft!=0 ) {
-            m_pushButtonLeft->setToolTip( m_dialogChatBase->fullName() );
-            const bool showedLeft = m_pushButtonLeft->geometry().width()>42;
-            if (showedLeft) {
-                m_pushButtonLeft->setText(m_itemText);
+
+        if (groupId()!=pGroupInfo->m_sGroupCode) {
+            m_itemText = m_dialogChatBase->fromName();
+            if ( m_pushButtonLeft!=0 ) {
+                m_pushButtonLeft->setToolTip( m_dialogChatBase->fullName() );
+                const bool showedLeft = m_pushButtonLeft->geometry().width()>42;
+                if (showedLeft) {
+                    m_pushButtonLeft->setText(m_itemText);
+                }
             }
-        }
-        if (m_labelImage!=0) {
-            m_labelImage->setPixmap( QPixmap::fromImage(m_dialogChatBase->fromImage()).scaled(const_image_label_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
+            if (m_labelImage!=0) {
+                m_labelImage->setPixmap( QPixmap::fromImage(m_dialogChatBase->fromImage()).scaled(const_image_label_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
+            }
         }
     }
 //    CheckGroupForbidSpeech();
+//    return true;
+}
+
+bool EbFrameItem::timerCheckState()
+{
+    if (m_pushButtonLeft==0 || !m_pushButtonLeft->isChecked()) {
+        return false;
+    }
+    if (m_dialogChatBase.get()!=0) {
+        m_dialogChatBase->timerCheckState();
+    }
+
     return true;
 }
 

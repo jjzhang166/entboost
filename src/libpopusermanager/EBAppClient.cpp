@@ -2773,7 +2773,25 @@ bool CEBAppClient::EB_IsMyGroup(eb::bigint nGroupId) const
 	{
 		return pManager->theMyEmployeeList.exist(nGroupId);
 	}
-	return false;
+    return false;
+}
+
+bool CEBAppClient::EB_HasSubGroup(eb::bigint nGroupId) const
+{
+    CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
+    if (pManager != NULL)
+    {
+        if (nGroupId==0) return false;
+        BoostReadLock rdlock(pManager->theDepartmentList.mutex());
+        CLockMap<mycp::bigint, CEBGroupInfo::pointer>::iterator pIter1 = pManager->theDepartmentList.begin();
+        for (; pIter1!=pManager->theDepartmentList.end(); pIter1++) {
+            const CEBGroupInfo::pointer &pDepartmentInfo = pIter1->second;
+            if (pDepartmentInfo->m_sParentCode==nGroupId) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 int CEBAppClient::EB_EditMember(const EB_MemberInfo* pEmployeeInfo)//,int nNeedEmpInfo)
@@ -2795,7 +2813,7 @@ int CEBAppClient::EB_EditMember(const EB_MemberInfo* pEmployeeInfo)//,int nNeedE
 				if (pMyEmployeeInfo->m_sDescription==pEmployeeInfo->m_sDescription)
 					return 0;	// 不需要修改，直接返回成功
 
-				// 只允许修改个人签名（备注信息）
+                /// 只允许修改个人签名（备注信息）
 				pMyEmployeeInfo->m_sDescription = pEmployeeInfo->m_sDescription;
 				// **
 				const int nForbidMinutes = -2;	// ** －2表示不处理

@@ -68,7 +68,8 @@ public:
     void onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUserId, EB_USER_LINE_STATE bLineState);
     void onMemberHeadChange(const EB_MemberInfo * pMemberInfo);
     void onContactHeadChange(const EB_ContactInfo* pContactInfo);
-    bool onGroupInfo(const EB_GroupInfo* pGroupInfo);
+    void onGroupInfo(const EB_GroupInfo* pGroupInfo);
+    bool timerCheckState(void);
 
 signals:
     void checkedFrameitem(const EbFrameItem*);

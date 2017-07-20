@@ -2,6 +2,7 @@
 #include "ui_dialogmessagetip.h"
 #include "iconhelper.h"
 #include "eblistwidgetitem.h"
+#include "dialogmainframe.h"
 
 const QSize const_icon_size(32,32);
 const QSize const_ignore_size(55,19);
@@ -211,13 +212,12 @@ void DialogMessageTip::callItem(QListWidgetItem *item)
             if (!theApp->m_ebum.EB_GetSubscribeFuncInfo(nEmailSubId,&m_emailSubscribeFuncInfo))
                 return;
         }
-//        if (theApp.OpenSubscribeFuncWindow(m_emailSubscribeFuncInfo,"", pTreeItemInfo->m_sName, NULL))
-//        {
-//            DelEmailMsgTip(pTreeItemInfo->m_sId);
+        if (theApp->mainWnd()->openSubscribeFuncWindow(m_emailSubscribeFuncInfo,"", pTreeItemInfo->m_sName)) {
+            delEmailMsgTip(pTreeItemInfo->m_sId);
 //            char* lpszSubId = new char[24];
 //            sprintf(lpszSubId,"%lld",m_emailSubscribeFuncInfo.m_nSubscribeId);
 //            theApp.GetMainWnd()->PostMessage(EB_COMMAND_CLEAR_SUBID_UNREAD_MSG, (WPARAM)lpszSubId,1);
-//        }
+        }
     }
     else if (pTreeItemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_GROUP || pTreeItemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_CONTACT) {
         if (pTreeItemInfo->m_sGroupCode>0)
@@ -245,13 +245,12 @@ void DialogMessageTip::callItem(QListWidgetItem *item)
         if (!theApp->m_ebum.EB_GetSubscribeFuncInfo(nSubId,&pSubscribeFuncInfo)) {
             return;
         }
-//        if (theApp.OpenSubscribeFuncWindow(pSubscribeFuncInfo,"", pTreeItemInfo->m_sName, NULL))
-//        {
-//            DelEmailMsgTip(pTreeItemInfo->m_sId);
+        if (theApp->mainWnd()->openSubscribeFuncWindow(pSubscribeFuncInfo,"", pTreeItemInfo->m_sName)) {
+            delEmailMsgTip(pTreeItemInfo->m_sId);
 //            char* lpszSubId = new char[24];
 //            sprintf(lpszSubId,"%lld",pSubscribeFuncInfo.m_nSubscribeId);
 //            theApp.GetMainWnd()->PostMessage(EB_COMMAND_CLEAR_SUBID_UNREAD_MSG, (WPARAM)lpszSubId,1);
-//        }
+        }
     }
 }
 
@@ -390,8 +389,7 @@ void DialogMessageTip::delEmailMsgTip(eb::bigint nId)
     if (!m_pIdItemInfo.find(nId,itemInfo,true)) {
         return;
     }
-    const int row = ui->listWidgetMessage->row(itemInfo->m_listItem);
-    QListWidgetItem * item = ui->listWidgetMessage->takeItem(row);
+    QListWidgetItem * item = ui->listWidgetMessage->takeItem( ui->listWidgetMessage->row(itemInfo->m_listItem) );
     if (item!=0)
         delete item;
     if (isEmpty())

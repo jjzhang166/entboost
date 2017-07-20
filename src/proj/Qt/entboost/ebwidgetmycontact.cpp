@@ -4,58 +4,26 @@
 
 //const CEBString const_default_group_name = "默认分组";
 
-EbWidgetMyContact::EbWidgetMyContact(QWidget *parent) : QWidget(parent)
+EbWidgetMyContact::EbWidgetMyContact(EB_VIEW_MODE viewMode, QWidget *parent) : EbWidgetTreeSelectBase(viewMode, parent)
   , m_contextMenu(0)
   , m_timeNewGroup(0)
   , m_inGroupEdit(false)
 {
-    m_treeWidgetMyContact = new QTreeWidget(this);
-    m_treeWidgetMyContact->setFrameStyle(QFrame::NoFrame); /// 去掉边框
-    m_treeWidgetMyContact->setHeaderHidden(true);
-    m_treeWidgetMyContact->setIconSize(const_tree_icon_size);
-    m_treeWidgetMyContact->setExpandsOnDoubleClick(false);
-    m_treeWidgetMyContact->setMouseTracking(false);
-    m_treeWidgetMyContact->setFrameShape(QFrame::NoFrame);
-    m_treeWidgetMyContact->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_treeWidgetMyContact->setAllColumnsShowFocus(false);
-    m_treeWidgetMyContact->setWordWrap(true);
-    m_treeWidgetMyContact->setColumnCount(1);
-    connect( m_treeWidgetMyContact,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
-    m_treeWidgetMyContact->setMouseTracking(true);
-    connect( m_treeWidgetMyContact,SIGNAL(itemEntered(QTreeWidgetItem*,int)),this,SLOT(onItemEntered(QTreeWidgetItem*,int)) );
-    connect( m_treeWidgetMyContact,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this,SLOT(onItemDoubleClicked(QTreeWidgetItem*,int)) );
-    connect( m_treeWidgetMyContact,SIGNAL(itemChanged(QTreeWidgetItem*,int)),this,SLOT(onItemChanged(QTreeWidgetItem*,int)) );
+    connect( m_treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(onItemClicked(QTreeWidgetItem*,int)) );
+    connect( m_treeWidget,SIGNAL(itemEntered(QTreeWidgetItem*,int)),this,SLOT(onItemEntered(QTreeWidgetItem*,int)) );
+    connect( m_treeWidget,SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this,SLOT(onItemDoubleClicked(QTreeWidgetItem*,int)) );
+    connect( m_treeWidget,SIGNAL(itemChanged(QTreeWidgetItem*,int)),this,SLOT(onItemChanged(QTreeWidgetItem*,int)) );
 
+    /// “添加”按钮
+    connect( m_pushButtonSelect, SIGNAL(clicked()),this,SLOT(onClickedPushButtonSelect()) );
     /// “打开会话”按钮
-    m_pushButtonCall = new QPushButton(this);
-    m_pushButtonCall->setParent( m_treeWidgetMyContact );
-    m_pushButtonCall->setVisible(false);
-    m_pushButtonCall->setObjectName("CallButton");
     connect( m_pushButtonCall, SIGNAL(clicked()),this,SLOT(onClickedPushButtonCall()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
     /// “修改我的名片”
-    m_pushButtonEdit = new QPushButton(this);
-    m_pushButtonEdit->setParent( m_treeWidgetMyContact );
-    m_pushButtonEdit->setVisible(false);
-    m_pushButtonEdit->setObjectName("CallButton");
     connect( m_pushButtonEdit, SIGNAL(clicked()),this,SLOT(onClickedPushButtonEdit()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
 
     const std::string const_default_group_name = theLocales.getLocalStdString("name-text.default-group-name","Default Group");
     const EB_UGInfo ugInfo(const_default_group_ugid,const_default_group_name);
     onUGInfo(&ugInfo);
-//    QString sGroupText;
-//    if (theApp->isAuthContact())
-//        sGroupText.Format(_T("%s [0]"),const_default_group_name.c_str());
-//    else
-//        sGroupText.Format(_T("%s (0)"),const_default_group_name.c_str());
-//    HTREEITEM pGroupTreeItem = m_treeContacts.InsertItem(sGroupText);
-//    EbWidgetItemInfo::pointer pContactInfo = EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE_GROUP,pGroupTreeItem);
-//    pContactInfo->m_nSubType = -1;
-//    pContactInfo->m_sId = const_default_group_ugid;
-//    pContactInfo->m_sName = const_default_group_name;
-//    m_treeContacts.SetItemData(pGroupTreeItem,(DWORD)pContactInfo.get());
-//    m_pGroupItemInfo.insert(const_default_group_ugid, pContactInfo);
 
     updateLocaleInfo();
 }
@@ -65,27 +33,6 @@ EbWidgetMyContact::~EbWidgetMyContact()
     m_pGroupItemInfo.clear();
     m_pContactItemInfo.clear();
 
-}
-
-void EbWidgetMyContact::updateLocaleInfo()
-{
-    m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
-    m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );
-
-}
-
-void EbWidgetMyContact::timerCheckState()
-{
-    if ( this->isVisible() &&
-         (m_pushButtonCall->isVisible() || m_pushButtonEdit->isVisible()) ) {
-        /// 实现定期自动判断当前鼠标位置，并刷新 call 按钮
-        const QRect& rect = m_treeWidgetMyContact->geometry();
-        const QPoint pointMouseToDialog = this->mapFromGlobal(this->cursor().pos());
-        if (!rect.contains(pointMouseToDialog)) {
-            m_pushButtonCall->setVisible(false);
-            m_pushButtonEdit->setVisible(false);
-        }
-    }
 }
 
 const EbWidgetItemInfo::pointer EbWidgetMyContact::onUGInfo(const EB_UGInfo *ugInfo)
@@ -102,7 +49,7 @@ const EbWidgetItemInfo::pointer EbWidgetMyContact::onUGInfo(const EB_UGInfo *ugI
             groupText = QString("%1 [0]").arg(ugInfo->m_sGroupName.c_str());
         else
             groupText = QString("%1 (0)").arg(ugInfo->m_sGroupName.c_str());
-        EbTreeWidgetItem * groupWidgetItem = new EbTreeWidgetItem(m_treeWidgetMyContact, QStringList(groupText));
+        EbTreeWidgetItem * groupWidgetItem = new EbTreeWidgetItem(m_treeWidget, QStringList(groupText));
         if (ugInfo->m_nUGId!=const_default_group_ugid) {
             groupWidgetItem->setFlags( groupWidgetItem->flags()|Qt::ItemIsEditable );
         }
@@ -115,13 +62,13 @@ const EbWidgetItemInfo::pointer EbWidgetMyContact::onUGInfo(const EB_UGInfo *ugI
             /// 默认分组，排在前面
             groupItemInfo->m_nIndex = 1;
         }
-        m_treeWidgetMyContact->addTopLevelItem(groupWidgetItem);
+        m_treeWidget->addTopLevelItem(groupWidgetItem);
         m_pGroupItemInfo.insert(ugInfo->m_nUGId,groupItemInfo);
         if (m_timeNewGroup>0 && time(0)-m_timeNewGroup<3) {
             m_timeNewGroup = 0;
             m_inGroupEdit = true;
-            m_treeWidgetMyContact->editItem(groupWidgetItem);
-            m_treeWidgetMyContact->setCurrentItem(groupWidgetItem);
+            m_treeWidget->editItem(groupWidgetItem);
+            m_treeWidget->setCurrentItem(groupWidgetItem);
         }
     }
     else {
@@ -146,7 +93,7 @@ const EbWidgetItemInfo::pointer EbWidgetMyContact::onUGInfo(const EB_UGInfo *ugI
     }
 
     if (bSortItems) {
-        m_treeWidgetMyContact->sortItems( 0,Qt::AscendingOrder );
+        m_treeWidget->sortItems( 0,Qt::AscendingOrder );
     }
     return groupItemInfo;
 }
@@ -354,36 +301,54 @@ void EbWidgetMyContact::onItemClicked(QTreeWidgetItem *item, int /*column*/)
     const EbWidgetItemInfo::ITEM_TYPE itemType = itemEb->m_itemInfo->m_nItemType;
     if (itemType==EbWidgetItemInfo::ITEM_TYPE_GROUP) {
         if (item->isExpanded()) {
-            m_treeWidgetMyContact->collapseItem(item);
+            m_treeWidget->collapseItem(item);
         }
         else {
-            m_treeWidgetMyContact->expandItem(item);
+            m_treeWidget->expandItem(item);
         }
     }
 }
 void EbWidgetMyContact::onItemEntered(QTreeWidgetItem *item, int /*column*/)
 {
-    if (!m_treeWidgetMyContact->hasFocus()) {
-        m_treeWidgetMyContact->setFocus();
+    if (!m_treeWidget->hasFocus()) {
+        m_treeWidget->setFocus();
     }
     /// 滚动条能正常显示
-    const QRect rectItem = m_treeWidgetMyContact->visualItemRect(item);
-    const QPoint pointItem = m_treeWidgetMyContact->mapToParent(rectItem.topRight());
-    const int y = pointItem.y();
+    const QRect rectItem = m_treeWidget->visualItemRect(item);
+    const QPoint pointItem = m_treeWidget->mapToParent(rectItem.topRight());
+    /// EB_VIEW_SELECT_USER 模式，有一条边框
+    const int y = (m_viewMode==EB_VIEW_SELECT_USER)?(pointItem.y()+1):pointItem.y();
     /// -2（配合下面的 y+1）实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
-    const EbTreeWidgetItem* itemEb = (EbTreeWidgetItem*)item;
-    if ( itemEb->m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_CONTACT ) {
-        m_pushButtonEdit->setVisible(false);
-        m_pushButtonCall->setVisible(false);
-        return;
+    const EbTreeWidgetItem* ebitem = (EbTreeWidgetItem*)item;
+    if (m_viewMode==EB_VIEW_SELECT_USER) {
+        m_pushButtonCall->hide();
+        m_pushButtonEdit->hide();
+        const bool isSelectedUser = m_selectedUserCallback==0?false:m_selectedUserCallback->isSelectedUser(ebitem->m_itemInfo);
+        if ( !isSelectedUser &&
+             ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_CONTACT ) {
+            m_pushButtonSelect->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
+            m_pushButtonSelect->setProperty("track-item",QVariant((quint64)item));
+            m_pushButtonSelect->setVisible(true);
+        }
+        else {
+            m_pushButtonSelect->setVisible(false);
+        }
     }
-    m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
-    m_pushButtonEdit->setProperty("track-item",QVariant((quint64)item));
-    m_pushButtonEdit->setVisible(true);
-    m_pushButtonCall->setGeometry( pointItem.x()-buttonSize*2,y+1,buttonSize,buttonSize );
-    m_pushButtonCall->setProperty("track-item",QVariant((quint64)item));
-    m_pushButtonCall->setVisible(true);
+    else {
+        m_pushButtonSelect->setVisible(false);
+        if ( ebitem->m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_CONTACT ) {
+            m_pushButtonEdit->setVisible(false);
+            m_pushButtonCall->setVisible(false);
+            return;
+        }
+        m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y+1,buttonSize,buttonSize );
+        m_pushButtonEdit->setProperty("track-item",QVariant((quint64)item));
+        m_pushButtonEdit->setVisible(true);
+        m_pushButtonCall->setGeometry( pointItem.x()-buttonSize*2,y+1,buttonSize,buttonSize );
+        m_pushButtonCall->setProperty("track-item",QVariant((quint64)item));
+        m_pushButtonCall->setVisible(true);
+    }
 }
 
 void EbWidgetMyContact::onItemChanged(QTreeWidgetItem *item, int column)
@@ -410,6 +375,17 @@ void EbWidgetMyContact::onItemChanged(QTreeWidgetItem *item, int column)
     }
 }
 
+void EbWidgetMyContact::onClickedPushButtonSelect()
+{
+    const EbTreeWidgetItem * ebitem = (EbTreeWidgetItem*)m_pushButtonSelect->property("track-item").toULongLong();
+    if (ebitem!=0 && ebitem->m_itemInfo.get()!=0) {
+        emit selectedItemInfo(ebitem->m_itemInfo);
+    }
+    m_pushButtonSelect->hide();
+    m_pushButtonSelect->setProperty("track-item",QVariant((quint64)0));
+    m_treeWidget->setFocus();
+}
+
 void EbWidgetMyContact::onClickedPushButtonCall()
 {
     const EbTreeWidgetItem * item = (EbTreeWidgetItem*)m_pushButtonCall->property("track-item").toULongLong();
@@ -419,7 +395,7 @@ void EbWidgetMyContact::onClickedPushButtonCall()
     }
     m_pushButtonCall->hide();
     m_pushButtonCall->setProperty("track-item",QVariant((quint64)0));
-    m_treeWidgetMyContact->setFocus();
+    m_treeWidget->setFocus();
 }
 
 void EbWidgetMyContact::onClickedPushButtonEdit()
@@ -430,7 +406,7 @@ void EbWidgetMyContact::onClickedPushButtonEdit()
     }
     m_pushButtonEdit->hide();
     m_pushButtonEdit->setProperty("track-item",QVariant((quint64)0));
-    m_treeWidgetMyContact->setFocus();
+    m_treeWidget->setFocus();
     createMenuData();
     m_contextMenu->onEditItem(item->m_itemInfo);
 }
@@ -453,7 +429,7 @@ void EbWidgetMyContact::onAddContactGroup()
 
 void EbWidgetMyContact::resizeEvent(QResizeEvent *e)
 {
-    m_treeWidgetMyContact->setGeometry( 0,0,width(),height() );
+    m_treeWidget->setGeometry( 0,0,width(),height() );
     QWidget::resizeEvent(e);
 }
 
@@ -468,7 +444,7 @@ void EbWidgetMyContact::createMenuData()
 void EbWidgetMyContact::contextMenuEvent(QContextMenuEvent *e)
 {
     createMenuData();
-    const EbTreeWidgetItem* item = (EbTreeWidgetItem*)m_treeWidgetMyContact->itemAt(e->pos());
+    const EbTreeWidgetItem* item = (EbTreeWidgetItem*)m_treeWidget->itemAt(e->pos());
     const EbWidgetItemInfo::pointer itemInfo = item==0?EbWidgetItemInfoNull:item->m_itemInfo;
     if (!m_contextMenu->updateMenuItem(itemInfo)) {
         return;
@@ -478,7 +454,7 @@ void EbWidgetMyContact::contextMenuEvent(QContextMenuEvent *e)
 
 void EbWidgetMyContact::deleteGroupItem(QTreeWidgetItem *groupItem)
 {
-    QTreeWidgetItem * item = m_treeWidgetMyContact->takeTopLevelItem( m_treeWidgetMyContact->indexOfTopLevelItem(groupItem) );
+    QTreeWidgetItem * item = m_treeWidget->takeTopLevelItem( m_treeWidget->indexOfTopLevelItem(groupItem) );
     if (item!=0) {
         delete item;
     }

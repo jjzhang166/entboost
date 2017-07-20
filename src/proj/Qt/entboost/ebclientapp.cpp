@@ -381,6 +381,18 @@ cgcSmartString EbClientApp::userHeadFilePath(mycp::bigint nUserId, eb::bigint me
     return memberId>0?":/img/defaultmember.png":":/img/defaultcontact.png";
 }
 
+QImage EbClientApp::funcImage(const EB_SubscribeFuncInfo *funcInfo) const
+{
+    tstring imagePath;
+    if ( QFileInfo::exists(funcInfo->m_sResFile.c_str()) ) {
+        imagePath = funcInfo->m_sResFile;
+    }
+    if (imagePath.empty()) {
+        imagePath = ":/img/defaultapp.png";
+    }
+    return QImage(imagePath.c_str());
+}
+
 QImage EbClientApp::memberHeadImage(const EB_MemberInfo *memberInfo) const
 {
     const EB_USER_LINE_STATE lineState = memberInfo==0?EB_LINE_STATE_UNKNOWN:memberInfo->m_nLineState;

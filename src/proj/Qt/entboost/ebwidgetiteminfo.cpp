@@ -34,12 +34,32 @@ EbWidgetItemInfo::EbWidgetItemInfo(EbWidgetItemInfo::ITEM_TYPE nItemType, QListW
 
 }
 
+EbWidgetItemInfo::EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QListWidgetItem *hItem)
+    : m_nItemType(EbWidgetItemInfo::ITEM_TYPE_CONTACT),m_nSubType(contactInfo->m_nContactType)
+    , m_hItem(0)
+    , m_listItem(hItem)
+    , m_nIndex(0)
+    , m_sEnterpriseCode(0),m_sGroupCode(0),m_sMemberCode(0)
+    , m_sName(contactInfo->m_sName)
+    , m_sAccount(contactInfo->m_sContact)
+    , m_nUserId(contactInfo->m_nContactUserId),m_nBigId(0)
+    , m_sId(contactInfo->m_nContactId),m_sParentId(0)
+    , m_dwItemData(contactInfo->m_nLineState), m_nExtData(0)
+    , m_nCount1(0), m_nCount2(0)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
+{
+
+}
+
 EbWidgetItemInfo::EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QTreeWidgetItem *hItem)
     : m_nItemType(EbWidgetItemInfo::ITEM_TYPE_CONTACT),m_nSubType(contactInfo->m_nContactType)
     , m_hItem(hItem)
     , m_listItem(0)
     , m_nIndex(0)
     , m_sEnterpriseCode(0),m_sGroupCode(0),m_sMemberCode(0)
+    , m_sName(contactInfo->m_sName)
+    , m_sAccount(contactInfo->m_sContact)
     , m_nUserId(contactInfo->m_nContactUserId),m_nBigId(0)
     , m_sId(contactInfo->m_nContactId),m_sParentId(0)
     , m_dwItemData(contactInfo->m_nLineState), m_nExtData(0)
@@ -48,8 +68,6 @@ EbWidgetItemInfo::EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QTreeWidge
     , m_time(0)
 
 {
-    m_sName = contactInfo->m_sName;
-    m_sAccount = contactInfo->m_sContact;
 }
 
 EbWidgetItemInfo::EbWidgetItemInfo(const EB_GroupInfo *groupInfo, QTreeWidgetItem *hItem)
@@ -65,6 +83,43 @@ EbWidgetItemInfo::EbWidgetItemInfo(const EB_GroupInfo *groupInfo, QTreeWidgetIte
     , m_sortFlag(SORT_BY_DEFAULT)
     , m_time(0)
 {
+}
+
+EbWidgetItemInfo::EbWidgetItemInfo(const EB_MemberInfo *memberInfo, QListWidgetItem *hItem)
+    : m_nItemType(EbWidgetItemInfo::ITEM_TYPE_MEMBER),m_nSubType(0)
+    , m_hItem(0)
+    , m_listItem(hItem)
+    , m_nIndex(0)
+    , m_sEnterpriseCode(0),m_sGroupCode(memberInfo->m_sGroupCode),m_sMemberCode(memberInfo->m_sMemberCode)
+    , m_sName(memberInfo->m_sUserName)
+    , m_sAccount(memberInfo->m_sMemberAccount)
+    , m_nUserId(memberInfo->m_nMemberUserId),m_nBigId(0)
+    , m_sId(0),m_sParentId(0)
+    , m_dwItemData(0), m_nExtData(0)
+    , m_nCount1(0), m_nCount2(0)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
+{
+
+}
+
+EbWidgetItemInfo::EbWidgetItemInfo(const EB_SubscribeFuncInfo *funcInfo, QListWidgetItem *hItem)
+    : m_nItemType(EbWidgetItemInfo::ITEM_TYPE_SUBINFO),m_nSubType(0)
+    , m_hItem(0)
+    , m_listItem(hItem)
+    , m_nIndex(0)
+    , m_sEnterpriseCode(0),m_sGroupCode(0),m_sMemberCode(0)
+    , m_sGroupName(funcInfo->m_sResFile)
+    , m_sName(funcInfo->m_sFunctionName)
+    , m_sAccount(funcInfo->m_sFunctionName)
+    , m_nUserId(0),m_nBigId(0)
+    , m_sId(funcInfo->m_nSubscribeId),m_sParentId(0)
+    , m_dwItemData(0), m_nExtData(0)
+    , m_nCount1(0), m_nCount2(0)
+    , m_sortFlag(SORT_BY_DEFAULT)
+    , m_time(0)
+{
+
 }
 
 EbWidgetItemInfo::EbWidgetItemInfo(EbWidgetItemInfo::ITEM_TYPE nItemType, QTreeWidgetItem *hItem)
@@ -116,6 +171,11 @@ EbWidgetItemInfo::pointer EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE n
     return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(nItemType,hItem));
 }
 
+EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_ContactInfo *contactInfo, QListWidgetItem *hItem)
+{
+    return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(contactInfo,hItem));
+}
+
 EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_ContactInfo *contactInfo, QTreeWidgetItem *hItem)
 {
     return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(contactInfo,hItem));
@@ -124,6 +184,16 @@ EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_ContactInfo *contact
 EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_GroupInfo *groupInfo, QTreeWidgetItem *hItem)
 {
     return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(groupInfo,hItem));
+}
+
+EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_MemberInfo *memberInfo, QListWidgetItem *hItem)
+{
+    return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(memberInfo,hItem));
+}
+
+EbWidgetItemInfo::pointer EbWidgetItemInfo::create(const EB_SubscribeFuncInfo *funcInfo, QListWidgetItem *hItem)
+{
+    return EbWidgetItemInfo::pointer(new EbWidgetItemInfo(funcInfo,hItem));
 }
 
 void EbWidgetItemInfo::operator =(const EbWidgetItemInfo *pItemInfo)

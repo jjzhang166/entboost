@@ -21,7 +21,7 @@ public:
     void onReceivedFile(const CCrFileInfo * fileInfo);
     void onFilePercent(const CChatRoomFilePercent * pChatRoomFilePercent);
     void deleteTranFile(eb::bigint msgId);
-    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bSort);
+    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bChangeLineState);
     void getProcessing(bool& pVideoProcessing, bool& pFileProcessing, bool& pDesktopProcessing) const;
     void showMsgRecord(void);
     void triggeredApps(int index);

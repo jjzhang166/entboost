@@ -170,7 +170,10 @@ SOURCES += main.cpp\
     ebwidgetmysession.cpp \
     ebcallrecordinfo.cpp \
     ebdialogrequestaddcontact.cpp \
-    ebwidgetmyenterprise.cpp
+    ebwidgetmyenterprise.cpp \
+    ebdialogselectuser.cpp \
+    ebwidgettreeselectbase.cpp \
+    ebdialogviewecard.cpp
 
 HEADERS  += mainwindow.h \
     EbDialogBase.h \
@@ -238,7 +241,12 @@ HEADERS  += mainwindow.h \
     ebwidgetmysession.h \
     ebcallrecordinfo.h \
     ebdialogrequestaddcontact.h \
-    ebwidgetmyenterprise.h
+    ebwidgetmyenterprise.h \
+    ebdialogselectuser.h \
+    ebcallback.h \
+    ebdefines.h \
+    ebwidgettreeselectbase.h \
+    ebdialogviewecard.h
 
 FORMS    += mainwindow.ui \
     dialoglogin.ui \
@@ -257,7 +265,9 @@ FORMS    += mainwindow.ui \
     dialogworkframe.ui \
     ebdialogfilemanager.ui \
     ebdialogcontactinfo.ui \
-    ebdialogrequestaddcontact.ui
+    ebdialogrequestaddcontact.ui \
+    ebdialogselectuser.ui \
+    ebdialogviewecard.ui
 
 RESOURCES += \
     entboost.qrc

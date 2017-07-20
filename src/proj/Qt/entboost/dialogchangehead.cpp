@@ -24,12 +24,13 @@ DialogChangeHead::DialogChangeHead(QWidget *parent) :
     this->showTitleBackground( const_title_height );
     updateLocaleInfo();
 
+    const QRect rectIcon(7,13,16,16);
     /// 默认头像按钮
     m_labelDefaultIcon = new QLabel(ui->pushButtonDefault);
     m_labelDefaultIcon->setObjectName("IconLabel");
     IconHelper::Instance()->SetIcon(m_labelDefaultIcon,QChar(0xf2be),10);
     m_labelDefaultIcon->setVisible(true);
-    m_labelDefaultIcon->setGeometry( 7,13,16,16 );
+    m_labelDefaultIcon->setGeometry( rectIcon );
     const QSize const_check_button_size(86,39+3);   /// 49+3 (3主要用于下面圆角不显示)
     ui->pushButtonDefault->setCheckable(true);
     ui->pushButtonDefault->setObjectName("TitleCheckButton");
@@ -42,7 +43,7 @@ DialogChangeHead::DialogChangeHead(QWidget *parent) :
     m_labelCustomIcon->setObjectName("IconLabel");
     IconHelper::Instance()->SetIcon(m_labelCustomIcon,QChar(0xf1c5),10);
     m_labelCustomIcon->setVisible(true);
-    m_labelCustomIcon->setGeometry( 7,13,16,16 );
+    m_labelCustomIcon->setGeometry( rectIcon );
     ui->pushButtonCustom->setCheckable(true);
     ui->pushButtonCustom->setObjectName("TitleCheckButton");
     x += const_check_button_size.width();
