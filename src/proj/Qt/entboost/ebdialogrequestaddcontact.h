@@ -2,7 +2,7 @@
 #define EBDIALOGREQUESTADDCONTACT_H
 
 #include "ebclientapp.h"
-#include <EbDialogBase.h>
+#include <ebdialogbase.h>
 
 
 namespace Ui {

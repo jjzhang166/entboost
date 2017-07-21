@@ -1,7 +1,8 @@
 #include "ebwidgetsearchresult.h"
 #include "eblabel.h"
-#include "iconhelper.h"
+#include "ebiconhelper.h"
 #include "eblistwidgetitem.h"
+#include "ebdialogmainframe.h"
 
 EbWidgetSearchResult::EbWidgetSearchResult(EB_SEARCH_FROM_FLAG fromFlag, QWidget *parent) : QWidget(parent)
   , m_searchFromFlag(fromFlag)
@@ -43,7 +44,7 @@ EbWidgetSearchResult::EbWidgetSearchResult(EB_SEARCH_FROM_FLAG fromFlag, QWidget
     m_pushButtonSelect->setVisible(false);
     m_pushButtonSelect->setObjectName("CallButton");
     connect( m_pushButtonSelect, SIGNAL(clicked()),this,SLOT(onClickedButtonSelect()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonSelect,QChar(0xf067),12 );
+    EbIconHelper::Instance()->SetIcon(m_pushButtonSelect,QChar(0xf067),12 );
 
     updateLocaleInfo();
 }
@@ -102,6 +103,11 @@ void EbWidgetSearchResult::onKeyPressEnterItem(const QListWidgetItem *item)
 {
     const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;
     switch (ebitem->m_itemInfo->m_nItemType) {
+    case EbWidgetItemInfo::ITEM_TYPE_SUBINFO: {
+        const eb::bigint subId = ebitem->m_itemInfo->m_sId;
+        theApp->mainWnd()->openSubscribeFuncWindow(subId);
+        break;
+    }
     case EbWidgetItemInfo::ITEM_TYPE_MEMBER:
     case EbWidgetItemInfo::ITEM_TYPE_CONTACT: {
         theApp->m_ebum.EB_CallUserId(ebitem->m_itemInfo->m_nUserId);
@@ -117,6 +123,7 @@ void EbWidgetSearchResult::onKeyPressEnterItem(const QListWidgetItem *item)
     default:
         break;
     }
+    this->hide();
 }
 
 void EbWidgetSearchResult::onItemEntered(QListWidgetItem *item)
@@ -185,6 +192,8 @@ void EbWidgetSearchResult::onTriggeredActionDelete()
         return;
     }
     const QString url = ebitem->m_itemInfo->m_sName.c_str();
+    const QString iconFilePath = theApp->urlIconFilePath( QUrl(url) );
+    QFile::remove(iconFilePath);
     const QString sql = QString("DELETE FROM url_record_t WHERE url='%1'").arg(url);
     theApp->m_sqliteUser->execute( sql.toStdString().c_str() );
     m_listWidgetResults->removeItemWidget(ebitem);
@@ -299,9 +308,9 @@ void EbWidgetSearchResult::searchApp(const char *key, int limit)
     theApp->m_ebum.EB_GetSubscribeFuncList((EB_FUNC_LOCATION)0xffffff,m_pSubscribeFuncList);
     int index = 0;
     for (size_t i=0; i<m_pSubscribeFuncList.size(); i++) {
-        const EB_SubscribeFuncInfo &pFuncInfo = m_pSubscribeFuncList[i];
-        tstring sFunctionName(pFuncInfo.m_sFunctionName);
-        tstring sDescription(pFuncInfo.m_sDescription);
+        const EB_SubscribeFuncInfo &funcInfo = m_pSubscribeFuncList[i];
+        tstring sFunctionName(funcInfo.m_sFunctionName);
+        tstring sDescription(funcInfo.m_sDescription);
         std::transform(sFunctionName.begin(), sFunctionName.end(), sFunctionName.begin(), tolower);
         std::transform(sDescription.begin(), sDescription.end(), sDescription.begin(), tolower);
 
@@ -310,11 +319,11 @@ void EbWidgetSearchResult::searchApp(const char *key, int limit)
             continue;
         }
 
-        const QString label = QString("%1\n%2").arg(pFuncInfo.m_sFunctionName.c_str()).arg(pFuncInfo.m_sDescription.c_str());
-        const QImage image = theApp->funcImage(&pFuncInfo);
+        const QString label = QString("%1\n%2").arg(funcInfo.m_sFunctionName.c_str()).arg(funcInfo.m_sDescription.c_str());
+        const QImage image = theApp->funcImage(&funcInfo);
         const QIcon icon( QPixmap::fromImage(image).scaled(const_tree_icon_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
         EbListWidgetItem * pItem0 = new EbListWidgetItem( icon,label, m_listWidgetResults);
-        pItem0->m_itemInfo = EbWidgetItemInfo::create(&pFuncInfo,pItem0);
+        pItem0->m_itemInfo = EbWidgetItemInfo::create(&funcInfo,pItem0);
         m_listWidgetResults->addItem(pItem0);
         if (m_itemHeight==0) {
             m_itemHeight = m_listWidgetResults->visualItemRect(pItem0).height();
@@ -392,13 +401,19 @@ void EbWidgetSearchResult::searchUrlRecord(const char *key, int limit)
 //        CSqliteCdbc::escape_string_out(title);
         /// rgb(0,162,232)=00a2e8, rgb(128,128,128)=808080
         const QString label = QString("<font color=#00a2e8>&nbsp;%1</font> - <font color=#808080>%2</font>").arg(url.c_str()).arg(title.c_str());
-        EbListWidgetItem * pItem0 = new EbListWidgetItem("", m_listWidgetResults);
+        QString iconFilePath = theApp->urlIconFilePath( QUrl(url.c_str()) );
+        if (!QFile::exists(iconFilePath)) {
+            iconFilePath = ":/img/defaultapp.png";
+        }
+        const QIcon icon(iconFilePath);
+        EbListWidgetItem * pItem0 = new EbListWidgetItem( icon,"", m_listWidgetResults );
         pItem0->m_itemInfo = EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE_URL,pItem0);
         pItem0->m_itemInfo->m_sName = url;
         m_listWidgetResults->addItem(pItem0);
         EbLabel * labelItem = new EbLabel(m_listWidgetResults);
         labelItem->setText(label);
         labelItem->setToolTip( lastTime.c_str() );
+        labelItem->setProperty("url",QVariant(url.c_str()));
         connect( labelItem,SIGNAL(clicked()),this,SLOT(onClickedItemLabel()) );
 //        connect( labelItem,SIGNAL(keyPressEnter()),this,SLOT(onKeyPressEnterItemLabel()) );
         m_listWidgetResults->setItemWidget( pItem0,labelItem );

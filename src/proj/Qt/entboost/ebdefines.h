@@ -1,6 +1,8 @@
 #ifndef EBDEFINES_H
 #define EBDEFINES_H
 
+const QSize const_default_menu_image_size(24,24);
+
 typedef enum EB_VIEW_MODE {
     EB_VIEW_MAIN_FRAME,    /// 主界面
     EB_VIEW_SELECT_USER    /// 选择用户

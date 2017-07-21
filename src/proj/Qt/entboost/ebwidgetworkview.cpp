@@ -81,12 +81,12 @@ void EbWidgetWorkView::refreshOrStop()
 void EbWidgetWorkView::saveUrlHistory()
 {
     if ( !m_savedUrl ) {
-        m_savedUrl = true;
         tstring url( m_webEngineView->url().url().toStdString() );
         tstring title( m_webEngineView->title().toStdString() );
         if( url.empty() || url=="about:blank" || title.empty()) {
             return;
         }
+        m_savedUrl = true;
         CSqliteCdbc::escape_string_in(url);
         CSqliteCdbc::escape_string_in(title);
         char sql[3048];
@@ -190,6 +190,12 @@ void EbWidgetWorkView::onUrlChanged(const QUrl &url)
 
 void EbWidgetWorkView::onIconChanged(const QIcon &icon)
 {
+    if ( !icon.isNull() ) {
+        const QString iconFilePath = theApp->urlIconFilePath(m_url);
+        if (!QFile::exists(iconFilePath)) {
+            icon.pixmap(32,32).save(iconFilePath);
+        }
+    }
     emit iconChanged(this,icon);
 }
 

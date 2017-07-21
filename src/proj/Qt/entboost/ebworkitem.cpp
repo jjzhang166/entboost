@@ -1,5 +1,5 @@
 #include "ebworkitem.h"
-#include "iconhelper.h"
+#include "ebiconhelper.h"
 #include "ebclientapp.h"
 
 const QSize const_image_label_size(16,16);
@@ -52,7 +52,7 @@ void EbWorkItem::setFunInfo(const EB_SubscribeFuncInfo &subFuncInfo, bool bOpenN
         m_pushButtonTop->setText( subFuncInfo.m_sFunctionName.c_str() );
     }
     m_subFuncInfo = subFuncInfo;
-    IconHelper::Instance()->SetIcon( m_subFuncInfo.m_nSubscribeId, m_labelImage, 10 );
+    EbIconHelper::Instance()->SetIcon( m_subFuncInfo.m_nSubscribeId, m_labelImage, 10 );
 
 //    if (m_widgetWorkView.get()!=0) {
 //        m_widgetWorkView->m_funcInfo = pFuncInfo;
@@ -139,7 +139,7 @@ void EbWorkItem::buildButton(bool saveUrl,int topHeight, QWidget *parent)
         m_labelImage->setVisible(true);
         m_labelImage->setGeometry( 3,7,const_image_label_size.width(),const_image_label_size.height() );
         if ( m_subFuncInfo.m_nSubscribeId>0 ) {
-            IconHelper::Instance()->SetIcon( m_subFuncInfo.m_nSubscribeId, m_labelImage, 10 );
+            EbIconHelper::Instance()->SetIcon( m_subFuncInfo.m_nSubscribeId, m_labelImage, 10 );
         }
     }
     if (m_widgetWorkView.get()!=0) {
@@ -159,7 +159,7 @@ void EbWorkItem::buildButton(bool saveUrl,int topHeight, QWidget *parent)
         parent->connect( m_pushButtonClose,SIGNAL(clicked()),parent,SLOT(onClickedButtonTop()) );
         m_pushButtonClose->setVisible(false);
         m_pushButtonClose->resize( const_close_button_size );
-        IconHelper::Instance()->SetIcon( m_pushButtonClose,QChar(0xf00d),8 );
+        EbIconHelper::Instance()->SetIcon( m_pushButtonClose,QChar(0xf00d),8 );
         m_pushButtonClose->setObjectName("SysClose2Button");
     }
 }

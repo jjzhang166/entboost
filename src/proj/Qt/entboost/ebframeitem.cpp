@@ -1,7 +1,7 @@
 #include "ebframeitem.h"
-#include "dialogchatbase.h"
-#include "iconhelper.h"
-#include "dialogworkframe.h"
+#include "ebdialogchatbase.h"
+#include "ebiconhelper.h"
+#include "ebdialogworkframe.h"
 
 const QSize const_image_label_size(32,32);
 const QSize const_close_button_size(12,12);
@@ -12,7 +12,7 @@ const int const_left_button_right = 2;    /// **右边间隔
 #define DEFAULT_MSG_WIDTH1 16
 #define DEFAULT_MSG_WIDTH2 28
 
-EbFrameItem::EbFrameItem(const DialogChatBase::pointer& dialogChatBase)
+EbFrameItem::EbFrameItem(const EbDialogChatBase::pointer& dialogChatBase)
     : m_itemType(EbFrameItem::FRAME_ITEM_CALL_DIALOG)
     , m_dialogChatBase(dialogChatBase)
     , m_dialogWorkFrame(0)
@@ -65,7 +65,7 @@ void EbFrameItem::buildButton(int leftWidth, QWidget *parent)
     if (m_itemType==EbFrameItem::FRAME_ITEM_WORK_FRAME) {
         /// 工作台
         if (m_dialogWorkFrame==0) {
-            m_dialogWorkFrame = new DialogWorkFrame(true,true,parent);
+            m_dialogWorkFrame = new EbDialogWorkFrame(true,true,parent);
             parent->connect( m_dialogWorkFrame,SIGNAL(itemSizeChange(bool,int)),parent,SLOT(onWorkItemSizeChange(bool,int)) );
             this->connect( m_dialogWorkFrame,SIGNAL(itemSizeChange(bool,int)),this,SLOT(onWorkItemSizeChange(bool,int)) );
             m_dialogWorkFrame->setModal(false);
@@ -150,7 +150,7 @@ void EbFrameItem::buildButton(int leftWidth, QWidget *parent)
 
             m_pushButtonClose->setVisible(false);
             m_pushButtonClose->resize( const_close_button_size );
-            IconHelper::Instance()->SetIcon( m_pushButtonClose,QChar(0xf00d),8 );
+            EbIconHelper::Instance()->SetIcon( m_pushButtonClose,QChar(0xf00d),8 );
             m_pushButtonClose->setObjectName("SysCloseButton");
         }
     }

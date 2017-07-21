@@ -3,9 +3,9 @@
 
 #include "ebclientapp.h"
 //#include <QWidget>
-#include <dialogworkframe.h>
+#include <ebdialogworkframe.h>
 
-class EbWidgetChatRight : public DialogWorkFrame
+class EbWidgetChatRight : public EbDialogWorkFrame
 {
     Q_OBJECT
 public:

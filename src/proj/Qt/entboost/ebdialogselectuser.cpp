@@ -1,6 +1,6 @@
 #include "ebdialogselectuser.h"
 #include "ui_ebdialogselectuser.h"
-#include <iconhelper.h>
+#include <ebiconhelper.h>
 #include <eblistwidgetitem.h>
 #include <ebwidgetmygroup.h>
 #include <ebwidgetmycontact.h>
@@ -59,7 +59,7 @@ EbDialogSelectUser::EbDialogSelectUser(QWidget *parent) :
     /// 部门
     m_labelMyGroupIcon = new QLabel(ui->pushButtonMyGroup);
     m_labelMyGroupIcon->setObjectName("IconLabel");
-    IconHelper::Instance()->SetIcon(m_labelMyGroupIcon,QChar(0xf0c0),10);
+    EbIconHelper::Instance()->SetIcon(m_labelMyGroupIcon,QChar(0xf0c0),10);
     m_labelMyGroupIcon->setVisible(true);
     m_labelMyGroupIcon->setGeometry( rectIcon );
     const QSize const_check_button_size(86,39+3);   /// 49+3 (3主要用于下面圆角不显示)
@@ -72,7 +72,7 @@ EbDialogSelectUser::EbDialogSelectUser(QWidget *parent) :
     /// 联系人
     m_labelMyContactIcon = new QLabel(ui->pushButtonMyContact);
     m_labelMyContactIcon->setObjectName("IconLabel");
-    IconHelper::Instance()->SetIcon(m_labelMyContactIcon,QChar(0xf007),10);
+    EbIconHelper::Instance()->SetIcon(m_labelMyContactIcon,QChar(0xf007),10);
     m_labelMyContactIcon->setVisible(true);
     m_labelMyContactIcon->setGeometry( rectIcon );
     ui->pushButtonMyContact->setCheckable(true);
@@ -83,7 +83,7 @@ EbDialogSelectUser::EbDialogSelectUser(QWidget *parent) :
     /// 公司
     m_labelMyEnterpriseIcon = new QLabel(ui->pushButtonMyEnterprise);
     m_labelMyEnterpriseIcon->setObjectName("IconLabel");
-    IconHelper::Instance()->SetIcon(m_labelMyEnterpriseIcon,QChar(0xf19c),10);
+    EbIconHelper::Instance()->SetIcon(m_labelMyEnterpriseIcon,QChar(0xf19c),10);
     m_labelMyEnterpriseIcon->setVisible(true);
     m_labelMyEnterpriseIcon->setGeometry( rectIcon );
     ui->pushButtonMyEnterprise->setCheckable(true);
@@ -99,7 +99,7 @@ EbDialogSelectUser::EbDialogSelectUser(QWidget *parent) :
     connect( ui->listWidgetSelected,SIGNAL(itemEntered(QListWidgetItem*)),this,SLOT(onItemEnteredSelected(QListWidgetItem*)) );
     /// 删除
     ui->pushButtonDelete->setParent(ui->listWidgetSelected);
-    IconHelper::Instance()->SetIcon(ui->pushButtonDelete,QChar(0xf014),12 );
+    EbIconHelper::Instance()->SetIcon(ui->pushButtonDelete,QChar(0xf014),12 );
     ui->pushButtonDelete->setObjectName("CallDelButton");
     ui->pushButtonDelete->setVisible(false);
     connect( ui->pushButtonDelete,SIGNAL(clicked()),this,SLOT(onClickedButtonDelete()) );

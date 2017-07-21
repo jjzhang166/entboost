@@ -2,7 +2,7 @@
 #define EBDIALOGFILEMANAGER_H
 
 #include <ebclientapp.h>
-#include <EbDialogBase.h>
+#include <ebdialogbase.h>
 #include <ebwidgetfiletranlist.h>
 #include <ebwidgetiteminfo.h>
 

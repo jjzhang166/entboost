@@ -5,6 +5,7 @@
 #include <QTextFragment>
 #include <QBitmap>
 #include <QFileIconProvider>
+#include <ebdialogviewecard.h>
 
 const int const_max_length = 80;
 
@@ -385,7 +386,7 @@ void EbTextBrowser::addRichMsg(bool saveHistory, bool bReceive, const CCrRichInf
                 /// 名片信息
                 /// *** 这里要解析并显示名片信息
                 QString sCardMessage;
-                if (writeCardDataMessage( msgId, sObjectSaveData, &sCardMessage ) ) {
+                if (writeCardDataMessage( bReceive,msgId, sObjectSaveData, &sCardMessage ) ) {
                     if (sOutFirstMsg2!=0 && sOutFirstMsg2->length()<const_max_length) {
                         /// %s[个人名片]
                         *sOutFirstMsg2 += sCardMessage;
@@ -730,8 +731,37 @@ void EbTextBrowser::onAnchorClicked(const QUrl & url)
     const QString scheme = url.scheme();
     if (scheme==theViewEcard) {
         const QString ecardData = url.url().mid( scheme.length()+4 );
-        /// ???
-        return;
+        tstring sCardInfo;
+        int nCardType = 0;
+        theApp->m_ebum.EB_ParseCardInfo(ecardData.toStdString(),nCardType,sCardInfo);
+        EB_ECardInfo pUserECard;
+        if (nCardType==1 && theApp->m_ebum.EB_GetUserECardByFromInfo(sCardInfo,&pUserECard)) {
+            const QPoint pos = cursor().pos();
+            const QRect rectValid( pos.x()-12,pos.y()-12,24,24 );
+            EB_MemberInfo pMemberInfo;
+            EB_GroupInfo pGroupInfo;
+            if ( pUserECard.m_sMemberCode>0 &&
+                 theApp->m_ebum.EB_GetMemberInfoByMemberCode(&pMemberInfo,&pGroupInfo,pUserECard.m_sMemberCode) ) {
+                theApp->dialgoViewECard(rectValid,true)->setMemberInfo(&pMemberInfo,&pGroupInfo);
+            }
+            else if ( pUserECard.m_nMemberUserId>0 &&
+                      theApp->m_ebum.EB_GetMemberInfoByUserId2(&pMemberInfo,&pGroupInfo,pUserECard.m_nMemberUserId) ) {
+                theApp->dialgoViewECard(rectValid,true)->setMemberInfo(&pMemberInfo,&pGroupInfo);
+            }
+            else {
+                EB_ContactInfo pContactInfo;
+                pContactInfo.m_nContactUserId = pUserECard.m_nMemberUserId;
+                pContactInfo.m_sName = pUserECard.m_sAccountName;
+                pContactInfo.m_sCompany = pUserECard.m_sEnterprise;
+                pContactInfo.m_sGroupName = pUserECard.m_sGroupName;
+                pContactInfo.m_sJobTitle = pUserECard.m_sTitle;
+                pContactInfo.m_sPhone = pUserECard.m_sPhone;
+                pContactInfo.m_sTel = pUserECard.m_sTel;
+                pContactInfo.m_sEmail = pUserECard.m_sEmail;
+                pContactInfo.m_sAddress = pUserECard.m_sAddress;
+                theApp->dialgoViewECard(rectValid,true)->setContactInfo(&pContactInfo);
+            }
+        }
     }
     else {
         EbWebEngineUrlSchemeHandler::instance()->requestUrl(url);
@@ -1224,7 +1254,7 @@ void EbTextBrowser::loadMsgRecord(const char *sql, bool desc)
             break;
         case MRT_CARD_INFO:
             /// 名片信息
-            writeCardDataMessage( msgId, sMsgText.c_str() );
+            writeCardDataMessage( bReceive,msgId, sMsgText.c_str() );
             break;
         case MRT_USER_DATA:
             /// 用户自定义数据
@@ -1506,7 +1536,7 @@ void EbTextBrowser::writeVoiceMessage(const char *voiceFile,QString *pOutMsgText
     this->insertHtml(text);
 }
 
-bool EbTextBrowser::writeCardDataMessage( mycp::bigint msgId, const char *cardData, QString *pOutMsgText)
+bool EbTextBrowser::writeCardDataMessage( bool bReceive,mycp::bigint msgId, const char *cardData, QString *pOutMsgText)
 {
     int nCardType = 0;
     tstring sCardData;
@@ -1514,7 +1544,7 @@ bool EbTextBrowser::writeCardDataMessage( mycp::bigint msgId, const char *cardDa
     EB_ECardInfo pUserECard;
     if (nCardType==1 && theApp->m_ebum.EB_GetUserECardByFromInfo(sCardData,&pUserECard)) {
         /// ** 用户名片（个人名片）
-        m_cardInfoList.insert( msgId, sCardData.string(), false );
+//        m_cardInfoList.insert( msgId, sCardData.string(), false );
         const QString sUserEcardText = theLocales.getLocalText("chat-msg-text.user-ecard","User Ecard");
         const QString sUserEcardTip = QString("%1[%2]").arg(pUserECard.m_sAccountName.c_str()).arg(sUserEcardText);
         if (pOutMsgText!=0) {
@@ -1552,18 +1582,20 @@ bool EbTextBrowser::writeCardDataMessage( mycp::bigint msgId, const char *cardDa
         /// <HR align=left width=50 SIZE=2>
 //        const QString line = "<div style=\"margin:0;padding:0; width:80px;height:1px;background-color:#EFEFEF;overflow:hidden;margin-top: 15px;\"></div>";
         const tstring sFilePath = theApp->userHeadFilePath(pUserECard.m_nMemberUserId,pUserECard.m_sMemberCode,"");
-        const QString html = QString("<table width=\"200\" border=\"0\" style=\"margin-left:10px; margin-right:10px;\">"
+        const QString align = bReceive?"left":"right";
+        const QString html = QString("<p align=\"%1\"><table width=\"200\" border=\"0\" style=\"margin-left:10px; margin-right:10px;\">"
                              "<tr>"
-                             "<td width=\"36\"><a href=\"%1:///%2\" ><img src=\"%3\" width=\"32\" height=\"32\" /></a></td>"
-                             "<td valign=\"middle\"><p align=\"left\"><span style=\" font-weight:600;\">%4</span></p></td>"
+                             "<td width=\"36\"><a href=\"%2:///%3\" ><img src=\"%4\" width=\"48\" height=\"48\" /></a></td>"
+                             "<td valign=\"middle\"><p align=\"left\"><span style=\" font-weight:600;\">%5</span></p></td>"
                              "</tr>"
                              "<tr>"
                              "<td colspan=\"2\"><p>--------------------</p></td>"
                              "</tr>"
                              "<tr>"
-                             "<td colspan=\"2\"><p align=\"left\"><font color=#808080>%5</font></p></td>"
+                             "<td colspan=\"2\"><p align=\"left\"><font color=#808080>%6</font></p></td>"
                              "</tr>"
-                             "</table>")
+                             "</table></p>")
+                .arg(align)
                 .arg(theViewEcard).arg(cardData)
                 .arg(sFilePath.c_str()).arg(pUserECard.m_sAccountName.c_str())
                 .arg(sUserEcardText);

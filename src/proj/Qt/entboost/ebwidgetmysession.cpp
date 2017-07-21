@@ -3,7 +3,8 @@
 #include <ebmessagebox.h>
 #include <ebdialogrequestaddcontact.h>
 #include <ebdialogcontactinfo.h>
-#include <iconhelper.h>
+#include <ebdialogviewecard.h>
+#include <ebiconhelper.h>
 
 EbWidgetMySession::EbWidgetMySession(QWidget *parent) : QWidget(parent)
   , m_contextMenu(0)
@@ -23,21 +24,21 @@ EbWidgetMySession::EbWidgetMySession(QWidget *parent) : QWidget(parent)
     m_buttonCall->setVisible(false);
     m_buttonCall->setObjectName("CallButton");
     connect( m_buttonCall, SIGNAL(clicked()),this,SLOT(onClickedButtonCall()) );
-    IconHelper::Instance()->SetIcon(m_buttonCall,QChar(0xf27a),12 );
+    EbIconHelper::Instance()->SetIcon(m_buttonCall,QChar(0xf27a),12 );
     /// 申请加为好友 按钮
     m_buttonAddContact = new QPushButton(this);
     m_buttonAddContact->setParent( m_listWidget );
     m_buttonAddContact->setVisible(false);
     m_buttonAddContact->setObjectName("CallButton");
     connect( m_buttonAddContact, SIGNAL(clicked()),this,SLOT(onClickedButtonAddContact()) );
-    IconHelper::Instance()->SetIcon(m_buttonAddContact,QChar(0xf067),12 );
+    EbIconHelper::Instance()->SetIcon(m_buttonAddContact,QChar(0xf067),12 );
     /// “删除聊天记录” 按钮
     m_buttonDelete = new QPushButton(this);
     m_buttonDelete->setParent( m_listWidget );
     m_buttonDelete->setVisible(false);
     m_buttonDelete->setObjectName("CallDelButton");
     connect( m_buttonDelete, SIGNAL(clicked()),this,SLOT(onClickedButtonDelete()) );
-    IconHelper::Instance()->SetIcon(m_buttonDelete,QChar(0xf014),12 );
+    EbIconHelper::Instance()->SetIcon(m_buttonDelete,QChar(0xf014),12 );
 
     QTimer::singleShot( 100,this,SLOT(onLoadCallRecord()) );
 
@@ -301,6 +302,12 @@ void EbWidgetMySession::onItemEntered(QListWidgetItem *item)
     /// -2（配合下面的 y+1）实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
     const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;
+
+    /// 处理显示电子名片 浮动条
+    const QPoint pointIconRight = this->mapToGlobal(rectItem.topLeft());
+    const QRect rectIconGlobal( pointIconRight.x()-buttonSize,pointIconRight.y(),buttonSize*2,buttonSize );
+    theApp->dialgoViewECard(rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
+
     if (ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_SUBMSG) {
         /// 通知消息
         m_buttonDelete->setVisible(false);
@@ -336,6 +343,13 @@ void EbWidgetMySession::onItemEntered(QListWidgetItem *item)
 
     }
 
+}
+
+void EbWidgetMySession::onItemDoubleClicked(QListWidgetItem *item)
+{
+    const EbListWidgetItem * ebitem = (EbListWidgetItem*)item;
+    createMenuData();
+    m_contextMenu->onCallItem(ebitem->m_itemInfo);
 }
 
 void EbWidgetMySession::onClickedButtonDelete()
@@ -405,10 +419,10 @@ void EbWidgetMySession::onClickedButtonAddContact()
 
 void EbWidgetMySession::onClickedButtonCall()
 {
-    const EbListWidgetItem * item = (EbListWidgetItem*)m_buttonCall->property("track-item").toULongLong();
-    if (item!=0) {
+    const EbListWidgetItem * ebitem = (EbListWidgetItem*)m_buttonCall->property("track-item").toULongLong();
+    if (ebitem!=0) {
         createMenuData();
-        m_contextMenu->onCallItem(item->m_itemInfo);
+        m_contextMenu->onCallItem(ebitem->m_itemInfo);
     }
     m_buttonCall->hide();
     m_buttonCall->setProperty("track-item",QVariant((quint64)0));

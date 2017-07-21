@@ -1,6 +1,6 @@
 #include "ebframelist.h"
 #include <QDateTime>
-#include "dialogchatbase.h"
+#include "ebdialogchatbase.h"
 //#include "ebclientapp.h"
 
 EbFrameList::EbFrameList(QWidget* parent)
@@ -31,7 +31,7 @@ void EbFrameList::timerCheckState()
     }
 }
 
-DialogWorkFrame *EbFrameList::getWorkFrame() const
+EbDialogWorkFrame *EbFrameList::getWorkFrame() const
 {
     AUTO_CONST_RLOCK(m_list);
     CLockList<EbFrameItem::pointer>::const_iterator pIter = m_list.begin();
@@ -90,7 +90,7 @@ void EbFrameList::addFrameItem(const EbFrameItem::pointer &frameItem,bool bShow,
             frameItem->setChecked(false);
     }
     else {
-        DialogChatBase::pointer chatBase = frameItem->dialogChatBase();
+        EbDialogChatBase::pointer chatBase = frameItem->dialogChatBase();
         if (chatBase.get()!=0) {
             m_pParent->connect( chatBase.get(),SIGNAL(clickedClose()),m_pParent,SLOT(onClickedCloseFromDialogChatBase()) );
             /// 聊天会话是否当前隐藏
@@ -105,12 +105,12 @@ void EbFrameList::addFrameItem(const EbFrameItem::pointer &frameItem,bool bShow,
     }
 }
 
-DialogChatBase::pointer EbFrameList::getDialogChatBase(mycp::bigint nCallId, bool bRemove, bool bAutoCall)
+EbDialogChatBase::pointer EbFrameList::getDialogChatBase(mycp::bigint nCallId, bool bRemove, bool bAutoCall)
 {
 //    if (theWantExitApp) return NullDlgDialog;
 
     if (nCallId==0) {
-        return DialogChatBaseNull;
+        return EbDialogChatBaseNull;
     }
     {
         BoostWriteLock wtLock(m_list.mutex());
@@ -156,7 +156,7 @@ DialogChatBase::pointer EbFrameList::getDialogChatBase(mycp::bigint nCallId, boo
             return pFrameWndInfoTemp->dialogChatBase();
         }
     }
-    return DialogChatBaseNull;
+    return EbDialogChatBaseNull;
 }
 
 bool EbFrameList::addUnreadMsg(eb::bigint nCallId, eb::bigint nMsgId)
@@ -263,7 +263,7 @@ void EbFrameList::onMemberInfo(const EB_MemberInfo *pMemberInfo, bool bChangeLin
     CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
     for (; pIter!=m_list.end(); pIter++) {
         const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-        const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
+        const EbDialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
         if (chatBase.get()!=0) {
             chatBase->onMemberInfo(pMemberInfo,bChangeLineState);
         }
@@ -297,7 +297,7 @@ void EbFrameList::onRemoveGroup(const EB_GroupInfo* groupInfo)
         CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
         for (; pIter!=m_list.end(); pIter++) {
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-            const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
+            const EbDialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
                 chatBase->onRemoveGroup(groupInfo);
             }
@@ -308,7 +308,7 @@ void EbFrameList::onRemoveGroup(const EB_GroupInfo* groupInfo)
         CLockList<EbFrameItem::pointer>::const_iterator pIter = m_hide.begin();
         for (; pIter!=m_hide.end(); pIter++) {
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-            const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
+            const EbDialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
                 chatBase->onRemoveGroup(groupInfo);
             }
@@ -323,7 +323,7 @@ void EbFrameList::onRemoveMember(const EB_GroupInfo* groupInfo, eb::bigint nMemb
         CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
         for (; pIter!=m_list.end(); pIter++) {
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-            const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
+            const EbDialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
                 chatBase->onRemoveMember( groupInfo,nMemberId,memberUserId );
             }
@@ -335,7 +335,7 @@ void EbFrameList::onRemoveMember(const EB_GroupInfo* groupInfo, eb::bigint nMemb
         CLockList<EbFrameItem::pointer>::const_iterator pIter = m_hide.begin();
         for (; pIter!=m_hide.end(); pIter++) {
             const EbFrameItem::pointer& pFrameWndInfo = *pIter;
-            const DialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
+            const EbDialogChatBase::pointer & chatBase = pFrameWndInfo->dialogChatBase();
             if (chatBase.get()!=0) {
                 chatBase->onRemoveMember( groupInfo,nMemberId,memberUserId );
             }
@@ -480,9 +480,9 @@ bool EbFrameList::showByIndex(int showIndex)
     return result;
 }
 
-DialogWorkFrame * EbFrameList::showWorkFrame()
+EbDialogWorkFrame * EbFrameList::showWorkFrame()
 {
-    DialogWorkFrame * result = 0;
+    EbDialogWorkFrame * result = 0;
     BoostReadLock rdLock(m_list.mutex());
     CLockList<EbFrameItem::pointer>::iterator pIter = m_list.begin();
     for (; pIter!=m_list.end(); pIter++) {
@@ -586,7 +586,7 @@ void EbFrameList::showFirst(void)
     }
 }
 
-void EbFrameList::closeItem(const DialogChatBase *chatBase)
+void EbFrameList::closeItem(const EbDialogChatBase *chatBase)
 {
     if (chatBase==0) {
         return;

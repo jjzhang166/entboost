@@ -1,6 +1,6 @@
 #include "ebwidgetchatinput.h"
 #include "ebtextedit.h"
-#include "iconhelper.h"
+#include "ebiconhelper.h"
 
 const QSize const_button_emotion_size(24,20);
 
@@ -36,8 +36,8 @@ EbWidgetChatInput::EbWidgetChatInput(const EbcCallInfo::pointer& pCallInfo,QWidg
     m_pushButtonMsgRecord = new QPushButton(this);
     m_pushButtonEmotion->resize(const_button_emotion_size);
     m_pushButtonMsgRecord->resize(const_button_emotion_size);
-    IconHelper::Instance()->SetIcon(m_pushButtonEmotion,QChar(0xf118),12);
-    IconHelper::Instance()->SetIcon(m_pushButtonMsgRecord,QChar(0xf298),12);
+    EbIconHelper::Instance()->SetIcon(m_pushButtonEmotion,QChar(0xf118),12);
+    EbIconHelper::Instance()->SetIcon(m_pushButtonMsgRecord,QChar(0xf298),12);
     m_pushButtonEmotion->setObjectName("DialogChatButton");
     m_pushButtonMsgRecord->setObjectName("DialogChatButton");
     connect( m_pushButtonEmotion,SIGNAL(clicked()),this,SLOT(onClickedPushButtonEmotion()) );
@@ -53,7 +53,7 @@ EbWidgetChatInput::EbWidgetChatInput(const EbcCallInfo::pointer& pCallInfo,QWidg
     connect( m_pushButtonSend,SIGNAL(clicked()),this,SLOT(onClickedPushButtonSend()) );
     m_pushButtonSendSwitch = new QPushButton(this);
     m_pushButtonSendSwitch->raise();
-    IconHelper::Instance()->SetIcon(m_pushButtonSendSwitch,QChar(0xf0d7),12);
+    EbIconHelper::Instance()->SetIcon(m_pushButtonSendSwitch,QChar(0xf0d7),12);
     m_pushButtonSendSwitch->setObjectName("SendButton");
     connect( m_pushButtonSendSwitch,SIGNAL(clicked()),this,SLOT(onClickedPushButtonSendSwitch()) );
     if (theApp->sendKeyType()==EB_SEND_KEY_ENTER)
@@ -402,5 +402,10 @@ void EbWidgetChatInput::checkMyForbidSpeechState(bool bNewMessage, bool bFromMem
         m_pushButtonSend->setEnabled(true);
         this->m_textEditInput->setFocus();
     }
+}
+
+bool EbWidgetChatInput::isForbidSpeech() const
+{
+    return (m_callInfo->isGroupCall() && m_labelInputForbidState!=0 && m_labelInputForbidState->isVisible())?true:false;
 }
 

@@ -1,5 +1,5 @@
 #include "ebappbuttonitem.h"
-#include <iconhelper.h>
+#include <ebiconhelper.h>
 
 const QSize const_msg_label_size(16,16);
 EbAppButtonItem::pointer EbAppButtonItem::create(const QRect &rect, const EB_SubscribeFuncInfo & subscribeFuncInfo, QWidget * parent)
@@ -23,7 +23,7 @@ EbAppButtonItem::EbAppButtonItem(const QRect &rect, const EB_SubscribeFuncInfo &
     m_buttonApp->resize( rect.size() );
     if ( m_subscribeFuncInfo.m_sResFile.empty() || !QFile::exists(m_subscribeFuncInfo.m_sResFile.c_str()) ) {
         /// 11 是默认字体图标大小
-        IconHelper::Instance()->SetIcon( subscribeFuncInfo.m_nSubscribeId,m_buttonApp,11);
+        EbIconHelper::Instance()->SetIcon( subscribeFuncInfo.m_nSubscribeId,m_buttonApp,11);
     }
     else {
         updateIcon( m_subscribeFuncInfo.m_sResFile.c_str() );

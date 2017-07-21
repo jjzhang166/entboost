@@ -1,5 +1,5 @@
 #include "ebwidgetchatrecord.h"
-#include <iconhelper.h>
+#include <ebiconhelper.h>
 #include <ebmessagebox.h>
 
 const int const_one_page_count = 50;	/// 一页显示多少条
@@ -54,19 +54,19 @@ EbWidgetChatRecord::EbWidgetChatRecord(const EbcCallInfo::pointer &callInfo,QWid
     m_buttonMoveFirst = new QPushButton(this);
     connect( m_buttonMoveFirst,SIGNAL(clicked(bool)),this,SLOT(onClickedButtonMoveFirst()) );
     m_buttonMoveFirst->setObjectName("BlackMainColorButton");
-    IconHelper::Instance()->SetIcon(m_buttonMoveFirst,QChar(0xf100),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonMoveFirst,QChar(0xf100),10);
     m_buttonMovePrev = new QPushButton(this);
     connect( m_buttonMovePrev,SIGNAL(clicked(bool)),this,SLOT(onClickedButtonMovePrev()) );
     m_buttonMovePrev->setObjectName("BlackMainColorButton");
-    IconHelper::Instance()->SetIcon(m_buttonMovePrev,QChar(0xf104),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonMovePrev,QChar(0xf104),10);
     m_buttonMoveNext = new QPushButton(this);
     connect( m_buttonMoveNext,SIGNAL(clicked(bool)),this,SLOT(onClickedButtonMoveNext()) );
     m_buttonMoveNext->setObjectName("BlackMainColorButton");
-    IconHelper::Instance()->SetIcon(m_buttonMoveNext,QChar(0xf105),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonMoveNext,QChar(0xf105),10);
     m_buttonMoveLast = new QPushButton(this);
     connect( m_buttonMoveLast,SIGNAL(clicked(bool)),this,SLOT(onClickedButtonMoveLast()) );
     m_buttonMoveLast->setObjectName("BlackMainColorButton");
-    IconHelper::Instance()->SetIcon(m_buttonMoveLast,QChar(0xf101),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonMoveLast,QChar(0xf101),10);
 
     updateLocaleInfo();
     onClickedButtonViewMsg();

@@ -1,17 +1,17 @@
 #include "ebwidgetchatright.h"
-#include <dialogmainframe.h>
+#include <ebdialogmainframe.h>
 
 const int const_top_button_width = 85;
 EbWidgetChatRight::EbWidgetChatRight(const EbcCallInfo::pointer& pCallInfo,QWidget *parent)
-    : DialogWorkFrame(false,false,parent)
+    : EbDialogWorkFrame(false,false,parent)
     , m_callInfo(pCallInfo)
 //    , m_workFrame(0)
 {
     assert(m_callInfo.get()!=0);
 
-//    m_workFrame = new DialogWorkFrame(this);
+    /// for test
+//    m_workFrame = new EbDialogWorkFrame(this);
 //    m_workFrame->setModal(false);
-
 //    this->addUrl(false,"www.entboost.com");
 
     if (m_callInfo->groupId()==0) {
@@ -19,14 +19,14 @@ EbWidgetChatRight::EbWidgetChatRight(const EbcCallInfo::pointer& pCallInfo,QWidg
         EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_USER_INFO);
         workItem->setCallInfo( m_callInfo );
         workItem->setTopButtonWidth( const_top_button_width );
-        DialogWorkFrame::addWorkItem(false,workItem,0);
+        EbDialogWorkFrame::addWorkItem(false,workItem,0);
     }
     else {
         ///
         EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_USER_LIST);
         workItem->setCallInfo( m_callInfo );
         workItem->setTopButtonWidth( const_top_button_width );
-        DialogWorkFrame::addWorkItem(false,workItem,0);
+        EbDialogWorkFrame::addWorkItem(false,workItem,0);
     }
 }
 
@@ -51,7 +51,7 @@ void EbWidgetChatRight::exitChat(bool bHangup)
 
 void EbWidgetChatRight::onUserExit(eb::bigint nUserId, bool bExitDep)
 {
-    EbWidgetUserList * widgetUserList = DialogWorkFrame::widgetUserList();
+    EbWidgetUserList * widgetUserList = EbDialogWorkFrame::widgetUserList();
     if ( widgetUserList!=0 ) {
         widgetUserList->onExitUser( nUserId, bExitDep );
     }
@@ -75,7 +75,7 @@ void EbWidgetChatRight::onSendingFile(const CCrFileInfo *fileInfo)
     EbWidgetFileTranList * tranFile = this->openTranFile();
     tranFile->onSendingFile(fileInfo);
     if (tranFile->isEmpty()) {
-        DialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
+        EbDialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
     }
 }
 
@@ -104,7 +104,7 @@ void EbWidgetChatRight::deleteTranFile(eb::bigint msgId)
     if (tranFile!=0) {
         tranFile->deleteTranFile(msgId);
         if (tranFile->isEmpty()) {
-            DialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
+            EbDialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_TRAN_FILE) );
         }
     }
 }
@@ -141,10 +141,10 @@ void EbWidgetChatRight::showMsgRecord()
         EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_CHAT_RECORD);
         workItem->setCallInfo( m_callInfo );
         workItem->setTopButtonWidth( const_top_button_width );
-        DialogWorkFrame::addWorkItem(false,workItem);
+        EbDialogWorkFrame::addWorkItem(false,workItem);
     }
     else {
-        DialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_CHAT_RECORD) );
+        EbDialogWorkFrame::closeItem( indexOf(EbWorkItem::WORK_ITEM_CHAT_RECORD) );
     }
 
 }
@@ -180,7 +180,7 @@ void EbWidgetChatRight::resizeEvent(QResizeEvent *e)
 {
     const int nwidth = width();
 
-    DialogWorkFrame::resizeEvent(e);
+    EbDialogWorkFrame::resizeEvent(e);
 }
 
 EbWidgetFileTranList * EbWidgetChatRight::openTranFile()
@@ -190,7 +190,7 @@ EbWidgetFileTranList * EbWidgetChatRight::openTranFile()
         EbWorkItem::pointer workItem = EbWorkItem::create(EbWorkItem::WORK_ITEM_TRAN_FILE);
         workItem->setCallInfo( m_callInfo );
         workItem->setTopButtonWidth( const_top_button_width );
-        DialogWorkFrame::addWorkItem(false,workItem);
+        EbDialogWorkFrame::addWorkItem(false,workItem);
         tranFile = workItem->widgetTranFile();
     }
     return tranFile;

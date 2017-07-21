@@ -1,5 +1,5 @@
 #include "ebframefindtext.h"
-#include "iconhelper.h"
+#include "ebiconhelper.h"
 #include "eblineedit.h"
 #include "ebclientapp.h"
 
@@ -19,17 +19,17 @@ EbFrameFindText::EbFrameFindText(QWidget *parent) : QFrame(parent)
     m_buttonFindUp = new QPushButton(this);
     m_buttonFindUp->resize(const_button_size);
     m_buttonFindUp->setObjectName("SearchBarButton");
-    IconHelper::Instance()->SetIcon(m_buttonFindUp,QChar(0xf077),9);
+    EbIconHelper::Instance()->SetIcon(m_buttonFindUp,QChar(0xf077),9);
     connect( m_buttonFindUp,SIGNAL(clicked()),this,SLOT(onClickedButtonFindUp()) );
     m_buttonFindDown = new QPushButton(this);
     m_buttonFindDown->resize(const_button_size);
     m_buttonFindDown->setObjectName("SearchBarButton");
-    IconHelper::Instance()->SetIcon(m_buttonFindDown,QChar(0xf078),9);
+    EbIconHelper::Instance()->SetIcon(m_buttonFindDown,QChar(0xf078),9);
     connect( m_buttonFindDown,SIGNAL(clicked()),this,SLOT(onClickedButtonFindDown()) );
     m_buttonClose = new QPushButton(this);
     m_buttonClose->resize(const_button_size);
     m_buttonClose->setObjectName("SearchBarCloseButton");
-    IconHelper::Instance()->SetIcon(m_buttonClose,QChar(0xf00d),9);
+    EbIconHelper::Instance()->SetIcon(m_buttonClose,QChar(0xf00d),9);
     connect( m_buttonClose,SIGNAL(clicked()),this,SLOT(onClickedButtonClose()) );
 
     updateLocaleInfo();

@@ -1,6 +1,6 @@
 #include "ebwidgetsearchbar.h"
 #include "ebwidgetsearchresult.h"
-#include "iconhelper.h"
+#include "ebiconhelper.h"
 #include "ebclientapp.h"
 #include "eblineedit.h"
 #include <QWebEngineProfile>
@@ -14,23 +14,23 @@ EbWidgetSearchBar::EbWidgetSearchBar(QWidget *parent) : QWidget(parent)
     m_buttonBack = new QPushButton(this);
     m_buttonBack->resize(const_button_size);
     m_buttonBack->setObjectName("SearchBarButton");
-    IconHelper::Instance()->SetIcon(m_buttonBack,QChar(0xf060),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonBack,QChar(0xf060),10);
     connect( m_buttonBack,SIGNAL(clicked()),this,SLOT(onClickedButtonBack()) );
     m_buttonForward = new QPushButton(this);
     m_buttonForward->resize(const_button_size);
     m_buttonForward->setObjectName("SearchBarButton");
-    IconHelper::Instance()->SetIcon(m_buttonForward,QChar(0xf061),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonForward,QChar(0xf061),10);
     connect( m_buttonForward,SIGNAL(clicked()),this,SLOT(onClickedButtonForward()) );
     m_buttonRefresh = new QPushButton(this);
     m_buttonRefresh->resize(const_button_size);
     m_buttonRefresh->setObjectName("SearchBarButton");
-    IconHelper::Instance()->SetIcon(m_buttonRefresh,QChar(0xf01e),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonRefresh,QChar(0xf01e),10);
     connect( m_buttonRefresh,SIGNAL(clicked()),this,SLOT(onClickedButtonRefresh()) );
     m_buttonStop = new QPushButton(this);
     m_buttonStop->hide();
     m_buttonStop->resize(const_button_size);
     m_buttonStop->setObjectName("SearchBarCloseButton");
-    IconHelper::Instance()->SetIcon(m_buttonStop,QChar(0xf057),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonStop,QChar(0xf057),10);
     connect( m_buttonStop,SIGNAL(clicked()),this,SLOT(onClickedButtonStop()) );
     m_lineEditSearch = new EbLineEdit(this);
     m_lineEditSearch->setMouseFocusInSelectAll(true);
@@ -42,7 +42,7 @@ EbWidgetSearchBar::EbWidgetSearchBar(QWidget *parent) : QWidget(parent)
     m_buttonOptions = new QPushButton(this);
     m_buttonOptions->resize(const_button_size);
     m_buttonOptions->setObjectName("SearchBarButton");
-    IconHelper::Instance()->SetIcon(m_buttonOptions,QChar(0xf0c9),10);
+    EbIconHelper::Instance()->SetIcon(m_buttonOptions,QChar(0xf0c9),10);
     connect( m_buttonOptions,SIGNAL(clicked()),this,SLOT(onClickedButtonOptions()) );
     m_menuOptions = new QMenu(this);
     m_actionSaveUrlHistory = m_menuOptions->addAction( "Save Url History");
@@ -246,9 +246,6 @@ void EbWidgetSearchBar::onClickedSearchResultUrl(const QString &url)
 {
     this->m_lineEditSearch->setText(url);
     this->m_lineEditSearch->selectAll();
-    if (m_widgetSearchResult->isVisible()) {
-        m_widgetSearchResult->setVisible(false);
-    }
 }
 
 void EbWidgetSearchBar::onListResultsKeyPressFirstItemUp()

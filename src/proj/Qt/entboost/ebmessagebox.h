@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QMessageBox>
-#include <EbDialogBase.h>
+#include <ebdialogbase.h>
 
 namespace Ui {
 class EbMessageBox;

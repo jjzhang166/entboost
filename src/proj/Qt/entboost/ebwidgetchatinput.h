@@ -20,6 +20,7 @@ public:
     void onUserExit(eb::bigint nFromAccount);
     void onReceiveRich(void);
     void checkMyForbidSpeechState(bool bNewMessage,bool bFromMemberInfo, QString *pOutForbidMessage=0);
+    bool isForbidSpeech(void) const;
 
 signals:
     void clickedClose(void);

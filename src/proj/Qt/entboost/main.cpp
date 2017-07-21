@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include <QtCore/QCoreApplication>
-#include "dialoglogin.h"
+#include "ebdialoglogin.h"
 #include <QObject>
 #include <QHostAddress>
 #include <QNetworkInterface>
@@ -9,7 +9,7 @@
 #include <QFontDatabase>
 #include <QTranslator>
 #include "ebclientapp.h"
-#include "dialogmainframe.h"
+#include "ebdialogmainframe.h"
 //#include <QtWebEngine/QtWebEngine>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
@@ -128,14 +128,6 @@ bool findSysFontFamily(void)
 
 //}
 
-inline bool checkCreateDir(const QString & dirName)
-{
-    QDir pDir1(dirName);
-    if (!pDir1.exists()) {
-        return pDir1.mkdir(dirName);
-    }
-    return true;
-}
 //#define USES_CEF
 int main(int argc, char *argv[])
 {
@@ -203,7 +195,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    DialogLogin pDlgLogin;
+    EbDialogLogin pDlgLogin;
     const int nret = pDlgLogin.exec();
     if (nret==QDialog::Rejected) {
         return 0;
@@ -211,10 +203,11 @@ int main(int argc, char *argv[])
 
     /// 登录成功
     /// 设置 chrome 缓存路径
-    const QString m_sysAppDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    checkCreateDir(m_sysAppDataLocation);
-    QString m_sCefCachePath = m_sysAppDataLocation + "/cef_cache_temp";
-    checkCreateDir(m_sCefCachePath);
+//    const QString m_sysAppDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+//    checkCreateDir(m_sysAppDataLocation);
+//    QString m_sCefCachePath = m_sysAppDataLocation + "/cef_cache_temp";
+//    checkCreateDir(m_sCefCachePath);
+    QString m_sCefCachePath = theApp->appDataCefCacheTemp();
     if ( theApp->isLogonVisitor() ) {
         m_sCefCachePath += "/visitor";
     }
@@ -239,17 +232,21 @@ int main(int argc, char *argv[])
 //    QWebEngineProfile::defaultProfile()->settings()->setDefaultTextEncoding();
 //    QWebEngineSettings::globalSettings()
 
-    DialogMainFrame mainFrame;
+    EbDialogMainFrame mainFrame;
     const int ret = mainFrame.exec();
 #ifdef USES_CEF
     CefQuit()
 #endif
-    MainWindow w;
+//    MainWindow w;
 //    w.show();
 //    const int ret = a.exec();
     // exit
 //    theEBAppClient.EB_UnInit();
     theApp.reset();
 
+    if ( mainFrame.requestLogout() ) {
+        const QUrl entboostFile = QUrl::fromLocalFile(a.applicationFilePath());
+        QDesktopServices::openUrl( entboostFile );
+    }
     return ret;
 }

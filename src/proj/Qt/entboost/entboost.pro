@@ -105,42 +105,26 @@ LIBS += -L"../build" -llibebum
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-        EbDialogBase.cpp \
-    dialoglogin.cpp \
     ../../../include/ebc_public.cpp \
-    iconhelper.cpp \
     ebclientapp.cpp \
-    dialogconnectsetting.cpp \
     ebclocales.cpp \
-    httpfiledownload.cpp \
     ebmessagebox.cpp \
-    dialogregister.cpp \
-    dialogmainframe.cpp \
-    dialogframelist.cpp \
-    dialogchatbase.cpp \
     ebtextedit.cpp \
     ebwidgetchatinput.cpp \
     ebtextbrowser.cpp \
     ebwidgetchatright.cpp \
     ebframeitem.cpp \
     ebframelist.cpp \
-    dialogemotionselect.cpp \
     ebccallinfo.cpp \
-    dialogmessagetip.cpp \
     eblistwidgetitem.cpp \
     ebwidgetmygroup.cpp \
     ebtreewidgetitem.cpp \
     eblabel.cpp \
-    dialogmemberinfo.cpp \
-    dialogchangehead.cpp \
-    dialogmycenter.cpp \
     ebwidgetaccountinfo.cpp \
     ebwidgetmysetting.cpp \
     ebwidgetmodifypassword.cpp \
-    dialoggroupinfo.cpp \
     ebwidgetsearchbar.cpp \
     ebwidgetsearchresult.cpp \
-    dialogworkframe.cpp \
     ebwidgetworkview.cpp \
     ebworkitem.cpp \
     ebworklist.cpp \
@@ -173,45 +157,45 @@ SOURCES += main.cpp\
     ebwidgetmyenterprise.cpp \
     ebdialogselectuser.cpp \
     ebwidgettreeselectbase.cpp \
-    ebdialogviewecard.cpp
+    ebdialogviewecard.cpp \
+    ebhttpfiledownload.cpp \
+    ebdialogbase.cpp \
+    ebdialoglogin.cpp \
+    ebdialogregister.cpp \
+    ebdialogchangehead.cpp \
+    ebdialogchatbase.cpp \
+    ebdialogconnectsetting.cpp \
+    ebdialogemotionselect.cpp \
+    ebdialogmainframe.cpp \
+    ebdialogworkframe.cpp \
+    ebdialogframelist.cpp \
+    ebiconhelper.cpp \
+    ebdialoggroupinfo.cpp \
+    ebdialogmemberinfo.cpp \
+    ebdialogmessagetip.cpp \
+    ebdialogmycenter.cpp
 
 HEADERS  += mainwindow.h \
-    EbDialogBase.h \
-    dialoglogin.h \
     ../../../include/ebc_public.h \
-    iconhelper.h \
     ebclientapp.h \
-    dialogconnectsetting.h \
     ebclocales.h \
-    httpfiledownload.h \
     ebmessagebox.h \
-    dialogregister.h \
-    dialogmainframe.h \
-    dialogframelist.h \
-    dialogchatbase.h \
     ebtextedit.h \
     ebwidgetchatinput.h \
     ebtextbrowser.h \
     ebwidgetchatright.h \
     ebframeitem.h \
     ebframelist.h \
-    dialogemotionselect.h \
     ebccallinfo.h \
-    dialogmessagetip.h \
     eblistwidgetitem.h \
     ebwidgetmygroup.h \
     ebtreewidgetitem.h \
     eblabel.h \
-    dialogmemberinfo.h \
-    dialogchangehead.h \
-    dialogmycenter.h \
     ebwidgetaccountinfo.h \
     ebwidgetmysetting.h \
     ebwidgetmodifypassword.h \
-    dialoggroupinfo.h \
     ebwidgetsearchbar.h \
     ebwidgetsearchresult.h \
-    dialogworkframe.h \
     ebwidgetworkview.h \
     ebworkitem.h \
     ebworklist.h \
@@ -246,28 +230,44 @@ HEADERS  += mainwindow.h \
     ebcallback.h \
     ebdefines.h \
     ebwidgettreeselectbase.h \
-    ebdialogviewecard.h
+    ebdialogviewecard.h \
+    ebhttpfiledownload.h \
+    ebdialogbase.h \
+    ebdialoglogin.h \
+    ebdialogregister.h \
+    ebdialogchangehead.h \
+    ebdialogchatbase.h \
+    ebdialogconnectsetting.h \
+    ebdialogemotionselect.h \
+    ebdialogmainframe.h \
+    ebdialogworkframe.h \
+    ebdialogframelist.h \
+    ebiconhelper.h \
+    ebdialoggroupinfo.h \
+    ebdialogmemberinfo.h \
+    ebdialogmessagetip.h \
+    ebdialogmycenter.h
 
 FORMS    += mainwindow.ui \
-    dialoglogin.ui \
-    dialogconnectsetting.ui \
     ebmessagebox.ui \
-    dialogregister.ui \
-    dialogmainframe.ui \
-    dialogframelist.ui \
-    dialogchatbase.ui \
-    dialogemotionselect.ui \
-    dialogmessagetip.ui \
-    dialogmemberinfo.ui \
-    dialogchangehead.ui \
-    dialogmycenter.ui \
-    dialoggroupinfo.ui \
-    dialogworkframe.ui \
     ebdialogfilemanager.ui \
     ebdialogcontactinfo.ui \
     ebdialogrequestaddcontact.ui \
     ebdialogselectuser.ui \
-    ebdialogviewecard.ui
+    ebdialogviewecard.ui \
+    ebdialoglogin.ui \
+    ebdialogregister.ui \
+    ebdialogchangehead.ui \
+    ebdialogchatbase.ui \
+    ebdialogconnectsetting.ui \
+    ebdialogemotionselect.ui \
+    ebdialogmainframe.ui \
+    ebdialogworkframe.ui \
+    ebdialogframelist.ui \
+    ebdialoggroupinfo.ui \
+    ebdialogmemberinfo.ui \
+    ebdialogmessagetip.ui \
+    ebdialogmycenter.ui
 
 RESOURCES += \
     entboost.qrc

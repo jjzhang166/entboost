@@ -5,11 +5,12 @@
 #include "../../../include/colorconver.h"
 #include "../../../include/ebc_public.h"
 #include "../include/boost_ini.h"
-#include "httpfiledownload.h"
+#include "ebhttpfiledownload.h"
 #include "ebmessagebox.h"
-#include "dialogemotionselect.h"
-#include "dialogmemberinfo.h"
-#include "dialoggroupinfo.h"
+#include "ebdialogemotionselect.h"
+#include "ebdialogmemberinfo.h"
+#include "ebdialoggroupinfo.h"
+#include "ebdialogviewecard.h"
 #include "ebdialogcontactinfo.h"
 
 EbClientApp::pointer theApp;
@@ -54,6 +55,7 @@ EbClientApp::EbClientApp(QObject *parent)
     , m_mainWnd(0)
     , m_receiver(0)
     , m_dialogEmotionSelect(0)
+    , m_dialogViewECard(0)
 
 {
     // ??? for test
@@ -83,6 +85,10 @@ EbClientApp::~EbClientApp(void)
     if (m_dialogEmotionSelect!=0) {
         delete m_dialogEmotionSelect;
         m_dialogEmotionSelect = 0;
+    }
+    if (m_dialogViewECard!=0) {
+        delete m_dialogViewECard;
+        m_dialogViewECard = 0;
     }
 }
 
@@ -137,10 +143,10 @@ void EbClientApp::setSendKeyType(EB_SEND_KEY_TYPE v)
     }
 }
 
-DialogEmotionSelect* EbClientApp::showDialogEmotionSelect(const QPoint& pt,QObject* receiver)
+EbDialogEmotionSelect* EbClientApp::showDialogEmotionSelect(const QPoint& pt,QObject* receiver)
 {
     if (m_dialogEmotionSelect==0) {
-        m_dialogEmotionSelect = new DialogEmotionSelect;
+        m_dialogEmotionSelect = new EbDialogEmotionSelect;
         m_dialogEmotionSelect->setVisible(false);
         m_dialogEmotionSelect->setModal(false);
         m_dialogEmotionSelect->setWindowModality(Qt::WindowModal);
@@ -155,6 +161,29 @@ DialogEmotionSelect* EbClientApp::showDialogEmotionSelect(const QPoint& pt,QObje
     m_dialogEmotionSelect->setFocus();
     m_dialogEmotionSelect->show();
     return m_dialogEmotionSelect;
+}
+
+EbDialogViewECard *EbClientApp::dialgoViewECard(const QRect &rectValid, bool showImmediate)
+{
+    if (m_dialogViewECard==0) {
+        m_dialogViewECard = new EbDialogViewECard;
+        m_dialogViewECard->setVisible(false);
+        m_dialogViewECard->setModal(false);
+        m_dialogViewECard->setWindowModality(Qt::WindowModal);
+    }
+    /// 默认显示在左边
+    int x = rectValid.x()-m_dialogViewECard->geometry().width()-10;
+    if (x<0) {
+        /// 显示在右边
+        x = rectValid.right()+10;
+    }
+    int y = MAX(0,rectValid.y()-10);    /// -10 往上移一点
+    if (y+m_dialogViewECard->geometry().height()>this->screenRect().height()) {
+        y = this->screenRect().height()-m_dialogViewECard->geometry().height();
+    }
+    m_dialogViewECard->move(x,y);
+    m_dialogViewECard->setMouseEnter(rectValid,showImmediate);
+    return m_dialogViewECard;
 }
 
 void EbClientApp::editContactInfo(mycp::bigint contactId, QWidget *parent)
@@ -183,7 +212,7 @@ void EbClientApp::editGroupInfo(mycp::bigint groupId, QWidget *parent)
         return;
     }
 
-    DialogGroupInfo pDlgGroupInfo(parent);
+    EbDialogGroupInfo pDlgGroupInfo(parent);
     pDlgGroupInfo.m_groupInfo = pGroupInfo;
     if (pDlgGroupInfo.exec()==QDialog::Accepted) {
         EB_GroupInfo pPopDepartment(&pDlgGroupInfo.m_groupInfo);
@@ -193,7 +222,7 @@ void EbClientApp::editGroupInfo(mycp::bigint groupId, QWidget *parent)
 
 void EbClientApp::newGroupInfo(EB_GROUP_TYPE groupType, eb::bigint enterpriseId, eb::bigint parentGroupId, QWidget *parent)
 {
-    DialogGroupInfo pDlgGroupInfo(parent);
+    EbDialogGroupInfo pDlgGroupInfo(parent);
     pDlgGroupInfo.m_groupInfo.m_nGroupType = groupType;
     pDlgGroupInfo.m_groupInfo.m_sEnterpriseCode = enterpriseId;
     pDlgGroupInfo.m_groupInfo.m_sParentCode = parentGroupId;
@@ -205,7 +234,7 @@ void EbClientApp::newGroupInfo(EB_GROUP_TYPE groupType, eb::bigint enterpriseId,
 
 void EbClientApp::newMemberInfo(EB_GROUP_TYPE groupType, eb::bigint groupId, const QString &groupName, QWidget *parent)
 {
-    DialogMemberInfo dlg(parent);
+    EbDialogMemberInfo dlg(parent);
     dlg.m_memberInfo.m_sGroupCode = groupId;
     dlg.m_groupType = groupType;
     dlg.m_groupName = groupName;
@@ -222,7 +251,7 @@ void EbClientApp::editMemberInfo(const EB_MemberInfo *pMemberInfo, QWidget *pare
     //EB_GROUP_TYPE nGroupType = EB_GROUP_TYPE_DEPARTMENT;
     //m_ebum.EB_GetGroupType(pMemberInfo->m_sGroupCode,nGroupType);
 
-    DialogMemberInfo dlg(parent);
+    EbDialogMemberInfo dlg(parent);
     //pDlgMemberInfo.m_nGroupType = nGroupType;
     dlg.m_memberInfo = pMemberInfo;
     dlg.m_groupName = groupName.c_str();
@@ -384,7 +413,7 @@ cgcSmartString EbClientApp::userHeadFilePath(mycp::bigint nUserId, eb::bigint me
 QImage EbClientApp::funcImage(const EB_SubscribeFuncInfo *funcInfo) const
 {
     tstring imagePath;
-    if ( QFileInfo::exists(funcInfo->m_sResFile.c_str()) ) {
+    if ( funcInfo!=0 && QFileInfo::exists(funcInfo->m_sResFile.c_str()) ) {
         imagePath = funcInfo->m_sResFile;
     }
     if (imagePath.empty()) {
@@ -393,30 +422,33 @@ QImage EbClientApp::funcImage(const EB_SubscribeFuncInfo *funcInfo) const
     return QImage(imagePath.c_str());
 }
 
+
 QImage EbClientApp::memberHeadImage(const EB_MemberInfo *memberInfo) const
 {
     const EB_USER_LINE_STATE lineState = memberInfo==0?EB_LINE_STATE_UNKNOWN:memberInfo->m_nLineState;
-    tstring imagePath;
-    if ( memberInfo!=0 && QFileInfo::exists(memberInfo->m_sHeadResourceFile.c_str()) ) {
-        imagePath = memberInfo->m_sHeadResourceFile;
-    }
-    if (imagePath.empty()) {
-        imagePath = ":/img/defaultmember.png";
-    }
-    return fromHeadImage(imagePath,lineState);
+    return fromHeadImage(memberHeadFilePath(memberInfo),lineState);
+//    tstring imagePath;
+//    if ( memberInfo!=0 && QFileInfo::exists(memberInfo->m_sHeadResourceFile.c_str()) ) {
+//        imagePath = memberInfo->m_sHeadResourceFile;
+//    }
+//    if (imagePath.empty()) {
+//        imagePath = ":/img/defaultmember.png";
+//    }
+//    return fromHeadImage(imagePath,lineState);
 }
 
 QImage EbClientApp::contactHeadImage(const EB_ContactInfo *contactInfo) const
 {
     const EB_USER_LINE_STATE lineState = contactInfo==0?EB_LINE_STATE_UNKNOWN:contactInfo->m_nLineState;
-    tstring imagePath;
+    return fromHeadImage(contactHeadFilePath(contactInfo),lineState);
+}
+
+cgcSmartString EbClientApp::contactHeadFilePath(const EB_ContactInfo *contactInfo) const
+{
     if ( contactInfo!=0 && QFileInfo::exists(contactInfo->m_sHeadResourceFile.c_str()) ) {
-        imagePath = contactInfo->m_sHeadResourceFile;
+        return contactInfo->m_sHeadResourceFile;
     }
-    if (imagePath.empty()) {
-        imagePath = ":/img/defaultcontact.png";
-    }
-    return fromHeadImage(imagePath,lineState);
+    return ":/img/defaultcontact.png";
 }
 
 QImage EbClientApp::fromHeadImage(const cgcSmartString &imagePath, EB_USER_LINE_STATE lineState) const
@@ -461,6 +493,47 @@ cgcSmartString EbClientApp::memberHeadFilePath(const EB_MemberInfo *memberInfo) 
     }
     return ":/img/defaultmember.png";
 }
+
+QImage EbClientApp::groupHeadImage(eb::bigint groupId, EB_GROUP_TYPE groupType) const
+{
+    QImage groupImage;
+    switch (groupType) {
+    case EB_GROUP_TYPE_DEPARTMENT:
+        groupImage = QImage(":/img/imgdefaultdepartment.png");
+        break;
+    case EB_GROUP_TYPE_PROJECT:
+        groupImage = QImage(":/img/imgdefaultproject.png");
+        break;
+    case EB_GROUP_TYPE_GROUP:
+        groupImage = QImage(":/img/imgdefaultgroup.png");
+        break;
+//    case EB_GROUP_TYPE_TEMP:
+    default:
+        groupImage = QImage(":/img/imgdefaulttempgroup.png");
+        break;
+    }
+    if ( m_ebum.EB_IsGroupForbidSpeech(groupId) ) {
+        /// 禁言群组，加上禁方图标，显示在右下角
+         const QImage imageForbid = QImage(":/img/imgstateforbid.png");
+         groupImage = libEbc::imageAdd(groupImage,imageForbid,groupImage.width()-imageForbid.width(),groupImage.height()-imageForbid.height());
+    }
+    return groupImage;
+}
+
+//cgcSmartString EbClientApp::groupHeadFilePath(EB_GROUP_TYPE groupType) const
+//{
+//    switch (groupType) {
+//    case EB_GROUP_TYPE_DEPARTMENT:
+//        return ":/img/imgdefaultdepartment.png";
+//    case EB_GROUP_TYPE_PROJECT:
+//        return ":/img/imgdefaultproject.png";
+//    case EB_GROUP_TYPE_GROUP:
+//        return ":/img/imgdefaultgroup.png";
+//    default:
+//        return ":/img/imgdefaulttempgroup.png";
+//    }
+//    return ":/img/imgdefaulttempgroup.png";
+//}
 
 void EbClientApp::customEvent(QEvent *e)
 {
@@ -751,6 +824,15 @@ bool EbClientApp::initApp(void)
         sprintf(sql, "INSERT INTO sys_value_t(name,value1,value2) VALUES('main-color','',%lld)",(mycp::bigint)RGB(color.red(),color.green(),color.blue()));
         m_sqliteEbc->execute(sql);
     }
+    m_appDataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    checkCreateDir(m_appDataLocation);
+    m_appDataTempLocation = m_appDataLocation + "/temp";
+    checkCreateDir(m_appDataTempLocation);
+    m_appDataCefCacheTemp = m_appDataLocation + "/cef_cache_temp";
+    checkCreateDir(m_appDataCefCacheTemp);
+    m_appDataImageTempLocation = m_appDataLocation + "/image_temp";
+    checkCreateDir(m_appDataImageTempLocation);
+
     return true;
 }
 void EbClientApp::exitApp(bool bResetEbumOnly)
@@ -765,7 +847,7 @@ void EbClientApp::exitApp(bool bResetEbumOnly)
 
 bool EbClientApp::onLogonSuccess(void)
 {
-    // 检查本地默认浏览器
+    /// 检查本地默认浏览器
     int nCookie = 0;
     m_sqliteEbc->select("SELECT value2 FROM sys_value_t WHERE name='default-browser-type'", nCookie);
     cgcValueInfo::pointer pRecord = m_sqliteEbc->first(nCookie);
@@ -846,7 +928,7 @@ bool EbClientApp::onLogonSuccess(void)
         const std::string sUserSettingIniFile = m_userSettingIniFile.toStdString();
         const int nDefaultUIStyleType = GetPrivateProfileIntABoost("default","uistyle-type",2,sUserSettingIniFile.c_str());
         if (nDefaultUIStyleType>=2) {
-            // first time
+            /// first time
             m_nDefaultUIStyleType = (EB_UI_STYLE_TYPE)this->m_setting.GetDefaultUIStyleType();
             if (m_nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT) {
                 if (GetPrivateProfileIntABoost("default","main-w",UISTYLE_CHAT_DEFAULT_DLG_WIDTH,sUserSettingIniFile.c_str())>UISTYLE_CHAT_DEFAULT_DLG_WIDTH) {
@@ -890,6 +972,12 @@ void EbClientApp::updateStyleSheet()
     qApp->setStyleSheet(m_styleSheet);
 }
 
+QString EbClientApp::urlIconFilePath(const QUrl &url)
+{
+    const QString host = url.host();
+    return QString("%1/%2.png").arg(m_appDataImageTempLocation).arg(host);
+}
+
 QString EbClientApp::subscribeFuncUrl(mycp::bigint subId, const std::string &sParameters)
 {
     mycp::bigint m_nSelectCallId = 0;
@@ -915,8 +1003,7 @@ QString EbClientApp::subscribeFuncUrl(mycp::bigint subId, const std::string &sPa
 
 QString EbClientApp::lineStateText(EB_USER_LINE_STATE lineState) const
 {
-    switch (lineState)
-    {
+    switch (lineState) {
     case EB_LINE_STATE_BUSY:
         return theLocales.getLocalText("line-state.busy.text","Busy");
     case EB_LINE_STATE_AWAY:

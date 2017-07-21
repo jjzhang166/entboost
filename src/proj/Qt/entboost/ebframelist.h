@@ -10,8 +10,8 @@ public:
     virtual ~EbFrameList(void);
 
     void timerCheckState(void);
-    DialogWorkFrame * getWorkFrame(void) const;
-    DialogChatBase::pointer getDialogChatBase(mycp::bigint nCallId, bool bRemove, bool bAutoCall);
+    EbDialogWorkFrame * getWorkFrame(void) const;
+    EbDialogChatBase::pointer getDialogChatBase(mycp::bigint nCallId, bool bRemove, bool bAutoCall);
     bool addUnreadMsg(eb::bigint nCallId, eb::bigint nMsgId);
     bool setUnreadMsg(eb::bigint nCallId, size_t nUnreadMsgCount);
 //    void setUnreadMsg(CFrameWndInfo::FRAME_WND_TYPE nType, size_t nUnreadMsgCount);	// for FRAME_WND_WORK_FRAME
@@ -29,10 +29,10 @@ protected:
     void addFrameItem(const EbFrameItem::pointer& frameItem,bool bShow, bool bAutoCall, bool bForceAddToList = false,int nInsertOffset=-1);
     void showByCallId(mycp::bigint callId);
     bool showByIndex(int index);
-    DialogWorkFrame* showWorkFrame(void);
+    EbDialogWorkFrame* showWorkFrame(void);
     void clickedLeftButton(const QPushButton* leftButton, const QPoint& pt);
     void showFirst(void);
-    void closeItem(const DialogChatBase* chatBase);
+    void closeItem(const EbDialogChatBase* chatBase);
 
     void checkShowHideCloseButton(const QPoint& pt);    /// 定期检查显示或隐藏关闭按钮
     void onResize(const QRect& rect);

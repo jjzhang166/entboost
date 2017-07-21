@@ -1,7 +1,8 @@
 #include "ebwidgetuserlist.h"
 #include <QTimer>
 #include <eblistwidgetitem.h>
-#include <iconhelper.h>
+#include <ebiconhelper.h>
+#include <ebdialogviewecard.h>
 
 const QSize const_user_image_size(28,28);
 EbWidgetUserList::EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget *parent) : QWidget(parent)
@@ -26,7 +27,7 @@ EbWidgetUserList::EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget 
     m_pushButtonCall->setObjectName("CallButton");
     m_pushButtonCall->setToolTip( theLocales.getLocalText("main-frame.button-call.tooltip","open chat") );
     connect( m_pushButtonCall, SIGNAL(clicked()),this,SLOT(onClickedPushButtonCall()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
+    EbIconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
     /// “修改我的名片”
     m_pushButtonEdit = new QPushButton(this);
     m_pushButtonEdit->setParent( m_listWidgetUsers );
@@ -34,7 +35,7 @@ EbWidgetUserList::EbWidgetUserList(const EbcCallInfo::pointer &callInfo,QWidget 
     m_pushButtonEdit->setObjectName("CallButton");
     m_pushButtonEdit->setToolTip( theLocales.getLocalText("main-frame.button-edit.tooltip","edit member info") );
     connect( m_pushButtonEdit, SIGNAL(clicked()),this,SLOT(onClickedPushButtonEdit()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
+    EbIconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
 
     QTimer::singleShot( 1, this, SLOT(onLoadUserList()) );
 
@@ -130,8 +131,14 @@ void EbWidgetUserList::onItemEntered(QListWidgetItem *item)
     const QPoint pointItem = m_listWidgetUsers->mapToParent(rectItem.topRight());
     const int y = pointItem.y()-1;  /// -1 不保留 ITEM 边框
     const int buttonSize = rectItem.height();
-    const EbListWidgetItem * itemEb = (EbListWidgetItem*)item;
-    if ( itemEb->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
+    const EbListWidgetItem * ebitem = (EbListWidgetItem*)item;
+
+    /// 处理显示电子名片 浮动条
+    const QPoint pointIconRight = this->mapToGlobal(rectItem.topLeft());
+    const QRect rectIconGlobal( pointIconRight.x()-buttonSize,pointIconRight.y(),buttonSize*2,buttonSize );
+    theApp->dialgoViewECard(rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
+
+    if ( ebitem->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
         m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y,buttonSize,buttonSize );
         m_pushButtonEdit->setProperty("track-item",QVariant((quint64)item));
         m_pushButtonEdit->setVisible(true);

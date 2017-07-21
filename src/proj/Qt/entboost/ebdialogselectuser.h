@@ -2,7 +2,7 @@
 #define EBDIALOGSELECTUSER_H
 
 #include <ebclientapp.h>
-#include <EbDialogBase.h>
+#include <ebdialogbase.h>
 #include <QLabel>
 #include <ebcallback.h>
 #include <eblineedit.h>

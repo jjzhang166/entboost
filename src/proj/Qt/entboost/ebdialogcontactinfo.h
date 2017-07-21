@@ -2,7 +2,7 @@
 #define EBDIALOGCONTACTINFO_H
 
 #include "ebclientapp.h"
-#include <EbDialogBase.h>
+#include <ebdialogbase.h>
 
 namespace Ui {
 class EbDialogContactInfo;

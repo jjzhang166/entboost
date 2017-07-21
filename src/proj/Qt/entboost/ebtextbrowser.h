@@ -46,7 +46,7 @@ protected:
     void writeTitle(bool writeLeft,eb::bigint nMsgId,bool bPrivate,eb::bigint nFromUid,const tstring& sFromName,eb::bigint nToUid,const tstring& sToName,time_t tMsgTime, int nReadFlag,QString *pOutWindowText=0);
     void writeFileMessage(eb::bigint msgId,eb::bigint resourceId, const char* filePath,eb::bigint fileSize,QString *pOutMsgText=0);
     void writeVoiceMessage(const char* voiceFile,QString *pOutMsgText=0);
-    bool writeCardDataMessage( mycp::bigint msgId, const char* cardData,QString *pOutMsgText=0);
+    bool writeCardDataMessage( bool bReceive,mycp::bigint msgId, const char* cardData,QString *pOutMsgText=0);
     void addChatMsgBlock(eb::bigint msgId, bool alignLeft);
 
 private:
@@ -54,7 +54,7 @@ private:
     int m_timerIdFindTextBlockFromPosition;
     EbFrameChatToolBar * m_chatToolBar;
     QDateTime m_tLastMsgDayTime;
-    CLockMap<mycp::bigint,std::string> m_cardInfoList;
+//    CLockMap<mycp::bigint,std::string> m_cardInfoList;
     CLockMap<mycp::bigint,bool> m_pPrevReceivedFileMsgIdList;   /// msgid->
 };
 

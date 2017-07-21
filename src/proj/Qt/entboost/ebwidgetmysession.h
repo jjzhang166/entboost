@@ -26,6 +26,7 @@ public slots:
     void onDeleteSession(const EbWidgetItemInfo::pointer &itemInfo);
     void onClearSession(void);
     void onItemEntered(QListWidgetItem* item);
+    void onItemDoubleClicked(QListWidgetItem *item);
     void onClickedButtonDelete(void);
     void onClickedButtonAddContact(void);
     void onClickedButtonCall(void);

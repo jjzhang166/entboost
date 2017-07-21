@@ -1,5 +1,5 @@
 #include "ebwidgettreeselectbase.h"
-#include <iconhelper.h>
+#include <ebiconhelper.h>
 
 EbWidgetTreeSelectBase::EbWidgetTreeSelectBase(EB_VIEW_MODE viewMode, QWidget *parent) : QWidget(parent)
   , m_viewMode(viewMode)
@@ -30,21 +30,21 @@ EbWidgetTreeSelectBase::EbWidgetTreeSelectBase(EB_VIEW_MODE viewMode, QWidget *p
     m_pushButtonSelect->setVisible(false);
     m_pushButtonSelect->setObjectName("CallButton");
 //    connect( m_pushButtonSelect, SIGNAL(clicked()),this,SLOT(onClickedPushButtonSelect()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonSelect,QChar(0xf067),12 );
+    EbIconHelper::Instance()->SetIcon(m_pushButtonSelect,QChar(0xf067),12 );
     /// “打开会话”按钮
     m_pushButtonCall = new QPushButton(this);
     m_pushButtonCall->setParent( m_treeWidget );
     m_pushButtonCall->setVisible(false);
     m_pushButtonCall->setObjectName("CallButton");
 //    connect( m_pushButtonCall, SIGNAL(clicked()),this,SLOT(onClickedPushButtonCall()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
+    EbIconHelper::Instance()->SetIcon(m_pushButtonCall,QChar(0xf27a),12 );
     /// “修改我的名片”
     m_pushButtonEdit = new QPushButton(this);
     m_pushButtonEdit->setParent( m_treeWidget );
     m_pushButtonEdit->setVisible(false);
     m_pushButtonEdit->setObjectName("CallButton");
 //    connect( m_pushButtonEdit, SIGNAL(clicked()),this,SLOT(onClickedPushButtonEdit()) );
-    IconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
+    EbIconHelper::Instance()->SetIcon(m_pushButtonEdit,QChar(0xf2c3),12 );
 
 }
 

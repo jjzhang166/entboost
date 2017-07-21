@@ -24,7 +24,7 @@ using namespace mycp;
 using namespace entboost;
 #include "ebclocales.h"
 #include "ebdefines.h"
-#include "httpfiledownload.h"
+#include "ebhttpfiledownload.h"
 #include "ebccallinfo.h"
 #include <boost/shared_ptr.hpp>
 //#include <QtWebEngine/QtWebEngine>
@@ -49,6 +49,15 @@ const eb::bigint theVisitorStartId = 0x2000000000000LL;	// =562949953421312(15�
 #define is_visitor_uid(id) (id>=theVisitorStartId)
 #endif // is_visitor_uid
 
+inline bool checkCreateDir(const QString & dirName)
+{
+    QDir pDir1(dirName);
+    if (!pDir1.exists()) {
+        return pDir1.mkdir(dirName);
+    }
+    return true;
+}
+
 typedef enum EB_SEND_KEY_TYPE {
     EB_SEND_KEY_ENTER,
     EB_SEND_KEY_CTRL_ENTER
@@ -69,8 +78,9 @@ typedef enum EB_MSG_RECORD_TYPE
 inline bool isCanCollectRecordType(EB_MSG_RECORD_TYPE nType) {return (nType==MRT_FILE || nType==MRT_RESOURCE)?false:true;}
 
 
-class DialogEmotionSelect;
-class DialogMainFrame;
+class EbDialogEmotionSelect;
+class EbDialogMainFrame;
+class EbDialogViewECard;
 
 class EbClientApp : public QObject
 {
@@ -99,14 +109,19 @@ public:
     void triggeredApps(int index);
     std::vector<EB_SubscribeFuncInfo> m_pSubscribeFuncList;
 
-    void setMainWnd(DialogMainFrame * mainWnd) {m_mainWnd=mainWnd;}
-    DialogMainFrame *mainWnd(void) const {return m_mainWnd;}
+    void setMainWnd(EbDialogMainFrame * mainWnd) {m_mainWnd=mainWnd;}
+    EbDialogMainFrame *mainWnd(void) const {return m_mainWnd;}
     bool setDevAppId(QObject* receiver);
 
     bool initApp(void);
     void exitApp(bool bResetEbumOnly=false);
 //    bool startEBUMClient(void);
     bool onLogonSuccess(void);
+
+    const QString & appDataLocation(void) const {return m_appDataLocation;}
+    const QString & appDataTempLocation(void) const {return m_appDataTempLocation;}
+    const QString & appDataImageTempLocation(void) const {return m_appDataImageTempLocation;}
+    const QString & appDataCefCacheTemp(void) const {return m_appDataCefCacheTemp;}
 
     const QString & getAppDataPath(void) const {return m_appDataPath;}
     const QString & getAppUsersPath(void) const {return m_appUsersPath;}
@@ -128,6 +143,7 @@ public:
 //    const QColor& getHotColor(void) const {return this->m_hotColor;}
 //    const QColor& getPreColor(void) const {return this->m_preColor;}
 
+    QString urlIconFilePath( const QUrl &url );
     QString subscribeFuncUrl( eb::bigint subId, const std::string &sParameters="" );
     void setEntManagerUrl(const QString& v) {m_sEntManagerUrl = v;}
     const QString& entManagerUrl(void) const {return m_sEntManagerUrl;}
@@ -177,7 +193,8 @@ public:
     const QRect& deskRect(void) const {return m_deskRect;}
     const QRect& screenRect(void) const {return m_screenRect;}
 
-    DialogEmotionSelect* showDialogEmotionSelect(const QPoint& pt,QObject* receiver=0);
+    EbDialogEmotionSelect* showDialogEmotionSelect(const QPoint& pt,QObject* receiver=0);
+    EbDialogViewECard * dialgoViewECard(const QRect & rectValid,bool showImmediate=false);
 
     bool isLogoned(void) const {return m_ebum.EB_IsLogoned();}
     bool isLogonVisitor(void) const {return m_ebum.EB_IsLogonVisitor();}
@@ -196,8 +213,11 @@ public:
     QImage funcImage(const EB_SubscribeFuncInfo * funcInfo) const;
     QImage memberHeadImage(const EB_MemberInfo * memberInfo) const;
     QImage contactHeadImage(const EB_ContactInfo * contactInfo) const;
+    tstring contactHeadFilePath(const EB_ContactInfo * contactInfo) const;
     QImage fromHeadImage(const tstring &imagePath, EB_USER_LINE_STATE lineState) const;
     tstring memberHeadFilePath(const EB_MemberInfo * memberInfo) const;
+//    tstring groupTypeHeadFilePath(EB_GROUP_TYPE groupType) const;
+    QImage groupHeadImage(eb::bigint groupId, EB_GROUP_TYPE groupType) const;
 
 protected:
 //    virtual bool event(QEvent *e);
@@ -210,18 +230,22 @@ private:
     void onAppIdError(QEvent *e);
     void loadUserSetting(void);
 
-    HttpFileDownload m_httpFileDownload;
+    EbHttpFileDownload m_httpFileDownload;
     void updateColor(bool bUpdateDatabase);
 
 private:
-    QString m_appDataPath;      // /datas
+    QString m_appDataLocation;      ///
+    QString m_appDataTempLocation;      /// "[m_appDataLocation]/temp"
+    QString m_appDataImageTempLocation;      /// "[m_appDataLocation]/image_temp"
+    QString m_appDataCefCacheTemp;      /// "[m_appDataLocation]/cef_cache_temp"
+    QString m_appDataPath;      /// "/datas"
     QString m_appUsersPath;
     QString m_appImgPath;
     QString m_appLocalesPath;
     QString m_appBodbPath;
-    QString m_settingFile;      // setting
-    QString m_settingIniFile;   // setting.ini
-    QString m_ebcIniFile;       // ebc.ini
+    QString m_settingFile;      /// setting
+    QString m_settingIniFile;   /// setting.ini
+    QString m_ebcIniFile;       /// ebc.ini
     QString m_userMainPath;
     QString m_userImagePath;
     QString m_userFilePath;
@@ -243,7 +267,7 @@ private:
     int m_nSaveConversations;
     bool m_bAuthContact;
     eb::bigint m_nDeployId;
-    int m_nLicenstType;         // 许可类型；0=未授权；1=终身授权；2=时间授权
+    int m_nLicenstType;         /// 许可类型；0=未授权；1=终身授权；2=时间授权
     int m_nEBServerVersion;
     eb::bigint m_nGroupMsgSubId;
     eb::bigint m_nFindAppSubId;
@@ -272,9 +296,10 @@ private:
     QRect m_deskRect;
     QRect m_screenRect;
 
-    DialogMainFrame * m_mainWnd;
+    EbDialogMainFrame * m_mainWnd;
     QObject* m_receiver;
-    DialogEmotionSelect* m_dialogEmotionSelect;
+    EbDialogEmotionSelect* m_dialogEmotionSelect;
+    EbDialogViewECard * m_dialogViewECard;
 };
 
 extern EbClientApp::pointer theApp;

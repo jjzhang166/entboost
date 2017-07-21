@@ -3,7 +3,7 @@
 #include "eblistwidgetitem.h"
 #include "ebtreewidgetitem.h"
 #include "ebmessagebox.h"
-#include <dialogmainframe.h>
+#include <ebdialogmainframe.h>
 #include <ebdialogcontactinfo.h>
 
 EbContextMenu::EbContextMenu(Type type,QWidget * parent)

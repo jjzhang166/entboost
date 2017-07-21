@@ -1,7 +1,8 @@
 #include "ebwidgetmygroup.h"
-#include "iconhelper.h"
+#include "ebiconhelper.h"
 #include "ebtreewidgetitem.h"
 #include "ebmessagebox.h"
+#include <ebdialogviewecard.h>
 
 EbWidgetMyGroup::EbWidgetMyGroup(EB_VIEW_MODE viewMode, QWidget *parent) : EbWidgetTreeSelectBase(viewMode, parent)
   , m_contextMenu(0)
@@ -292,6 +293,12 @@ void EbWidgetMyGroup::onItemEntered(QTreeWidgetItem *item, int /*column*/)
     /// -2（配合下面的 y+1）实现删除按钮显示时，保留ITEM边框，
     const int buttonSize = rectItem.height()-2;
     const EbTreeWidgetItem* ebitem = (EbTreeWidgetItem*)item;
+
+    /// 处理显示电子名片 浮动条
+    const QPoint pointIconRight = this->mapToGlobal(rectItem.topLeft());
+    const QRect rectIconGlobal( pointIconRight.x()-buttonSize,pointIconRight.y(),buttonSize*2,buttonSize );
+    theApp->dialgoViewECard(rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
+
     if (m_viewMode==EB_VIEW_SELECT_USER) {
         m_pushButtonCall->hide();
         m_pushButtonEdit->hide();

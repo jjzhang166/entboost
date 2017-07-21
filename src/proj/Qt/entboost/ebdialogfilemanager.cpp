@@ -1,6 +1,6 @@
 #include "ebdialogfilemanager.h"
 #include "ui_ebdialogfilemanager.h"
-#include <iconhelper.h>
+#include <ebiconhelper.h>
 #include <eblistwidgetitem.h>
 #include <ebmessagebox.h>
 #include <QTimer>
@@ -34,17 +34,17 @@ EbDialogFileManager::EbDialogFileManager(QWidget *parent) :
     connect( ui->listWidgetTranedFiles,SIGNAL(itemDoubleClicked(QListWidgetItem*)),this,SLOT(onItemDoubleClicked(QListWidgetItem*)) );
 
     ui->pushButtonOpenFile->setParent(ui->listWidgetTranedFiles);
-    IconHelper::Instance()->SetIcon(ui->pushButtonOpenFile,QChar(0xf016),12 );
+    EbIconHelper::Instance()->SetIcon(ui->pushButtonOpenFile,QChar(0xf016),12 );
     ui->pushButtonOpenFile->setObjectName("CallButton");
     ui->pushButtonOpenFile->setVisible(false);
     connect( ui->pushButtonOpenFile,SIGNAL(clicked()),this,SLOT(onClickedButtonOpenFile()) );
     ui->pushButtonOpenDir->setParent(ui->listWidgetTranedFiles);
-    IconHelper::Instance()->SetIcon(ui->pushButtonOpenDir,QChar(0xf07c),12 );
+    EbIconHelper::Instance()->SetIcon(ui->pushButtonOpenDir,QChar(0xf07c),12 );
     ui->pushButtonOpenDir->setObjectName("CallButton");
     ui->pushButtonOpenDir->setVisible(false);
     connect( ui->pushButtonOpenDir,SIGNAL(clicked()),this,SLOT(onClickedButtonOpenDir()) );
     ui->pushButtonDeleteFile->setParent(ui->listWidgetTranedFiles);
-    IconHelper::Instance()->SetIcon(ui->pushButtonDeleteFile,QChar(0xf014),12 );
+    EbIconHelper::Instance()->SetIcon(ui->pushButtonDeleteFile,QChar(0xf014),12 );
     ui->pushButtonDeleteFile->setObjectName("CallDelButton");
     ui->pushButtonDeleteFile->setVisible(false);
     connect( ui->pushButtonDeleteFile,SIGNAL(clicked()),this,SLOT(onClickedButtonDeleteFile()) );

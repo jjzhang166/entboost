@@ -5,9 +5,9 @@
 #include <QLabel>
 #include <boost/shared_ptr.hpp>
 //#include <stl/locklist.h>
-#include "dialogchatbase.h"
+#include "ebdialogchatbase.h"
 
-class DialogWorkFrame;
+class EbDialogWorkFrame;
 
 class EbFrameItem : public QObject
 {
@@ -24,10 +24,10 @@ public:
         return EbFrameItem::pointer( new EbFrameItem(itemType) );
     }
 
-    static EbFrameItem::pointer create(const DialogChatBase::pointer& dialogChatBase) {
+    static EbFrameItem::pointer create(const EbDialogChatBase::pointer& dialogChatBase) {
         return EbFrameItem::pointer( new EbFrameItem(dialogChatBase) );
     }
-    EbFrameItem(const DialogChatBase::pointer& dialogChatBase);
+    EbFrameItem(const EbDialogChatBase::pointer& dialogChatBase);
     EbFrameItem(FRAME_ITEM_TYPE itemType);
     virtual ~EbFrameItem(void);
 
@@ -40,9 +40,9 @@ public:
 //    QPushButton* buttonClose(void) const {return m_pushButtonClose;}
 //    void setItemText(const QString & text);
     const QString & itemText(void) const {return m_itemText;}
-    DialogWorkFrame * dialogWorkFrame(void) const {return m_dialogWorkFrame;}
+    EbDialogWorkFrame * dialogWorkFrame(void) const {return m_dialogWorkFrame;}
 //    void updateWorkFrameSize(bool showLeft,int size);
-    const DialogChatBase::pointer & dialogChatBase(void) const {return m_dialogChatBase;}
+    const EbDialogChatBase::pointer & dialogChatBase(void) const {return m_dialogChatBase;}
     mycp::bigint callId(void) const {return (m_dialogChatBase.get()==0)?0:m_dialogChatBase->callId();}
     mycp::bigint groupId(void) const {return (m_dialogChatBase.get()==0)?0:m_dialogChatBase->groupId();}
     mycp::bigint fromUserId(void) const {return (m_dialogChatBase.get()==0)?0:m_dialogChatBase->fromUserId();}
@@ -80,8 +80,8 @@ public slots:
 private:
     FRAME_ITEM_TYPE m_itemType;
     QString m_itemText;
-    DialogChatBase::pointer m_dialogChatBase;
-    DialogWorkFrame * m_dialogWorkFrame;
+    EbDialogChatBase::pointer m_dialogChatBase;
+    EbDialogWorkFrame * m_dialogWorkFrame;
     QPushButton * m_pushButtonLeft;
     QLabel * m_labelUnreadMsg;
     QLabel * m_labelImage;

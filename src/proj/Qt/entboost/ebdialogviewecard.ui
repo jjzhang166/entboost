@@ -78,6 +78,32 @@
     <string>type</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pushButtonSendMsg">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>250</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>send msg</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButtonAddContact">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>250</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>add contact</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

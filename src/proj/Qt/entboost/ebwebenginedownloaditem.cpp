@@ -1,6 +1,6 @@
 #include "ebwebenginedownloaditem.h"
 #include "ebclientapp.h"
-#include <dialogmainframe.h>
+#include <ebdialogmainframe.h>
 
 inline qint64 getNextBigFileId(void)
 {

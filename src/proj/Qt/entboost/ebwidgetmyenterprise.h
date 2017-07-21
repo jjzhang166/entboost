@@ -54,6 +54,7 @@ private:
     EbWidgetItemInfo::pointer m_pUpdateEntItemInfo;
     int m_timerIdUpdateGroupCount;
     CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pUpdateGroupCountList;	// group_id->
+//    EB_EnterpriseInfo m_enterpriseInfo;
 };
 
 #endif // EBWIDGETMYENTERPRISE_H
