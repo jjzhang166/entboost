@@ -551,7 +551,9 @@ void EbContextMenu::onCallItem(const EbWidgetItemInfo::pointer &itemInfo)
     }
     else if (itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
         theApp->m_pAutoCallFromUserIdList.remove(itemInfo->m_nUserId);
-        theApp->m_ebum.EB_CallMember(itemInfo->m_sMemberCode,0);
+        if (theApp->m_ebum.EB_CallMember(itemInfo->m_sMemberCode,0)!=0) {
+            theApp->m_ebum.EB_CallUserId(itemInfo->m_nUserId,0);
+        }
     }
     else if (itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_GROUP) {
         theApp->m_pAutoCallGroupIdList.remove(itemInfo->m_sGroupCode);

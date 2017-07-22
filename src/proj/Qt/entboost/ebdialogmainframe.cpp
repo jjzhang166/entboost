@@ -2246,20 +2246,19 @@ void EbDialogMainFrame::onBroadcastMsg(QEvent *e)
                    "VALUES(%lld,0,-1,%lld,'%s',%d,'%s')",
              pApMsgInfo->m_nMsgId, nFromUserid, sFromAccount.c_str(), nMsgType, sMsgName.c_str() );
     theApp->m_sqliteUser->execute(sql);
-//    if (this->m_pDlgMySession != NULL && m_pDlgMySession->GetSafeHwnd())
-//    {
-//        CCallRecordInfo::pointer pCallRecordInfo = CCallRecordInfo::create();
-//        pCallRecordInfo->m_sCallId = pApMsgInfo->m_nMsgId;
-//        pCallRecordInfo->m_sGroupName = sMsgName;	// *
-//        pCallRecordInfo->m_sGroupCode = 0;
-//        pCallRecordInfo->m_sMemberCode = -1;
-//        pCallRecordInfo->m_nFromUserId = nFromUserid;
-//        pCallRecordInfo->m_sFromAccount = sFromAccount;
-//        pCallRecordInfo->m_nFromType = nMsgType;
-//        pCallRecordInfo->m_tTime = time(0);
-//        pCallRecordInfo->m_bRead = false;
-//        m_pDlgMySession->InsertCallRecord(pCallRecordInfo,true);
-//    }
+    if (this->m_widgetMySession!=0) {
+        EbCallRecordInfo::pointer pCallRecordInfo = EbCallRecordInfo::create();
+        pCallRecordInfo->m_sCallId = pApMsgInfo->m_nMsgId;
+        pCallRecordInfo->m_sGroupName = sMsgName;	/// *
+        pCallRecordInfo->m_sGroupCode = 0;
+        pCallRecordInfo->m_sMemberCode = -1;
+        pCallRecordInfo->m_nFromUserId = nFromUserid;
+        pCallRecordInfo->m_sFromAccount = sFromAccount;
+        pCallRecordInfo->m_nFromType = nMsgType;
+        pCallRecordInfo->m_tTime = time(0);
+        pCallRecordInfo->m_bRead = false;
+        m_widgetMySession->insertCallRecord(pCallRecordInfo,true);
+    }
 
 //    //CString sContent;
 //    //if (theApp.GetGroupMsgSugId()>0)

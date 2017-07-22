@@ -16,8 +16,9 @@ EbDialogMessageTip::EbDialogMessageTip(QWidget *parent) :
     ui->setupUi(this);
 
     /// 去掉标题栏
-    this->setWindowFlags( Qt::FramelessWindowHint );
-//    this->setWindowFlags( Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint );
+    /// 使用 activateWindow MAC 其实也是一样效果
+//    this->setWindowFlags( Qt::FramelessWindowHint );
+    this->setWindowFlags( Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint );
     /// 屏蔽 ESC 按键不退出
     this->setFilterEscapeKey(true);
     this->setFilterEnterKey(true);
@@ -330,7 +331,7 @@ void EbDialogMessageTip::showMsgTip()
     this->setGeometry(rect);
     if (!this->isVisible()) {
         this->show();
-        this->activateWindow();
+//        this->activateWindow();
     }
     else {
         return;
