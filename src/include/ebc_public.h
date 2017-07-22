@@ -103,10 +103,10 @@ const std::string theColorSkinsString[] = {"紫色","靛青","蓝色","绿色","
 static std::string theDayOfWeek[] = {"周日","周一","周二","周三","周四","周五","周六"};
 static char theAllFilesFilter[] = "All Files (*.*)|*.*||";
 
-#ifndef bigint
-//typedef __int64				bigint;
-typedef mycp::bigint        bigint;
-#endif
+//#ifndef bigint
+////typedef __int64				bigint;
+//typedef mycp::bigint        bigint;
+//#endif
 const double const_kb_size = 1024.0;
 const double const_mb_size = 1024*const_kb_size;
 const double const_gb_size = 1024*const_mb_size;

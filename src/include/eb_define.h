@@ -373,7 +373,7 @@ typedef enum EB_STATE_CODE
 	, EB_STATE_MEMORY_ERROR								// 83 内存不够
 	, EB_STATE_DATA_ERROR									// 84 数据或格式错误
 	, EB_STATE_CREATE_FILE_ERROR					// 85 创建文件失败
-	, EB_STATE_FORBIG_SPEECH							// 86 禁言限制
+	, EB_STATE_FORBID_SPEECH							// 86 禁言限制
         , EB_STATE_GROUP_FORBID_SPEECH				// 87 群禁言限制
 	, EB_STATE_ID_NOT_EXIST								// 88 ID或编号不存在
 	, EB_STATE_INTERVAL_TIME_LIMIT				// 89 间隔时间限制

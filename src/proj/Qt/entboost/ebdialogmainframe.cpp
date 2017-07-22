@@ -2492,7 +2492,7 @@ void EbDialogMainFrame::onSendingFile(QEvent *e)
         EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_WARNING,default_warning_auto_close );
         return;
     }
-    case EB_STATE_FORBIG_SPEECH: {
+    case EB_STATE_FORBID_SPEECH: {
         /// 你被禁言中：<br>不能发送群文件！
         QString text = theLocales.getLocalText("on-send-file.forbid-speech.text","Forbid Speech");
         text.replace( "[STATE_CODE]", QString::number((int)state) );

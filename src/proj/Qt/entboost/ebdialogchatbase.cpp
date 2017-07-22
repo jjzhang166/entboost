@@ -1131,7 +1131,7 @@ void EbDialogChatBase::processMsg(bool bReceive,const CCrRichInfo* pCrMsgInfo,EB
         m_textBrowserMessage->addLineString(0,theLocales.getLocalText("chat-msg-text.group-forbid-speech","Group Forbid Speech") );
         return;
     }
-    else if (nState==EB_STATE_FORBIG_SPEECH) {
+    else if (nState==EB_STATE_FORBID_SPEECH) {
         /// 你被禁言中！
         m_textBrowserMessage->addLineString(0,theLocales.getLocalText("chat-msg-text.forbid-speech","Forbid Speech") );
         return;
