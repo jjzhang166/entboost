@@ -14,28 +14,24 @@ class EbDialogChangeHead : public EbDialogBase
 
 public:
     explicit EbDialogChangeHead(QWidget *parent = 0);
-    ~EbDialogChangeHead();
+    ~EbDialogChangeHead(void);
 
     void updateLocaleInfo(void);
-    void setHeadResorceFile(const QString & headResourceFile);
-
+    void setHeadResorceFile(const QString &headResourceFile);
 signals:
-    void onSelectedImage(qint64 resourceId,const QString & resourceFile);
-
+    void onSelectedImage(qint64 resourceId,const QString &resourceFile);
 public slots:
     void onClickedPushButtonDefault(void);
     void onClickedPushButtonCustom(void);
     void updateClickedPushButton(const QObject *sender);
     void onClickedPushButtonOpenFile(void);
     void onClickedListWidgetDefaultHeads(const QModelIndex &index);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *);
-//    virtual void timerEvent(QTimerEvent *);
-    virtual void accept();
+    virtual void resizeEvent(QResizeEvent *e);
+//    virtual void timerEvent(QTimerEvent *e);
+    virtual void accept(void);
 
     void loadDefaultHeadImage(void);
-
 private:
     Ui::EbDialogChangeHead *ui;
     QLabel * m_labelDefaultIcon;

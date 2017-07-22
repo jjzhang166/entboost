@@ -12,27 +12,23 @@ class EbDialogEmotionSelect;
 class EbDialogEmotionSelect : public EbDialogBase
 {
     Q_OBJECT
-
 public:
     explicit EbDialogEmotionSelect(QWidget *parent = 0);
-    ~EbDialogEmotionSelect();
+    ~EbDialogEmotionSelect(void);
 
     void updateLocaleInfo(void);
 signals:
-    void selectedResource(const QIcon& icon,mycp::bigint resourceId,const QString& resourceCmInfo,const QString & resourceFilePath);
-
+    void selectedResource(const QIcon &icon,mycp::bigint resourceId, const QString &resourceCmInfo,const QString &resourceFilePath);
 public slots:
-    void onItemClicked(QListWidgetItem* item);
-    void onItemEntered(QListWidgetItem* item);
-
+    void onItemClicked(QListWidgetItem *item);
+    void onItemEntered(QListWidgetItem *item);
 protected:
-    virtual void resizeEvent(QResizeEvent *);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void focusOutEvent(QFocusEvent *e);
+    virtual bool eventFilter(QObject *obj, QEvent *e);
+    virtual void timerEvent(QTimerEvent *e);
     void checkFocusOut(void);
-    virtual void focusOutEvent(QFocusEvent *event);
-    virtual bool eventFilter(QObject *obj, QEvent *ev);
     void loadEmotion(void);
-    virtual void timerEvent(QTimerEvent * event);
-
 private:
     Ui::EbDialogEmotionSelect *ui;
     int m_timerIdLoadEmotion;

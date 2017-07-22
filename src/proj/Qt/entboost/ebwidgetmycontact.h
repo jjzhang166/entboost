@@ -16,12 +16,11 @@ public:
     explicit EbWidgetMyContact(EB_VIEW_MODE viewMode, QWidget *parent = nullptr);
     virtual ~EbWidgetMyContact(void);
 
-    const EbWidgetItemInfo::pointer onUGInfo(const EB_UGInfo* ugInfo);
-    void onUGDelete(const EB_UGInfo* ugInfo);
-    void onContactInfo(const EB_ContactInfo* contactInfo);
-    void onContactDelete(const EB_ContactInfo* contactInfo);
-    void onContactHeadChange(const EB_ContactInfo* contactInfo);
-
+    const EbWidgetItemInfo::pointer onUGInfo(const EB_UGInfo *ugInfo);
+    void onUGDelete(const EB_UGInfo *ugInfo);
+    void onContactInfo(const EB_ContactInfo *contactInfo);
+    void onContactDelete(const EB_ContactInfo *contactInfo);
+    void onContactHeadChange(const EB_ContactInfo *contactInfo);
 signals:
 
 public slots:
@@ -33,16 +32,14 @@ public slots:
     void onClickedPushButtonCall(void);
     void onClickedPushButtonEdit(void);
     void onAddContactGroup(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void contextMenuEvent(QContextMenuEvent *e);
     void createMenuData(void);
-    virtual void contextMenuEvent(QContextMenuEvent * e);
-
     void deleteGroupItem(QTreeWidgetItem *item);
 private:
-    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pGroupItemInfo;	// ug_id->
-    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pContactItemInfo;	// contact_id->
+    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pGroupItemInfo;	/// ug_id->
+    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pContactItemInfo;	/// contact_id->
     EbContextMenu * m_contextMenu;
     time_t m_timeNewGroup;
     bool m_inGroupEdit;

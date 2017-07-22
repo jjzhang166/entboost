@@ -12,7 +12,6 @@ class EbDialogViewECard;
 class EbDialogViewECard : public EbDialogBase
 {
     Q_OBJECT
-
 public:
     enum VIEW_TYPE {
         VIEW_UNKNOWE
@@ -21,30 +20,28 @@ public:
         , VIEW_MEMBER
         , VIEW_CONTACT
     };
-
     explicit EbDialogViewECard(QWidget *parent = 0);
-    ~EbDialogViewECard();
+    ~EbDialogViewECard(void);
 
     void updateLocaleInfo(void);
     bool setItemInfo(const EbWidgetItemInfo::pointer &itemInfo);
-    void setEnterpriseInfo(const EB_EnterpriseInfo* pEnterpriseInfo);
-    void setGroupInfo(const EB_GroupInfo* pGroupInfo,const EB_EnterpriseInfo* pEnterpriseInfo);
+    void setEnterpriseInfo(const EB_EnterpriseInfo *enterpriseInfo);
+    void setGroupInfo(const EB_GroupInfo *groupInfo, const EB_EnterpriseInfo *enterpriseInfo);
     void setGroupInfo(eb::bigint groupId);
-    void setMemberInfo(const EB_MemberInfo* pMemberInfo,const EB_GroupInfo* pGroupInfo);
+    void setMemberInfo(const EB_MemberInfo *memberInfo, const EB_GroupInfo *groupInfo);
     void setMemberInfo(eb::bigint groupId, eb::bigint memberUserId);
-    void setContactInfo(const EB_ContactInfo* pContactInfo);
+    void setContactInfo(const EB_ContactInfo *contactInfo);
     void setContactInfo1(eb::bigint contactId);
     void setContactInfo2(eb::bigint userId);
 
-    void setMouseEnter(const QRect & rectValid, bool showImmediate=false);
+    void setMouseEnter(const QRect &rectValid, bool showImmediate=false);
     void hideReset(void);
-
 public slots:
     void onClieckedButtonAddContact(void);
     void onClieckedButtonSendMsg(void);
 protected:
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void timerEvent(QTimerEvent *event);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void timerEvent(QTimerEvent *e);
     void updateEnterpriseInfo(void);
     void updateGroupInfo(void);
     void updateMemberInfo(void);

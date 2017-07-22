@@ -2,10 +2,6 @@
 #include <ebiconhelper.h>
 
 const QSize const_msg_label_size(16,16);
-EbAppButtonItem::pointer EbAppButtonItem::create(const QRect &rect, const EB_SubscribeFuncInfo & subscribeFuncInfo, QWidget * parent)
-{
-    return EbAppButtonItem::pointer(new EbAppButtonItem(rect,subscribeFuncInfo,parent));
-}
 
 EbAppButtonItem::EbAppButtonItem(const QRect &rect, const EB_SubscribeFuncInfo &subscribeFuncInfo, QWidget * parent)
     : QObject(parent)
@@ -37,6 +33,10 @@ EbAppButtonItem::EbAppButtonItem(const QRect &rect, const EB_SubscribeFuncInfo &
     move( rect.x(), rect.y() );
 }
 
+EbAppButtonItem::pointer EbAppButtonItem::create(const QRect &rect, const EB_SubscribeFuncInfo & subscribeFuncInfo, QWidget * parent)
+{
+    return EbAppButtonItem::pointer(new EbAppButtonItem(rect,subscribeFuncInfo,parent));
+}
 void EbAppButtonItem::move(int x, int y)
 {
     m_buttonApp->move( x, y );

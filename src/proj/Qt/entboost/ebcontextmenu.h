@@ -22,20 +22,18 @@ public:
     virtual ~EbContextMenu(void);
 
     QAction * exec(const QPoint & pos);
-    QAction * setMenuActionVisible(int commandId,bool visible);
+    QAction * setMenuActionVisible(int commandId, bool visible);
     bool updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo);
 
     void onCallItem(const EbWidgetItemInfo::pointer &itemInfo);
     void onEditItem(const EbWidgetItemInfo::pointer &itemInfo);
-
 signals:
     void addContactGroup(void);
     void deleteSession(const EbWidgetItemInfo::pointer &itemInfo);
     void clearSession(void);
-
 public slots:
-    void onTriggeredActionDeleteSession();
-    void onTriggeredActionClearSession();
+    void onTriggeredActionDeleteSession(void);
+    void onTriggeredActionClearSession(void);
 
     void onTriggeredActionAddContact(void);
     void onTriggeredActionEditContact(void);

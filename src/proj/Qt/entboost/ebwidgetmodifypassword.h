@@ -15,7 +15,6 @@ public:
     void updateLocaleInfo(void);
     void setFocus(void);
     void save(void);
-
 signals:
 
 public slots:
@@ -27,7 +26,6 @@ private:
     QLineEdit * m_lineEditNewPassword;
     QLabel * m_labelConfirmPassword;
     QLineEdit * m_lineEditConfirmPassword;
-
 };
 
 #endif // EBWIDGETMODIFYPASSWORD_H

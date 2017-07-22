@@ -15,11 +15,10 @@ public:
     void setSelectedUserCallback(EbSelectedUserCallback *cb) {m_selectedUserCallback=cb;}
     void updateLocaleInfo(void);
     void timerCheckState(void);
-
 signals:
-    void selectedItemInfo(const EbWidgetItemInfo::pointer&);
-
+    void selectedItemInfo(const EbWidgetItemInfo::pointer &itemInfo);
 public slots:
+
 protected:
     EB_VIEW_MODE m_viewMode;
     EbSelectedUserCallback * m_selectedUserCallback;

@@ -20,34 +20,28 @@ public:
         , FRAME_ITEM_CALL_DIALOG        /// 聊天会话
         , FRAME_ITEM_UNKNOWN
     };
-    static EbFrameItem::pointer create(FRAME_ITEM_TYPE itemType) {
-        return EbFrameItem::pointer( new EbFrameItem(itemType) );
-    }
-
-    static EbFrameItem::pointer create(const EbDialogChatBase::pointer& dialogChatBase) {
-        return EbFrameItem::pointer( new EbFrameItem(dialogChatBase) );
-    }
-    EbFrameItem(const EbDialogChatBase::pointer& dialogChatBase);
+    EbFrameItem(const EbDialogChatBase::pointer &dialogChatBase);
     EbFrameItem(FRAME_ITEM_TYPE itemType);
     virtual ~EbFrameItem(void);
+    static EbFrameItem::pointer create(FRAME_ITEM_TYPE itemType);
+    static EbFrameItem::pointer create(const EbDialogChatBase::pointer &dialogChatBase);
 
     FRAME_ITEM_TYPE itemType(void) const {return m_itemType;}
     bool isItemType(FRAME_ITEM_TYPE itemType) const {return m_itemType==itemType?true:false;}
-
     QWidget* parent(void) const;
 
-    void buildButton(int leftWidth,QWidget *parent = 0);
+    void buildButton(int leftWidth, QWidget *parent = 0);
 //    QPushButton* buttonClose(void) const {return m_pushButtonClose;}
 //    void setItemText(const QString & text);
-    const QString & itemText(void) const {return m_itemText;}
-    EbDialogWorkFrame * dialogWorkFrame(void) const {return m_dialogWorkFrame;}
+    const QString &itemText(void) const {return m_itemText;}
+    EbDialogWorkFrame *dialogWorkFrame(void) const {return m_dialogWorkFrame;}
 //    void updateWorkFrameSize(bool showLeft,int size);
-    const EbDialogChatBase::pointer & dialogChatBase(void) const {return m_dialogChatBase;}
+    const EbDialogChatBase::pointer &dialogChatBase(void) const {return m_dialogChatBase;}
     mycp::bigint callId(void) const {return (m_dialogChatBase.get()==0)?0:m_dialogChatBase->callId();}
     mycp::bigint groupId(void) const {return (m_dialogChatBase.get()==0)?0:m_dialogChatBase->groupId();}
     mycp::bigint fromUserId(void) const {return (m_dialogChatBase.get()==0)?0:m_dialogChatBase->fromUserId();}
     /// * 检查按钮点击状态：1=点击关闭，2=上边点击，0=没有点击
-    int checkLeftButtonClickState(const QPushButton* button, const QPoint& pt) const;
+    int checkLeftButtonClickState(const QPushButton *button, const QPoint &pt) const;
     void requestClose(void);
 //    QPushButton* buttonLeft(void) const {return m_pushButtonLeft;}
 
@@ -57,26 +51,23 @@ public:
     void onMoveEvent(void);
     void setChecked(bool checked, bool hideButton=false);
     bool isChecked(void) const;
-    bool checkShowHideCloseButton(const QPoint& pt);
+    bool checkShowHideCloseButton(const QPoint &pt);
     void setCloseButtonVisible(bool visible);
-    void setCloseTime(qint64 t) {m_closeTime = t;}
+    void setCloseTime(qint64 t) {m_closeTime=t;}
     qint64 closeTime(void) const {return m_closeTime;}
-    void clearUnreadMsg(bool bFromUserClick=false);
+    void clearUnreadMsg(bool fromUserClick=false);
     void addUnreadMsg(void);
-    void setUnreadMsg(size_t nUnreadMsgCount);
+    void setUnreadMsg(size_t unreadMsgCount);
 
-    void onUserLineStateChange(eb::bigint nGroupCode, eb::bigint nUserId, EB_USER_LINE_STATE bLineState);
-    void onMemberHeadChange(const EB_MemberInfo * pMemberInfo);
-    void onContactHeadChange(const EB_ContactInfo* pContactInfo);
-    void onGroupInfo(const EB_GroupInfo* pGroupInfo);
+    void onUserLineStateChange(eb::bigint groupId, eb::bigint userId, EB_USER_LINE_STATE lineState);
+    void onMemberHeadChange(const EB_MemberInfo * memberInfo);
+    void onContactHeadChange(const EB_ContactInfo* contactInfo);
+    void onGroupInfo(const EB_GroupInfo* groupInfo);
     bool timerCheckState(void);
-
 signals:
-    void checkedFrameitem(const EbFrameItem*);
-
+    void checkedFrameitem(const EbFrameItem *frameItem);
 public slots:
-    void onWorkItemSizeChange(bool fromAboutBlank,int size);
-
+    void onWorkItemSizeChange(bool fromAboutBlank, int size);
 private:
     FRAME_ITEM_TYPE m_itemType;
     QString m_itemText;
@@ -88,6 +79,5 @@ private:
     QPushButton * m_pushButtonClose;
     qint64 m_closeTime;
     size_t m_nUnreadMsgCount;
-
 };
 #endif // EBFRAMEITEM_H

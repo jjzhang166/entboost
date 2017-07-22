@@ -12,23 +12,20 @@ class EbDialogRegister;
 class EbDialogRegister : public EbDialogBase
 {
     Q_OBJECT
-
 public:
     explicit EbDialogRegister(QWidget *parent = 0);
-    ~EbDialogRegister();
+    ~EbDialogRegister(void);
 
-    const QString& account(void) const {return m_sAccount;}
-//    const QString& password(void) const {return m_sPassword;}
-    const QString& userName(void) const {return m_sUserName;}
-    const QString& enterpriseName(void) const {return m_sEnterpriseName;}
+    const QString &account(void) const {return m_sAccount;}
+//    const QString &password(void) const {return m_sPassword;}
+    const QString &userName(void) const {return m_sUserName;}
+    const QString &enterpriseName(void) const {return m_sEnterpriseName;}
     mycp::bigint registerUserId(void) const {return m_nRegisterUserId;}
-
 protected:
     virtual void accept(void);
     virtual void customEvent(QEvent *e);
 
     void onRegisterResponse(QEvent *e);
-
 private:
     Ui::EbDialogRegister *ui;
     CEBAppClient m_pEBAppClient;

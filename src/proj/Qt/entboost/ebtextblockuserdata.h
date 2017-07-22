@@ -9,8 +9,6 @@
 class EbTextBlockUserData : public QTextBlockUserData
 {
 public:
-    EbTextBlockUserData(qint64 msgId);
-    virtual ~EbTextBlockUserData(void);
     enum TypeFlag {
         Unknown   = 0x0,
         TitleMessage = 0x1,
@@ -18,6 +16,8 @@ public:
         ReceiveMessage = 0x4,
         FileMessage = 0x8
     };
+    EbTextBlockUserData(qint64 msgId);
+    virtual ~EbTextBlockUserData(void);
 
     bool isTitleMessage(void) const {return (m_flags&TitleMessage)!=0?true:false;}
     bool isChatMessage(void) const {return (m_flags&ChatMessage)!=0?true:false;}

@@ -18,13 +18,12 @@ public:
     explicit EbWidgetMyEnterprise(EB_VIEW_MODE viewMode, QWidget *parent = nullptr);
     virtual ~EbWidgetMyEnterprise(void);
 
-    void onEnterpriseInfo(const EB_EnterpriseInfo* pEnterpriseInfo);
-    void SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemInfo, const EB_MemberInfo* pMemberInfo, EB_SORT_ITEMS_FLAG nSortItems=EB_AUTO_SORT);
-    void onGroupInfo(const EB_GroupInfo * pGroupInfo);
-    void onMemberInfo(const EB_MemberInfo * pMemberInfo, bool bChangeLineState);
-    void onRemoveGroup(const EB_GroupInfo* pGroupInfo);
-    void deleteMemberInfo(const EB_GroupInfo* pGroupInfo, eb::bigint nMemberCode, bool fromDeleteGroup);
-
+    void onEnterpriseInfo(const EB_EnterpriseInfo *enterpriseInfo);
+    void SetMemberInfo(const EbWidgetItemInfo::pointer &groupItemInfo, const EB_MemberInfo *memberInfo, EB_SORT_ITEMS_FLAG sortItems=EB_AUTO_SORT);
+    void onGroupInfo(const EB_GroupInfo *groupInfo);
+    void onMemberInfo(const EB_MemberInfo *memberInfo, bool changeLineState);
+    void onRemoveGroup(const EB_GroupInfo *groupInfo);
+    void deleteMemberInfo(const EB_GroupInfo *gGroupInfo, eb::bigint memberId, bool fromDeleteGroup);
 signals:
 
 public slots:
@@ -35,20 +34,18 @@ public slots:
     void onClickedPushButtonSelect(void);
     void onClickedPushButtonCall(void);
     void onClickedPushButtonEdit(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *);
-    void createMenuData(void);
-    virtual void contextMenuEvent(QContextMenuEvent * e);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void contextMenuEvent(QContextMenuEvent *e);
     virtual void timerEvent(QTimerEvent *e);
 
-    void setGroupCount(const EbWidgetItemInfo::pointer& pGroupItem, eb::bigint sGroupCode, bool bFromMemberInfo);
-    void setGroupCount(const EbWidgetItemInfo::pointer& pGroupItem, const EB_GroupInfo* pGroupInfo, bool bFromMemberInfo);
-
+    void createMenuData(void);
+    void setGroupCount(const EbWidgetItemInfo::pointer &groupItem, eb::bigint groupId, bool fromMemberInfo);
+    void setGroupCount(const EbWidgetItemInfo::pointer &groupItem, const EB_GroupInfo *gGroupInfo, bool fromMemberInfo);
 private:
-    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pEntItemInfo;	// ent_code->
-    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pDepItemInfo;	// dep_code->
-    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pEmpItemInfo;	// emp_code->
+    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pEntItemInfo;	/// ent_code->
+    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pDepItemInfo;	/// dep_code->
+    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pEmpItemInfo;	/// emp_code->
     EbContextMenu * m_contextMenu;
     int m_timerIdUpdateEnterpriseCount;
     EbWidgetItemInfo::pointer m_pUpdateEntItemInfo;

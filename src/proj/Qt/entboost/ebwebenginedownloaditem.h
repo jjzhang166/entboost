@@ -10,33 +10,30 @@ class EbWebEngineDownloadItem : public QObject
     Q_OBJECT
 public:
     typedef boost::shared_ptr<EbWebEngineDownloadItem> pointer;
-    EbWebEngineDownloadItem(QWebEngineDownloadItem * download, QObject * parent);
-    static EbWebEngineDownloadItem::pointer create(QWebEngineDownloadItem * download,QObject * parent=0);
+    EbWebEngineDownloadItem(QWebEngineDownloadItem *download, QObject *parent);
+    static EbWebEngineDownloadItem::pointer create(QWebEngineDownloadItem *download, QObject *parent=0);
 
     qint64 msgId(void) const {return m_msgId;}
     quint32 downloadId(void) const {return m_downloadId;}
 //    void setState(QWebEngineDownloadItem::DownloadState state) {m_state=state;}
     QWebEngineDownloadItem::DownloadState state(void) const {return m_state;}
 //    void setTotalBytes(qint64 v) {m_totalBytes=v;}
-    qint64 totalBytes() const {return m_totalBytes;}
+    qint64 totalBytes(void) const {return m_totalBytes;}
 //    void setReceivedBytes(qint64 v) {m_receivedBytes=v;}
-    qint64 receivedBytes() const {return m_receivedBytes;}
-    const QUrl &url() const {return m_url;}
-    const QString &mimeType() const {return m_mimeType;}
+    qint64 receivedBytes(void) const {return m_receivedBytes;}
+    const QUrl &url(void) const {return m_url;}
+    const QString &mimeType(void) const {return m_mimeType;}
 //    void setPath(const QString &v) {m_path=v;}
-    const QString &path() const {return m_path;}
-    bool isFinished() const {return m_state==QWebEngineDownloadItem::DownloadCompleted?true:false;}
-
+    const QString &path(void) const {return m_path;}
+    bool isFinished(void) const {return m_state==QWebEngineDownloadItem::DownloadCompleted?true:false;}
 signals:
 //    void downloadFinished(const EbWebEngineDownloadItem*);
 ////    void downLoadStateChanged(const EbWebEngineDownloadItem*);
 //    void downloadProgress(const EbWebEngineDownloadItem*);
-
 public slots:
-    void onDownloadFinished();
+    void onDownloadFinished(void);
     void onDownLoadStateChanged(QWebEngineDownloadItem::DownloadState state);
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-
 private:
     QWebEngineDownloadItem * m_downloadItem;
     qint64 m_msgId;

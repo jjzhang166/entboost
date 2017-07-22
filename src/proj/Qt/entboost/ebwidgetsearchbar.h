@@ -16,7 +16,7 @@ public:
     virtual ~EbWidgetSearchBar(void);
 
     void updateLocaleInfo(void);
-    void changeUrl(const QString& url, bool searchFucus, bool searchSelectAll);
+    void changeUrl(const QString &url, bool searchFucus, bool searchSelectAll);
     void updateLoadState(bool loadFinished, bool canGoBack, bool canGoForward);
     void onMoveEvent(void);
 //    const QRect &searchEditRect(void);
@@ -28,7 +28,6 @@ signals:
     void clickedStop(void);
     void searchKeyPressEnter(const QString &text);
     void saveUrlHistory(void);
-
 public slots:
     void onClickedButtonBack(void);
     void onClickedButtonForward(void);
@@ -46,13 +45,11 @@ public slots:
     void onClickedSearchResultUrl(const QString &url);
     void onListResultsKeyPressFirstItemUp(void);
     void onListResultsKeyPressEsc(void);
-
 protected:
 //    void moveSize(void);
-    virtual void resizeEvent(QResizeEvent *event);
-    virtual bool eventFilter(QObject *watched, QEvent *event);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual bool eventFilter(QObject *watched, QEvent *e);
 //    virtual bool event(QEvent *e);
-
 private:
     QPushButton * m_buttonBack;
     QPushButton * m_buttonForward;

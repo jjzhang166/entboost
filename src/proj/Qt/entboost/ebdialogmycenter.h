@@ -15,23 +15,19 @@ class EbWidgetModifyPassword;
 class EbDialogMyCenter : public EbDialogBase
 {
     Q_OBJECT
-
 public:
     explicit EbDialogMyCenter(QWidget *parent = 0);
-    ~EbDialogMyCenter();
+    ~EbDialogMyCenter(void);
 
     void updateLocaleInfo(void);
-    void onAreaInfo(const EB_AreaInfo* pAreaInfo,int nParameter);
-
+    void onAreaInfo(const EB_AreaInfo *areaInfo,int parameter);
 public slots:
     void onClickedPushButtonAccountInfo(void);
     void onClickedPushButtonMySetting(void);
     void onClickedPushButtonModifyPassword(void);
     void udpateClickedPushButton(const QObject *sender);
-
 protected:
     virtual void accept(void);
-
 private:
     Ui::EbDialogMyCenter *ui;
     QLabel * m_labelAccountInfoIcon;

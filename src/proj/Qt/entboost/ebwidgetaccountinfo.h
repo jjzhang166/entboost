@@ -19,15 +19,13 @@ public:
     void load(void);
     void save(void);
     void checkData(void);
-    void onAreaInfo(const EB_AreaInfo* pAreaInfo, int nParameter);
-
+    void onAreaInfo(const EB_AreaInfo *areaInfo, int parameter);
 signals:
 
 public slots:
     void onCurrentIndexChangedArea1(int index);
     void onCurrentIndexChangedArea2(int index);
     void onCurrentIndexChangedArea3(int index);
-
 private:
     QLabel * m_labelAccount;
     QLineEdit * m_lineEditAccount;
@@ -57,7 +55,6 @@ private:
     QLabel * m_labelDescription;
     QPlainTextEdit * m_plainTextEditDescription;
     EB_AccountInfo m_myAccountInfo;
-
 };
 
 #endif // EBWIDGETACCOUNTINFO_H

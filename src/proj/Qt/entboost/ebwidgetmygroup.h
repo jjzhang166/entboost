@@ -15,16 +15,15 @@ class EbWidgetMyGroup : public EbWidgetTreeSelectBase
 {
     Q_OBJECT
 public:
-    explicit EbWidgetMyGroup(EB_VIEW_MODE viewMode,QWidget *parent = 0);
+    explicit EbWidgetMyGroup(EB_VIEW_MODE viewMode, QWidget *parent = 0);
     virtual ~EbWidgetMyGroup(void);
 
-    void SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemInfo, const EB_MemberInfo* pMemberInfo, EB_SORT_ITEMS_FLAG nSortItems=EB_AUTO_SORT);
-    void onGroupInfo(const EB_GroupInfo * pGroupInfo);
-    void onMemberInfo(const EB_MemberInfo * pMemberInfo, bool bChangeLineState);
-    void onRemoveGroup(const EB_GroupInfo* pGroupInfo);
-    void deleteMemberInfo(const EB_GroupInfo* pGroupInfo, eb::bigint nMemberCode, bool fromDeleteGroup);
-//    void deleteGroupInfo(const EB_GroupInfo* pGroupInfo);
-
+    void setMemberInfo(const EbWidgetItemInfo::pointer &groupItemInfo, const EB_MemberInfo *memberInfo, EB_SORT_ITEMS_FLAG sortItems=EB_AUTO_SORT);
+    void onGroupInfo(const EB_GroupInfo *groupInfo);
+    void onMemberInfo(const EB_MemberInfo *memberInfo, bool changeLineState);
+    void onRemoveGroup(const EB_GroupInfo *groupInfo);
+    void deleteMemberInfo(const EB_GroupInfo *groupInfo, eb::bigint memberCode, bool fromDeleteGroup);
+//    void deleteGroupInfo(const EB_GroupInfo *groupInfo);
 signals:
 
 public slots:
@@ -35,15 +34,13 @@ public slots:
     void onClickedPushButtonSelect(void);
     void onClickedPushButtonCall(void);
     void onClickedPushButtonEdit(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void contextMenuEvent(QContextMenuEvent *e);
     void createMenuData(void);
-    virtual void contextMenuEvent(QContextMenuEvent * e);
-
 private:
-    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pDepItemInfo;	// dep_code->
-    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pEmpItemInfo;	// emp_code->
+    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pDepItemInfo;	/// dep_code->
+    CLockMap<eb::bigint,EbWidgetItemInfo::pointer> m_pEmpItemInfo;	/// emp_code->
     EbContextMenu * m_contextMenu;
 };
 

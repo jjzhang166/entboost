@@ -21,10 +21,9 @@ class EbDialogSelectUser : public EbDialogBase
         , public EbSelectedUserCallback
 {
     Q_OBJECT
-
 public:
     explicit EbDialogSelectUser(QWidget *parent = 0);
-    ~EbDialogSelectUser();
+    ~EbDialogSelectUser(void);
 
     void updateLocaleInfo(void);
     void timerCheckState(void);
@@ -32,15 +31,15 @@ public:
     void setSingleSelect(bool b) {m_singleSelect = b;}
     void setSelectedGroupId(eb::bigint v) {m_selectedGroupId = v;}
 
-    void onGroupInfo(const EB_GroupInfo * pGroupInfo);
-    void onMemberInfo(const EB_MemberInfo * pMemberInfo, bool bChangeLineState);
-    void onRemoveGroup(const EB_GroupInfo* pGroupInfo);
-    void deleteMemberInfo(const EB_GroupInfo* pGroupInfo, eb::bigint nMemberCode, bool fromDeleteGroup);
+    void onGroupInfo(const EB_GroupInfo *groupInfo);
+    void onMemberInfo(const EB_MemberInfo *memberInfo, bool changeLineState);
+    void onRemoveGroup(const EB_GroupInfo *groupInfo);
+    void deleteMemberInfo(const EB_GroupInfo *groupInfo, eb::bigint memberId, bool fromDeleteGroup);
 
     CLockMap<tstring,bool> m_existedUser;    /// account->
     CLockMap<tstring,EbWidgetItemInfo::pointer> m_selectedList;
 public slots:
-    void onSelectedItemInfo(const EbWidgetItemInfo::pointer&);
+    void onSelectedItemInfo(const EbWidgetItemInfo::pointer &itemInfo);
     void onItemEnteredSelected(QListWidgetItem *item);
     void updateClickedButton(const QObject *sender);
     void onClickedButtonMyGroup(void);
@@ -59,18 +58,16 @@ public slots:
     void onClickedSearchResultUrl(const QString &url);
     void onListResultsKeyPressFirstItemUp(void);
     void onListResultsKeyPressEsc(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *);
+    virtual void resizeEvent(QResizeEvent *e);
     virtual void accept(void);
 
     /// CEBSearchCallback
-    virtual void onGroupInfo(const EB_GroupInfo* pGroupInfo,const EB_EnterpriseInfo* pEnterpriseInfo, unsigned long dwParam);
-    virtual void onMemberInfo(const EB_GroupInfo* pGroupInfo, const EB_MemberInfo* pMemberInfo, unsigned long dwParam);
-    virtual void onContactInfo(const EB_ContactInfo* pContactInfo, unsigned long dwParam);
+    virtual void onGroupInfo(const EB_GroupInfo *groupInfo, const EB_EnterpriseInfo *enterpriseInfo, unsigned long dwParam);
+    virtual void onMemberInfo(const EB_GroupInfo *groupInfo, const EB_MemberInfo *memberInfo, unsigned long dwParam);
+    virtual void onContactInfo(const EB_ContactInfo *contactInfo, unsigned long dwParam);
     /// EbSelectedUserCallback
     virtual bool isSelectedUser(const EbWidgetItemInfo::pointer &itemInfo);
-
 private:
     Ui::EbDialogSelectUser *ui;
     QLabel * m_labelMyGroupIcon;

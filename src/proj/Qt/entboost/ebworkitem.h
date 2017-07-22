@@ -29,9 +29,7 @@ public:
 //    explicit EbWorkItem(QObject *parent=0);
     explicit EbWorkItem(WORK_ITEM_TYPE itemType);
     virtual ~EbWorkItem(void);
-    static EbWorkItem::pointer create(WORK_ITEM_TYPE itemType) {
-        return EbWorkItem::pointer( new EbWorkItem(itemType) );
-    }
+    static EbWorkItem::pointer create(WORK_ITEM_TYPE itemType);
 
     void setTopButtonWidth(int v) {m_topButtonWidth=v;}
     void setCallInfo(const EbcCallInfo::pointer &v) {m_callInfo=v;}
@@ -39,13 +37,12 @@ public:
     bool isItemType(WORK_ITEM_TYPE itemType) const {return m_itemType==itemType?true:false;}
     mycp::bigint subscribeId(void) const {return m_widgetWorkView==0?0:m_widgetWorkView->m_funcInfo.m_nSubscribeId;}
     mycp::bigint fromSubscribeId(void) const {return m_widgetWorkView==0?0:m_widgetWorkView->m_funcInfo.m_nFromSubscribeId;}
-    void setAppUrl(bool saveUrl, const QString & sUrl, const QString & sPostData);
-    void setFunInfo(const EB_SubscribeFuncInfo& pFuncInfo, bool bOpenNewClose);
+    void setAppUrl(bool saveUrl, const QString &url, const QString &postData);
+    void setFunInfo(const EB_SubscribeFuncInfo& funcInfo, bool openNewClose);
     const QString& appUrl(void) const {return m_appUrl;}
 
     QWidget* parent(void) const;
-
-    void buildButton(bool saveUrl,int topHeight,QWidget *parent = 0);
+    void buildButton(bool saveUrl,int topHeight, QWidget *parent = 0);
     QPushButton* buttonClose(void) const {return m_pushButtonClose;}
     EbWidgetWorkView::pointer widgetWorkView(void) const {return m_widgetWorkView;}
     EbWidgetUserInfo * widgetUserInfo(void) const {return m_widgetUserInfo;}
@@ -61,7 +58,7 @@ public:
     /// * 用于关闭某个ITEM，左右移动按钮位置
     int onMove(int x);
     QRect topGeometry(void) const;
-    void setChecked(bool checked, bool hideButton=false, bool bSearchFocus=false);
+    void setChecked(bool checked, bool hideButton=false, bool searchFocus=false);
     bool isChecked(void) const;
     bool setCheckedFocus(void);
     bool checkShowHideCloseButton(const QPoint& pt);
@@ -70,19 +67,17 @@ public:
 
     bool back(void);
     bool forward(void);
-    bool canGoBack(bool & pOutCanGoBack) const;
-    bool canGoForward(bool &pOutCanGoForward) const;
+    bool canGoBack(bool &outCanGoBack) const;
+    bool canGoForward(bool &outCanGoForward) const;
     bool refreshOrStop(void);
     bool saveUrlHistory(void);
-
 signals:
 
 public slots:
     void onMemberOnlineSizeChange(int memberSize, int onlineSize);
-    bool onTitleChanged(WORK_ITEM_TYPE itemType, const QString& title);
-    bool onTitleChanged(const EbWidgetWorkView* view, const QString& title);
-    bool onIconChanged(const EbWidgetWorkView * view, const QIcon&);
-
+    bool onTitleChanged(WORK_ITEM_TYPE itemType, const QString &title);
+    bool onTitleChanged(const EbWidgetWorkView *view, const QString &title);
+    bool onIconChanged(const EbWidgetWorkView *view, const QIcon &icon);
 private:
     WORK_ITEM_TYPE m_itemType;
     QString m_itemText;

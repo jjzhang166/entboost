@@ -11,8 +11,6 @@ class EbFrameChatToolBar : public QFrame
 {
     Q_OBJECT
 public:
-    explicit EbFrameChatToolBar(const EbcCallInfo::pointer& pCallInfo,QWidget *parent = 0);
-    virtual ~EbFrameChatToolBar(void);
     enum Type {
         Unknown,
         SelectedText,
@@ -20,13 +18,14 @@ public:
         PointFile,
         PointUserHead
     };
+    explicit EbFrameChatToolBar(const EbcCallInfo::pointer &callInfo, QWidget *parent = 0);
+    virtual ~EbFrameChatToolBar(void);
 
-    void setCallInfo(const EbcCallInfo::pointer &pCallInfo);
+    void setCallInfo(const EbcCallInfo::pointer &callInfo);
     void updateMsgType( const QPoint &pos, qint64 msgId, Type type, const QVariant &parameter1=QVariant(), const QVariant &parameter2=QVariant() );
     void updateLocaleInfo(void);
 signals:
     void deleteMessage(qint64 msgId);
-
 public slots:
     void onClickedButton0(bool checked);
     void onClickedButton1(bool checked);
@@ -40,15 +39,12 @@ public slots:
     void onClickedButton4(bool checked);
     void onClickedButton5(bool checked);
     void onClickedButton6(bool checked);
-
 protected:
     void moveSize(void);
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void timerEvent(QTimerEvent *);
-
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void timerEvent(QTimerEvent *e);
     void hideAllButton(void);
     void showHideButton(void);
-
 private:
     EbcCallInfo::pointer m_callInfo;
     std::vector<QPushButton*> m_buttonList;

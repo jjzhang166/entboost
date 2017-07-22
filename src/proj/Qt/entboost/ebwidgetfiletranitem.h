@@ -13,11 +13,11 @@ class EbWidgetFileTranItem : public QWidget
     Q_OBJECT
 public:
     typedef boost::shared_ptr<EbWidgetFileTranItem> pointer;
-    explicit EbWidgetFileTranItem(bool isSending,const CCrFileInfo *fileInfo,QWidget *parent = 0);
-    static EbWidgetFileTranItem::pointer create(bool isSending,const CCrFileInfo *fileInfo,QWidget *parent = 0);
+    explicit EbWidgetFileTranItem(bool isSending, const CCrFileInfo *fileInfo, QWidget *parent = 0);
+    static EbWidgetFileTranItem::pointer create(bool isSending, const CCrFileInfo *fileInfo, QWidget *parent = 0);
 
-    void updateFileInfo(const CCrFileInfo * pCrFileInfo);
-    void setFilePercent(const CChatRoomFilePercent * pChatRoomFilePercent);
+    void updateFileInfo(const CCrFileInfo *fileInfo);
+    void setFilePercent(const CChatRoomFilePercent *filePercent);
     void updateLocaleInfo(void);
 signals:
 
@@ -28,12 +28,10 @@ public slots:
     void onButtonReject(void);
     void onButtonOffSend(void);
     void onButtonCancel(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent* e);
-
+    virtual void resizeEvent(QResizeEvent *e);
 private:
-    bool m_isSending;					// default false;
+    bool m_isSending;					/// default false;
     CCrFileInfo m_fileInfo;
     QLabel * m_labelFileName;
     QProgressBar * m_progressBar;
@@ -43,7 +41,6 @@ private:
     QPushButton * m_buttonReject;
     QPushButton * m_buttonOffSend;
     QPushButton * m_buttonCancel;
-
 };
 
 #endif // EBWIDGETFILETRANITEM_H

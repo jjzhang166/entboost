@@ -14,21 +14,20 @@ const QSize const_image_size(42,41);
 class EbMessageBox : public EbDialogBase
 {
     Q_OBJECT
-
 public:
-    explicit EbMessageBox(QWidget *parent = 0);
-    ~EbMessageBox();
-    typedef enum {
+    enum IMAGE_TYPE {
         IMAGE_NULL
         , IMAGE_INFORMATION
         , IMAGE_QUESTION
         , IMAGE_WARNING
         , IMAGE_ERROR
-    }IMAGE_TYPE;
+    };
+    explicit EbMessageBox(QWidget *parent = 0);
+    ~EbMessageBox(void);
 
-    // icon mayby QChar::Null
-    static int doExec(QWidget *parent, const QString& title, QChar icon, const QString& text, IMAGE_TYPE imageType, int autoClose=0, int nButtonType=QMessageBox::Ok | QMessageBox::Cancel );
-    static void doShow(QWidget* parent, const QString& title, QChar icon, const QString& text, IMAGE_TYPE imageType, int autoClose=0, int nButtonType=QMessageBox::NoButton);
+    /// icon mayby QChar::Null
+    static int doExec(QWidget *parent, const QString &title, QChar icon, const QString &text, IMAGE_TYPE imageType, int autoClose=0, int nButtonType=QMessageBox::Ok|QMessageBox::Cancel);
+    static void doShow(QWidget *parent, const QString &title, QChar icon, const QString &text, IMAGE_TYPE imageType, int autoClose=0, int nButtonType=QMessageBox::NoButton);
 
     QString m_title;
     QChar m_icon;
@@ -37,13 +36,11 @@ public:
     int m_buttonType;
     int m_autoClose;
 
-    void init();    // *** for ->show()
-
+    void init(void);    /// *** for ->show()
 protected:
-    virtual int exec();
-//    void showEvent(QShowEvent *);
-    virtual void timerEvent(QTimerEvent *event);
-
+    virtual int exec(void);
+//    void showEvent(QShowEvent *e);
+    virtual void timerEvent(QTimerEvent *e);
 private:
     Ui::EbMessageBox *ui;
 //    QLabel* labelImage;

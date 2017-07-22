@@ -11,16 +11,15 @@ class EbWidgetUserInfo : public QWidget
 {
     Q_OBJECT
 public:
-    explicit EbWidgetUserInfo(const EbcCallInfo::pointer &callInfo,QWidget *parent = nullptr);
+    explicit EbWidgetUserInfo(const EbcCallInfo::pointer &callInfo, QWidget *parent = nullptr);
 
     void updateLocaleInfo(void);
 signals:
 
 public slots:
     void onClickedButtonAddContact(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
+    virtual void resizeEvent(QResizeEvent *e);
 private:
     EbcCallInfo::pointer m_callInfo;
     QLabel * m_labelImage;
@@ -43,7 +42,6 @@ private:
     QLabel * m_labelAddress;
     QLineEdit * m_lineEditAddress;
     QPushButton * m_buttonReqeustAddContact;
-
 };
 
 #endif // EBWIDGETUSERINFO_H

@@ -92,6 +92,11 @@ EbClientApp::~EbClientApp(void)
     }
 }
 
+EbClientApp::pointer EbClientApp::create(QObject *parent)
+{
+    return EbClientApp::pointer( new EbClientApp(parent) );
+}
+
 void EbClientApp::clearSubscribeSelectInfo()
 {
     m_nSelectCallId = 0;

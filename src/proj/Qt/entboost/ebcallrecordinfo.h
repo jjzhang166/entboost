@@ -8,7 +8,7 @@ class EbCallRecordInfo
 {
 public:
     typedef boost::shared_ptr<EbCallRecordInfo> pointer;
-    EbCallRecordInfo();
+    EbCallRecordInfo(void);
     static EbCallRecordInfo::pointer create(void);
 
     bool isGroupCall(void) const {return m_sGroupCode>0?true:false;}

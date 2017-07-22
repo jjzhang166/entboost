@@ -34,31 +34,31 @@ public:
         ITEM_EXT_DATA_FORBID_SPEECH = 0x1	/// 禁言
     };
 
-    EbWidgetItemInfo(ITEM_TYPE nItemType,int nIndex);
-    EbWidgetItemInfo(ITEM_TYPE nItemType,QListWidgetItem* hItem);
-    EbWidgetItemInfo(ITEM_TYPE nItemType,QTreeWidgetItem* hItem);
-    EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QListWidgetItem* hItem);
-    EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QTreeWidgetItem* hItem);
-    EbWidgetItemInfo(const EB_GroupInfo * groupInfo, QTreeWidgetItem* hItem);
-    EbWidgetItemInfo(const EB_MemberInfo * memberInfo, QListWidgetItem* hItem);
-    EbWidgetItemInfo(const EB_SubscribeFuncInfo * funcInfo, QListWidgetItem* hItem);
+    EbWidgetItemInfo(ITEM_TYPE nItemType, int nIndex);
+    EbWidgetItemInfo(ITEM_TYPE nItemType, QListWidgetItem *hItem);
+    EbWidgetItemInfo(ITEM_TYPE nItemType, QTreeWidgetItem *hItem);
+    EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QListWidgetItem *hItem);
+    EbWidgetItemInfo(const EB_ContactInfo *contactInfo, QTreeWidgetItem *hItem);
+    EbWidgetItemInfo(const EB_GroupInfo *groupInfo, QTreeWidgetItem *hItem);
+    EbWidgetItemInfo(const EB_MemberInfo *memberInfo, QListWidgetItem *hItem);
+    EbWidgetItemInfo(const EB_SubscribeFuncInfo *funcInfo, QListWidgetItem *hItem);
     EbWidgetItemInfo(void);
-    static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType,int nIndex);
-    static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType,QListWidgetItem* hItem);
-    static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType,QTreeWidgetItem* hItem);
-    static EbWidgetItemInfo::pointer create(const EB_ContactInfo *contactInfo,QListWidgetItem* hItem);
-    static EbWidgetItemInfo::pointer create(const EB_ContactInfo *contactInfo,QTreeWidgetItem* hItem);
-    static EbWidgetItemInfo::pointer create(const EB_GroupInfo * groupInfo,QTreeWidgetItem* hItem);
-    static EbWidgetItemInfo::pointer create(const EB_MemberInfo * memberInfo,QListWidgetItem* hItem);
-    static EbWidgetItemInfo::pointer create(const EB_SubscribeFuncInfo * funcInfo,QListWidgetItem* hItem);
+    static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType, int nIndex);
+    static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType, QListWidgetItem *hItem);
+    static EbWidgetItemInfo::pointer create(ITEM_TYPE nItemType, QTreeWidgetItem *hItem);
+    static EbWidgetItemInfo::pointer create(const EB_ContactInfo *contactInfo, QListWidgetItem *hItem);
+    static EbWidgetItemInfo::pointer create(const EB_ContactInfo *contactInfo, QTreeWidgetItem *hItem);
+    static EbWidgetItemInfo::pointer create(const EB_GroupInfo *groupInfo, QTreeWidgetItem *hItem);
+    static EbWidgetItemInfo::pointer create(const EB_MemberInfo *memberInfo, QListWidgetItem *hItem);
+    static EbWidgetItemInfo::pointer create(const EB_SubscribeFuncInfo *funcInfo, QListWidgetItem *hItem);
 
-    void operator =(const EbWidgetItemInfo* pItemInfo);
-    bool operator <(const EbWidgetItemInfo* pItemInfo);
+    void operator =(const EbWidgetItemInfo *itemInfo);
+    bool operator <(const EbWidgetItemInfo *itemInfo);
 
-    static int memberSubType(const EB_MemberInfo* memberInfo);
+    static int memberSubType(const EB_MemberInfo *memberInfo);
     static int memberSubType(EB_GROUP_TYPE groupType, eb::bigint groupId, eb::bigint memberUserId);
-    void updateMemberInfo(const EB_MemberInfo * memberInfo);
-    void updateContactInfo(const EB_ContactInfo * contactInfo);
+    void updateMemberInfo(const EB_MemberInfo *memberInfo);
+    void updateContactInfo(const EB_ContactInfo *contactInfo);
 
     ITEM_TYPE m_nItemType;
     int m_nSubType;
@@ -79,21 +79,9 @@ public:
     int m_nExtData;
     int m_nCount1;
     int m_nCount2;
-//    QImage* m_pHeadImage;
     QVariant m_headMd5;
     SORT_FLAG m_sortFlag;
     time_t m_time;
-//    void UpdateHead(QImage* pHeadImage,const tstring& sHeadMd5)
-//    {
-//        if (m_pHeadImage!=NULL)
-//        {
-//            delete m_pHeadImage;
-//        }
-//        m_pHeadImage = pHeadImage;
-//        m_sHeadMd5 = sHeadMd5;
-//    }
-
-
 };
 const EbWidgetItemInfo::pointer EbWidgetItemInfoNull;
 

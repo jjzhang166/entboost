@@ -14,7 +14,7 @@ class EbWidgetChatRecord : public QWidget
 {
     Q_OBJECT
 public:
-    explicit EbWidgetChatRecord(const EbcCallInfo::pointer &callInfo,QWidget *parent = nullptr);
+    explicit EbWidgetChatRecord(const EbcCallInfo::pointer &callInfo, QWidget *parent = nullptr);
     virtual ~EbWidgetChatRecord(void);
 
     void updateLocaleInfo(void);
@@ -33,11 +33,9 @@ public slots:
     void onClickedButtonMoveLast(void);
 
     void onLoadChatRecord(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
-    virtual void timerEvent(QTimerEvent *);
-
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void timerEvent(QTimerEvent *e);
 private:
     EbcCallInfo::pointer m_callInfo;
     QString m_fromName;
@@ -61,7 +59,6 @@ private:
     int m_timerIdLoadChatRecord;
     bool m_bViewSearchResult;
     bool m_bSearchByDate;
-
 };
 
 #endif // EbWidgetChatRecord_H

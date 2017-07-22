@@ -48,7 +48,7 @@ EbWidgetMyGroup::~EbWidgetMyGroup()
     //    m_actionList.clear();
 }
 
-void EbWidgetMyGroup::SetMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemInfo, const EB_MemberInfo* memberInfo, EB_SORT_ITEMS_FLAG nSortItems)
+void EbWidgetMyGroup::setMemberInfo(const EbWidgetItemInfo::pointer& pGroupItemInfo, const EB_MemberInfo* memberInfo, EB_SORT_ITEMS_FLAG nSortItems)
 {
     if (pGroupItemInfo.get()==0 || memberInfo==0 || memberInfo->m_sMemberCode==0) {
         return;
@@ -120,7 +120,7 @@ void EbWidgetMyGroup::onGroupInfo(const EB_GroupInfo * groupInfo)
     for (size_t i=0;i<pOutMemberInfoList.size(); i++) {
         const EB_MemberInfo& pMemberInfo = pOutMemberInfoList[i];
         if (pMemberInfo.m_sMemberCode==0) continue;
-        SetMemberInfo(groupItemInfo, &pMemberInfo,EB_DISABLE_SORT);
+        setMemberInfo(groupItemInfo, &pMemberInfo,EB_DISABLE_SORT);
     }
     if ( !pOutMemberInfoList.empty() ) {
         groupItemInfo->m_hItem->sortChildren( 0,Qt::AscendingOrder );
@@ -153,7 +153,7 @@ void EbWidgetMyGroup::onMemberInfo(const EB_MemberInfo *pMemberInfo,bool bChange
     /// 已经加载成员
     if (pDepItemInfo->m_dwItemData==0)
         pDepItemInfo->m_dwItemData = 1;
-    SetMemberInfo(pDepItemInfo, pMemberInfo);
+    setMemberInfo(pDepItemInfo, pMemberInfo);
     if (bChangeLineState) {
         CEBString sGroupName;
         if (theApp->m_ebum.EB_GetGroupName(pMemberInfo->m_sGroupCode,sGroupName)) {

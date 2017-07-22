@@ -10,6 +10,28 @@
 
 //const int const_listwidget_item_height = 24;
 
+CLoginInfo::CLoginInfo()
+    : m_bSafePwd(false)
+{
+
+}
+CLoginInfo::CLoginInfo(const cgcSmartString &sAccount, const cgcSmartString &sPassword, bool bSafePwd)
+    : m_sAccount(sAccount)
+    , m_sPassword(sPassword)
+    , m_bSafePwd(bSafePwd)
+    , m_nLineState(EB_LINE_STATE_UNKNOWN)
+    , m_nUserId(0), m_nPhone(0)
+//        , m_hItem(NULL)
+    , m_item(NULL)
+{
+
+}
+CLoginInfo::pointer CLoginInfo::create(const mycp::tstring& sAccount, const mycp::tstring& sPassword, bool bSafePwd)
+{
+    return CLoginInfo::pointer(new CLoginInfo(sAccount, sPassword, bSafePwd));
+}
+
+
 EbDialogLogin::EbDialogLogin(QWidget *parent)
     : EbDialogBase(parent)
     , ui(new Ui::EbDialogLogin)
@@ -1207,3 +1229,4 @@ void EbDialogLogin::onClickPushButtonConnectSetting(void)
     }
 
 }
+

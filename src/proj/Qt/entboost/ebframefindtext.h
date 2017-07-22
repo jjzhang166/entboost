@@ -20,22 +20,19 @@ public:
     void showFocusInput(const QString &selectedText);
     void updateLocaleInfo(void);
 signals:
-    void findText(bool back,const QString & text);
+    void findText(bool back,const QString &text);
     void exitFindText(void);
-
 public slots:
     void onKeyPressEscFindText(void);
     void onKeyPressEnter(const QString &text);
-    void onTextChanged(const QString &);
+    void onTextChanged(const QString &text);
 
     void onClickedButtonFindUp(void);
     void onClickedButtonFindDown(void);
     void onClickedButtonClose(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
+    virtual void resizeEvent(QResizeEvent *e);
     virtual void timerEvent(QTimerEvent *e);
-
 private:
     EbLineEdit * m_lineEditFindText;
     QLabel * m_labelStatus;

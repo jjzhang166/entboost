@@ -4,7 +4,6 @@
 #include "ebclientapp.h"
 #include <ebdialogbase.h>
 
-
 namespace Ui {
 class EbDialogRequestAddContact;
 }
@@ -12,10 +11,9 @@ class EbDialogRequestAddContact;
 class EbDialogRequestAddContact : public EbDialogBase
 {
     Q_OBJECT
-
 public:
     explicit EbDialogRequestAddContact(QWidget *parent = 0);
-    ~EbDialogRequestAddContact();
+    ~EbDialogRequestAddContact(void);
 
     QString m_headFilePath;
     QString m_fromName;
@@ -23,9 +21,8 @@ public:
     QString m_fromAccount;
     void updateLocaleInfo(void);
 public slots:
-    virtual int exec();
-    virtual void accept();
-
+    virtual int exec(void);
+    virtual void accept(void);
 private:
     Ui::EbDialogRequestAddContact *ui;
 };

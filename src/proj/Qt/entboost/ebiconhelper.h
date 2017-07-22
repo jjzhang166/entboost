@@ -15,13 +15,12 @@ class EbIconHelper : public QObject
 {
     Q_OBJECT
 public:
-    static EbIconHelper* Instance(void);
-    void SetIcon(QLabel* ctl, QChar c, int size=10);
+    static EbIconHelper *Instance(void);
+    void SetIcon(QLabel *ctl, QChar c, int size=10);
     void SetIcon(QPushButton* ctl, QChar c, int size=10);
-    void SetIcon( qint64 subId, QLabel* ctl, int size=10 );
-    void SetIcon( qint64 subId, QPushButton* ctl, int size=10 );
-    QChar GetIcon( qint64 subId ) const;
-
+    void SetIcon(qint64 subId, QLabel *ctl, int size=10 );
+    void SetIcon(qint64 subId, QPushButton *ctl, int size=10 );
+    QChar GetIcon(qint64 subId) const;
 signals:
 
 public slots:

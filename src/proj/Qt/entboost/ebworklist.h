@@ -17,16 +17,15 @@ public:
     EbWidgetUserList * widgetUserList(void) const;
     EbWidgetChatRecord * widgetChatRecord(void) const;
     EbWidgetFileTranList * widgetTranFile(void) const;
-
 protected:
-    void addWorkItem(bool saveUrl,const EbWorkItem::pointer& workItem,int nInsertOffset=-1);
+    void addWorkItem(bool saveUrl, const EbWorkItem::pointer& workItem, int insertOffset=-1);
     void showByIndex(int index, bool bSearchFocus);
     void setItemText(EbWorkItem::WORK_ITEM_TYPE itemType, const QString &text);
-    void clickedTopButton(const QPushButton* topButton, const QPoint& pt);
+    void clickedTopButton(const QPushButton *topButton, const QPoint &pos);
     void showFirst(void);
-    int indexOf(const EbWidgetWorkView * view) const;
+    int indexOf(const EbWidgetWorkView *view) const;
     int indexOf(EbWorkItem::WORK_ITEM_TYPE type, bool sendClose=false) const;
-    void closeItem(const EbWidgetWorkView * view);
+    void closeItem(const EbWidgetWorkView *view);
     void closeItem(int index);
 //    void closeItem(EbWorkItem::WORK_ITEM_TYPE type);
     void clear(void);
@@ -41,13 +40,12 @@ protected:
     void back(void);
     void forward(void);
     bool canGoBack() const;
-    bool canGoForward() const;
+    bool canGoForward(void) const;
     void refreshOrStop(void);
     void saveUrlHistory(void);
 //    void stop(void);
 protected:
     virtual void onItemSizeChange(const EbWorkItem::pointer& fromWorkItem,int size,int right) {}
-
 protected:
     QWidget* m_pParent;
     int m_topHeight;

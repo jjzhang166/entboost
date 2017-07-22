@@ -29,7 +29,10 @@ EbWorkItem::~EbWorkItem()
 {
     m_widgetWorkView.reset();
 }
-
+EbWorkItem::pointer EbWorkItem::create(WORK_ITEM_TYPE itemType)
+{
+    return EbWorkItem::pointer( new EbWorkItem(itemType) );
+}
 void EbWorkItem::setAppUrl(bool saveUrl,const QString &sUrl, const QString &sPostData)
 {
     if (sUrl!="about:blank" && sUrl.indexOf("http",Qt::CaseInsensitive)<0) {

@@ -11,21 +11,19 @@ class EbWidgetChatInput : public QWidget
 {
     Q_OBJECT
 public:
-    explicit EbWidgetChatInput(const EbcCallInfo::pointer& pCallInfo,QWidget *parent = 0);
+    explicit EbWidgetChatInput(const EbcCallInfo::pointer &callInfo, QWidget *parent = 0);
     virtual ~EbWidgetChatInput(void);
 
     void updateLocaleInfo(void);
     void setFocusInput(void);
-    void setCallInfo(const EbcCallInfo::pointer& pCallInfo);    /// 主要用于更新 CALLID
-    void onUserExit(eb::bigint nFromAccount);
+    void setCallInfo(const EbcCallInfo::pointer &callInfo);    /// 主要用于更新 CALLID
+    void onUserExit(eb::bigint fromUserId);
     void onReceiveRich(void);
-    void checkMyForbidSpeechState(bool bNewMessage,bool bFromMemberInfo, QString *pOutForbidMessage=0);
+    void checkMyForbidSpeechState(bool newMessage, bool fromMemberInfo, QString *pOutForbidMessage=0);
     bool isForbidSpeech(void) const;
-
 signals:
     void clickedClose(void);
     void clickedMsgRecord(void);
-
 public slots:
     void onDropSendFileTextEdit(const QString &filePath);
     void onClickedPushButtonEmotion(void);
@@ -37,13 +35,10 @@ public slots:
     void onTriggeredSendSwitch1(void);
 
     void onSelectedResourceEmotion(const QIcon& icon,mycp::bigint resourceId,const QString& resourceCmInfo,const QString & resourceFilePath);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *);
+    virtual void resizeEvent(QResizeEvent *e);
     virtual void contextMenuEvent(QContextMenuEvent *e);
-    virtual void timerEvent(QTimerEvent *);
-
-
+    virtual void timerEvent(QTimerEvent *e);
 private:
     EbTextEdit* m_textEditInput;
     QLabel * m_labelInputForbidState;

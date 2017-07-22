@@ -13,10 +13,9 @@ public:
 signals:
     void keyPressFirstItemUp(void);
     void keyPressEsc(void);
-    void keyPressEnter(const QListWidgetItem * item);
-
+    void keyPressEnter(const QListWidgetItem *item);
 protected:
-    virtual void keyPressEvent(QKeyEvent *);
+    virtual void keyPressEvent(QKeyEvent *e);
 };
 
 #endif // EBLISTWIDGET_H

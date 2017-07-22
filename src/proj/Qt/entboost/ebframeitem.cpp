@@ -49,6 +49,16 @@ EbFrameItem::~EbFrameItem()
     m_dialogChatBase.reset();
 }
 
+EbFrameItem::pointer EbFrameItem::create(FRAME_ITEM_TYPE itemType)
+{
+    return EbFrameItem::pointer( new EbFrameItem(itemType) );
+}
+
+EbFrameItem::pointer EbFrameItem::create(const EbDialogChatBase::pointer& dialogChatBase)
+{
+    return EbFrameItem::pointer( new EbFrameItem(dialogChatBase) );
+}
+
 QWidget *EbFrameItem::parent() const
 {
     if (m_pushButtonLeft!=0) {

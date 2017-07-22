@@ -12,19 +12,16 @@ class EbDialogGroupInfo;
 class EbDialogGroupInfo : public EbDialogBase
 {
     Q_OBJECT
-
 public:
     explicit EbDialogGroupInfo(QWidget *parent = 0);
-    ~EbDialogGroupInfo();
+    ~EbDialogGroupInfo(void);
 
     EB_GroupInfo m_groupInfo;
-
     void updateLocaleInfo(void);
 public slots:
-    virtual int exec();
-    virtual void accept();
+    virtual int exec(void);
+    virtual void accept(void);
     void onClickedLabelManagerUserName(void);
-
 private:
     Ui::EbDialogGroupInfo *ui;
     EbLabel * m_labelManagerUserName;

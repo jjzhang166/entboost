@@ -9,7 +9,6 @@ public:
     EbWebEngineProfile(QObject *parent=0);
 
 protected:
-
 };
 
 #endif // EBWEBENGINEPROFILE_H

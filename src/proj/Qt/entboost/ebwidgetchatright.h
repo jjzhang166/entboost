@@ -9,33 +9,29 @@ class EbWidgetChatRight : public EbDialogWorkFrame
 {
     Q_OBJECT
 public:
-    explicit EbWidgetChatRight(const EbcCallInfo::pointer& pCallInfo,QWidget *parent = 0);
+    explicit EbWidgetChatRight(const EbcCallInfo::pointer &callInfo, QWidget *parent = 0);
     virtual ~EbWidgetChatRight(void);
 
     void exitChat(bool bHangup);
-    void onUserExit(eb::bigint nUserId, bool bExitDep);
-    void setCallInfo(const EbcCallInfo::pointer &pCallInfo);
-    void onMsgReceipt(const CCrRichInfo* pCrMsgInfo,int nAckType);
-    void onSendingFile(const CCrFileInfo * fileInfo);
-    void onReceivingFile(const CCrFileInfo * fileInfo);
-    void onReceivedFile(const CCrFileInfo * fileInfo);
-    void onFilePercent(const CChatRoomFilePercent * pChatRoomFilePercent);
+    void onUserExit(eb::bigint userId, bool exitDep);
+    void setCallInfo(const EbcCallInfo::pointer &callInfo);
+    void onMsgReceipt(const CCrRichInfo *crMsgInfo,int ackType);
+    void onSendingFile(const CCrFileInfo *fileInfo);
+    void onReceivingFile(const CCrFileInfo *fileInfo);
+    void onReceivedFile(const CCrFileInfo *fileInfo);
+    void onFilePercent(const CChatRoomFilePercent *filePercent);
     void deleteTranFile(eb::bigint msgId);
-    void onMemberInfo(const EB_MemberInfo* pMemberInfo, bool bChangeLineState);
-    void getProcessing(bool& pVideoProcessing, bool& pFileProcessing, bool& pDesktopProcessing) const;
+    void onMemberInfo(const EB_MemberInfo* memberInfo, bool changeLineState);
+    void getProcessing(bool &outVideoProcessing, bool &outFileProcessing, bool &outDesktopProcessing) const;
     void showMsgRecord(void);
     void triggeredApps(int index);
-
 signals:
 
 public slots:
-    virtual void resizeEvent(QResizeEvent *);
-
+    virtual void resizeEvent(QResizeEvent *e);
 private:
     EbWidgetFileTranList * openTranFile(void);
-
 //    void updateGroupUsers(void);
-
 private:
     EbcCallInfo::pointer m_callInfo;
 //    DialogWorkFrame * m_workFrame;

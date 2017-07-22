@@ -146,6 +146,11 @@ EbDialogChatBase::~EbDialogChatBase()
     delete ui;
 }
 
+EbDialogChatBase::pointer EbDialogChatBase::create(const EbcCallInfo::pointer& pCallInfo,QWidget *parent)
+{
+    return EbDialogChatBase::pointer(new EbDialogChatBase(pCallInfo,parent));
+}
+
 void EbDialogChatBase::updateLocaleInfo()
 {
     /// 显示右上角关闭按钮（这几个按钮还是要的，因为透明了也没用，点不到下面按钮）

@@ -17,28 +17,24 @@ public:
 
     void updateLocaleInfo(void);
     void timerCheckState(void);
-    void insertCallRecord(const EbCallRecordInfo::pointer& pCallRecordInfo, bool bInsertNew,bool sort=true);
-    EbCallRecordInfo::pointer callRecordInfo(eb::bigint groupId, eb::bigint userId, int msgType = 0) const;
-
+    void insertCallRecord(const EbCallRecordInfo::pointer &callRecordInfo, bool insertNew, bool sort=true);
+    EbCallRecordInfo::pointer callRecordInfo(eb::bigint groupId, eb::bigint userId, int msgType=0) const;
 signals:
 
 public slots:
     void onDeleteSession(const EbWidgetItemInfo::pointer &itemInfo);
     void onClearSession(void);
-    void onItemEntered(QListWidgetItem* item);
+    void onItemEntered(QListWidgetItem *item);
     void onItemDoubleClicked(QListWidgetItem *item);
     void onClickedButtonDelete(void);
     void onClickedButtonAddContact(void);
     void onClickedButtonCall(void);
     void onLoadCallRecord(void);
-
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void contextMenuEvent(QContextMenuEvent *e);
     void createMenuData(void);
-    virtual void contextMenuEvent(QContextMenuEvent * e);
-
-    bool deleteRecord(const EbCallRecordInfo::pointer& pCallRecordInfo,bool quesiton);
-
+    bool deleteRecord(const EbCallRecordInfo::pointer &callRecordInfo, bool quesiton);
 private:
     QListWidget * m_listWidget;
     QPushButton * m_buttonAddContact;
@@ -47,7 +43,6 @@ private:
     EbContextMenu * m_contextMenu;
     CLockMap<const QListWidgetItem*, EbCallRecordInfo::pointer> m_pCallRecordInfo;
     bool m_bReloadRecordData;
-
 };
 
 #endif // EBWIDGETMYSESSION_H

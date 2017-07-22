@@ -8,33 +8,28 @@
 namespace Ui {
 class EbDialogMemberInfo;
 }
-
 class EbDialogChangeHead;
 
 class EbDialogMemberInfo : public EbDialogBase
 {
     Q_OBJECT
-
 public:
     explicit EbDialogMemberInfo(QWidget *parent = 0);
-    ~EbDialogMemberInfo();
+    ~EbDialogMemberInfo(void);
 
     EB_GROUP_TYPE m_groupType;
     QString m_groupName;
     EB_MemberInfo m_memberInfo;
-
     void updateLocaleInfo(void);
 public slots:
-//    virtual void open();
-    virtual int exec();
-    virtual void accept();
+//    virtual void open(void);
+    virtual int exec(void);
+    virtual void accept(void);
 
     void onClickedLabelUserHead(void);
-    void onSelectedHeadImage(qint64 resourceId,const QString & resourceFile);
-
+    void onSelectedHeadImage(qint64 resourceId, const QString &resourceFile);
 protected:
     void updateUserHeadImage(void);
-
 private:
     Ui::EbDialogMemberInfo *ui;
     EbLabel * m_labelUserHead;

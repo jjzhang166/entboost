@@ -20,38 +20,34 @@ class EbDialogFrameList : public EbDialogBase
         , public EbFrameList
 {
     Q_OBJECT
-
 public:
     explicit EbDialogFrameList(QWidget *parent = 0);
-    ~EbDialogFrameList();
+    ~EbDialogFrameList(void);
 
     void updateLocaleInfo(void);
     EbDialogWorkFrame * showWorkFrame(void);
-    void addFrameItem(const EbFrameItem::pointer& frameItem,bool bShow, bool bAutoCall, bool bForceAddToList = false);
+    void addFrameItem(const EbFrameItem::pointer &frameItem, bool show, bool autoCall, bool forceAddToList=false);
     void showFrameItem(mycp::bigint callId);
     void showFrameList(bool show=true);
-
 public slots:
     void onClickedPushButtonShowWorkFrame(void);
     void onClickedPushButtonShowHideLeft(void);
     void onClickedButtonLeft(bool checked);
     void onClickedCloseFromDialogChatBase(void);
 
-    void onCheckedFrameitem(const EbFrameItem*);
-    void onWorkItemSizeChange(bool fromAboutBlank,int size);
+    void onCheckedFrameitem(const EbFrameItem *frameItem);
+    void onWorkItemSizeChange(bool fromAboutBlank, int size);
 protected:
-    virtual void contextMenuEvent(QContextMenuEvent *);
-    virtual void moveEvent(QMoveEvent *event);
-    virtual void resizeEvent(QResizeEvent *);
-//    virtual bool event(QEvent *event);
+    virtual void contextMenuEvent(QContextMenuEvent *e);
+    virtual void moveEvent(QMoveEvent *e);
+    virtual void resizeEvent(QResizeEvent *e);
+//    virtual bool event(QEvent *e);
 //    virtual void customEvent(QEvent *e);
     void checkOneSecond(void);
-    virtual void timerEvent(QTimerEvent *event);
-
+    virtual void timerEvent(QTimerEvent *e);
 private:
     void updateShowHideIcon(void);
     void updateSize(void);
-
 private:
     Ui::EbDialogFrameList *ui;
     bool m_showedLeft;

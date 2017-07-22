@@ -33,7 +33,6 @@ public:
     void updateLocaleInfo(void);
     void refreshSkin(void);
     bool requestLogout(void) const {return m_requestLogout;}
-
 public slots:
     void onClickedPushButtonSetting(void);
     void onTriggeredActionSelectColor(void);
@@ -56,10 +55,10 @@ public slots:
     void onClickedPushButtonMyApp(void);
     void updateMyButton(const QPushButton* fromButton);
 
-    void onClickedSubApp(const EB_SubscribeFuncInfo &);
-    void openUrl( bool bSaveBrowseTitle, const QString& sAppUrl, const QString& sPostData="", int nInsertOffset=-1 );
-    bool openSubscribeFuncWindow( eb::bigint subscribeId, const std::string& sPostData="", const std::string& sParameters="" );
-    bool openSubscribeFuncWindow( const EB_SubscribeFuncInfo& pSubscribeFuncInfo, const std::string& sPostData="", const std::string& sParameters="" );
+    void onClickedSubApp(const EB_SubscribeFuncInfo &funcInfo);
+    void openUrl(bool saveBrowseTitle, const QString &appUrl, const QString &postData="", int insertOffset=-1);
+    bool openSubscribeFuncWindow(eb::bigint subscribeId, const std::string &postData="", const std::string &parameters="");
+    bool openSubscribeFuncWindow(const EB_SubscribeFuncInfo &funcInfo, const std::string &postData="", const std::string &parameters="");
 
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 
@@ -75,25 +74,23 @@ public slots:
 
     void processDatas(void);
 protected:
-    virtual void accept();
+    virtual void accept(void);
     virtual void reject(void);
-    virtual void resizeEvent(QResizeEvent *);
-//    virtual void closeEvent(QCloseEvent *event);
+    virtual void resizeEvent(QResizeEvent *e);
+//    virtual void closeEvent(QCloseEvent *e);
 
 //    virtual bool event(QEvent *e);
     virtual void customEvent(QEvent *e);
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseDoubleClickEvent(QMouseEvent *event);
-    virtual void keyPressEvent(QKeyEvent *);
-    virtual void contextMenuEvent(QContextMenuEvent *);
-    virtual bool eventFilter(QObject *obj, QEvent *ev);
-    virtual void timerEvent( QTimerEvent *event );
+    virtual void mousePressEvent(QMouseEvent *e);
+    virtual void mouseDoubleClickEvent(QMouseEvent *e);
+    virtual void keyPressEvent(QKeyEvent *e);
+    virtual void contextMenuEvent(QContextMenuEvent *e);
+    virtual bool eventFilter(QObject *obj, QEvent *e);
+    virtual void timerEvent( QTimerEvent *e);
 
     void createMenuData(void);
-    QSystemTrayIcon * m_trayIcon;
     void creatTrayIcon(void);
     void changeTrayTooltip(void);
-
 private:
     void BuildHeadRect(void);
 
@@ -117,9 +114,9 @@ private:
     void onFilePercent(QEvent *e);
     void onSave2Cloud(QEvent *e);
     /// 聊天会话
-    void CreateFrameList(bool bShow);
-    EbDialogChatBase::pointer getDialogChatBase(const EbcCallInfo::pointer & pEbCallInfo,bool bShow=true,bool bOwnerCall=false);
-    EbDialogChatBase::pointer getDialogChatBase(eb::bigint nCallId, bool bRemove=false);
+    void CreateFrameList(bool show);
+    EbDialogChatBase::pointer getDialogChatBase(const EbcCallInfo::pointer &callInfo, bool show=true, bool ownerCall=false);
+    EbDialogChatBase::pointer getDialogChatBase(eb::bigint callId, bool remove=false);
     void onCallConnected(QEvent *e);
     void onCallError(QEvent *e);
     void onCallHangup(QEvent *e);
@@ -157,13 +154,12 @@ private:
 #ifdef USES_EVENT_DATE_TIMER
     void checkEventData(void);
 #else
-    bool checkEventData(QEvent * e);
+    bool checkEventData(QEvent *e);
 #endif
 
     void checkOneSecond(void);
     void checkCallExit(void);
-    void saveCallRecord(eb::bigint callId,eb::bigint groupId, const EB_AccountInfo & fromAccountInfo);
-
+    void saveCallRecord(eb::bigint callId, eb::bigint groupId, const EB_AccountInfo &fromAccountInfo);
 private:
     Ui::EbDialogMainFrame *ui;
     EbLabel* m_labelUserImage;
@@ -194,6 +190,7 @@ private:
     CLockMap<QEvent*,bool> m_eventMap;
 #endif
     int m_timerOneSecond;
+    QSystemTrayIcon * m_trayIcon;
     bool m_requestLogout;
 };
 

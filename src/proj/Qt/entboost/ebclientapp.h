@@ -32,23 +32,6 @@ using namespace entboost;
 /// 使用这个某些事件参数，才能返回处理结果
 //#define USES_CORE_EVENT
 
-const int const_button_icon_size = 9;
-
-const int const_common_edit_height = 22;
-const int const_common_title_font_size = 11;
-const int const_common_title_image_font_size = 12;
-const int default_warning_auto_close = 3;       /// 警告提示，显示3秒后，自动关闭
-const int default_information_auto_close = 5;   /// 消息提示，显示5秒后，自动关闭
-const QSize const_tree_icon_size(32,32);
-
-#define UISTYLE_CHAT_DEFAULT_DLG_WIDTH	288
-#define UISTYLE_CHAT_DEFAULT_DLG_HEIGHT	568
-
-#ifndef is_visitor_uid
-const eb::bigint theVisitorStartId = 0x2000000000000LL;	// =562949953421312(15位)
-#define is_visitor_uid(id) (id>=theVisitorStartId)
-#endif // is_visitor_uid
-
 inline bool checkCreateDir(const QString & dirName)
 {
     QDir pDir1(dirName);
@@ -58,26 +41,6 @@ inline bool checkCreateDir(const QString & dirName)
     return true;
 }
 
-typedef enum EB_SEND_KEY_TYPE {
-    EB_SEND_KEY_ENTER,
-    EB_SEND_KEY_CTRL_ENTER
-}EB_SEND_KEY_TYPE;
-
-typedef enum EB_MSG_RECORD_TYPE
-{
-    MRT_UNKNOWN
-    , MRT_TEXT
-    , MRT_JPG
-    , MRT_FILE
-    , MRT_WAV
-    , MRT_RESOURCE
-    , MRT_MAP_POS		= 10	/// 地图位置
-    , MRT_CARD_INFO				/// 名片信息，如用户名片等
-    , MRT_USER_DATA	= 200
-}EB_MSG_RECORD_TYPE;
-inline bool isCanCollectRecordType(EB_MSG_RECORD_TYPE nType) {return (nType==MRT_FILE || nType==MRT_RESOURCE)?false:true;}
-
-
 class EbDialogEmotionSelect;
 class EbDialogMainFrame;
 class EbDialogViewECard;
@@ -86,12 +49,10 @@ class EbClientApp : public QObject
 {
 //    Q_OBJECT
 public:
+    typedef boost::shared_ptr<EbClientApp> pointer;
     explicit EbClientApp(QObject *parent=0);
     ~EbClientApp(void);
-    typedef boost::shared_ptr<EbClientApp> pointer;
-    static EbClientApp::pointer create(QObject *parent=0) {
-        return EbClientApp::pointer( new EbClientApp(parent) );
-    }
+    static EbClientApp::pointer create(QObject *parent=0);
 
     CEBParseSetting m_setting;
     CEBAppClient m_ebum;
@@ -218,11 +179,9 @@ public:
     tstring memberHeadFilePath(const EB_MemberInfo * memberInfo) const;
 //    tstring groupTypeHeadFilePath(EB_GROUP_TYPE groupType) const;
     QImage groupHeadImage(eb::bigint groupId, EB_GROUP_TYPE groupType) const;
-
 protected:
 //    virtual bool event(QEvent *e);
     virtual void customEvent(QEvent *e);
-
 public slots:
 
 private:
@@ -232,7 +191,6 @@ private:
 
     EbHttpFileDownload m_httpFileDownload;
     void updateColor(bool bUpdateDatabase);
-
 private:
     QString m_appDataLocation;      ///
     QString m_appDataTempLocation;      /// "[m_appDataLocation]/temp"
@@ -304,20 +262,5 @@ private:
 
 extern EbClientApp::pointer theApp;
 extern EbcLocales theLocales;
-
-/// 暂时没有用
-//class EbWebEngineUrlRequestInterceptor : public QWebEngineUrlRequestInterceptor
-//{
-//    Q_OBJECT
-//public:
-//    explicit EbWebEngineUrlRequestInterceptor(QObject *p = Q_NULLPTR)
-//        : QWebEngineUrlRequestInterceptor (p)
-//    {
-//    }
-
-//    virtual void interceptRequest(QWebEngineUrlRequestInfo &info) {
-//        int i=0;
-//    }
-//};
 
 #endif // EBCLIENTAPP_H

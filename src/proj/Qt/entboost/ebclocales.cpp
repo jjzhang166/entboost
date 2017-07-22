@@ -2,6 +2,33 @@
 //#include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+EbGroupTypeName::EbGroupTypeName(int value, const std::string& name, const std::string& shortName)
+    : m_value(value), m_name(name), m_shortName(shortName)
+{
+}
+EbGroupTypeName::pointer EbGroupTypeName::create(int value, const std::string& name, const std::string& shortName)
+{
+    return EbGroupTypeName::pointer(new EbGroupTypeName(value, name, shortName));
+}
+
+EbDayOfWeekInfo::EbDayOfWeekInfo(int value, const std::string& name, const std::string& shortName)
+    : m_value(value), m_name(name), m_shortName(shortName)
+{
+}
+EbDayOfWeekInfo::pointer EbDayOfWeekInfo::create(int value, const std::string& name, const std::string& shortName)
+{
+    return EbDayOfWeekInfo::pointer(new EbDayOfWeekInfo(value, name, shortName));
+}
+
+EbColorInfo::EbColorInfo(const QString& name, const QColor& color)
+    : m_name(name), m_color(color)
+{
+}
+EbColorInfo::pointer EbColorInfo::create(const QString& name, const QColor& color)
+{
+    return EbColorInfo::pointer(new EbColorInfo(name, color));
+}
+
 EbcLocales::EbcLocales()
     : m_titleBackgroundHeight(42)
 {

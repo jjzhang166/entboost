@@ -14,11 +14,10 @@ public:
     virtual ~EbHttpFileDownload(void);
 
 signals:
-    void downloadHttpFileOk(const QString& saveToFilePath, const QString& lastModified);
-    void downloadHttpFileError(const QString& saveToFilePath, QNetworkReply::NetworkError errorCode);
-
+    void downloadHttpFileOk(const QString &saveToFilePath, const QString &lastModified);
+    void downloadHttpFileError(const QString &saveToFilePath, QNetworkReply::NetworkError errorCode);
 public slots:
-    void downloadHttpFile( const QString& url, const QString& saveToFilePath, const QString& oldLastModifited, int nWaitSeconds=10 );
+    void downloadHttpFile( const QString &url, const QString &saveToFilePath, const QString &oldLastModifited, int waitSeconds=10 );
     void doDownloadHttpFile(void);
     const QString& getSaveToFilePath(void) const {return m_saveToFilePath;}
     bool getDownloadFinished(void) const {return m_downloadFinished;}
@@ -28,7 +27,6 @@ public slots:
     void replyReadyRead(void);
     void replyFinished(void);
     void replyError(QNetworkReply::NetworkError code);
-
 private:
     QNetworkAccessManager * m_networkManager;
     QNetworkReply * m_reply;

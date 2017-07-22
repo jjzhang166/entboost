@@ -13,23 +13,20 @@ public:
     virtual ~EbTextEdit(void);
 
     bool formatInputMsg(EB_ChatRoomRichMsg *pOutMsgFormat);
-
 signals:
     void dropSendFile(const QString &filePath);
     void requestSendText(void);
-
 protected:
-//    virtual void timerEvent( QTimerEvent *event );
-    virtual void keyPressEvent(QKeyEvent *ev);
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseReleaseEvent(QMouseEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-//    virtual QMimeData *createMimeDataFromSelection() const;
+//    virtual void timerEvent(QTimerEvent *e);
+    virtual void keyPressEvent(QKeyEvent *e);
+    virtual void mousePressEvent(QMouseEvent *e);
+    virtual void mouseReleaseEvent(QMouseEvent *e);
+    virtual void mouseMoveEvent(QMouseEvent *e);
+//    virtual QMimeData *createMimeDataFromSelection(void) const;
     virtual bool canInsertFromMimeData(const QMimeData *source) const;
     virtual void insertFromMimeData(const QMimeData *source);
 
 //    void check(void);
-
 private:
 //    int m_timerCheck;
     bool m_bMousePress;
