@@ -42,7 +42,7 @@ QPushButton#MessageTipButton{background-color:rgb(0,0,0,0); color: rgb([EB_MAIN_
 QPushButton#MessageTipButton:hover{background-color:rgb([EB_MAIN_RGB]); color: white;}
 QPushButton#MessageTipButton:pressed{background-color:rgb([EB_MAIN_RGB]); color: white; border-style: inset; }
 /* MessageTip 消息提醒 "消息列表" */
-QListWidget#MessageTipList{background-color:rgb(0,0,0,0);border:0px;}
+QListWidget#MessageTipList{background-color:rgb(0,0,0,0);border: none;}
 QListWidget#MessageTipList::Item{height:40px;}
 QListWidget#MessageTipList::Item:hover{background:rgb([EB_MAIN_RGB],20);}
 QListWidget#MessageTipList::item:selected{background:rgb([EB_MAIN_RGB],40); color:black;}
@@ -66,7 +66,7 @@ QListWidget#UserList::item:selected{background:rgb([EB_MAIN_RGB],40); color:blac
 
 /* “我的部门/联系人/.” TREE 结构*/
 QTreeWidget#HasBorder{background-color: rgb(250,250,250);border:1px solid rgb(224,224,224);}
-QTreeWidget{background-color: rgb(250,250,250);}
+QTreeWidget{background-color: rgb(250,250,250);border: none;}
 QTreeWidget::item{height:40px; background: rgb(250,250,250);}  
 QTreeWidget::branch{image:none;}
 QTreeView::item:hover{background: rgb([EB_MAIN_RGB],20);}
