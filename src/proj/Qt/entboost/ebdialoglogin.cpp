@@ -692,7 +692,8 @@ void EbDialogLogin::onLogonSuccess(QEvent *e)
                 pAccountInfo->GetAccount().c_str(), pAccountInfo->GetAccount().c_str(), pAccountInfo->GetUserId());
         int ret = (int)theApp->m_sqliteEbc->execute(sSql);
         if (ui->checkBoxSavePwd->isChecked()) {
-            if (theApp->ebServerVersion()==0) {	// ** 兼容旧版本服务端
+            if (theApp->ebServerVersion()==0) {
+                /// ** 兼容旧版本服务端
                 const std::string sPassword = ui->lineEditPassword->text().toStdString();
                 sprintf(sSql, "insert into user_login_record_t(account,account_r,password,safepwd,linestate,user_id,phone) VALUES('%s','%s','%s',1,%d,%lld,%lld)",
                     sAccount.c_str(),pAccountInfo->GetAccount().c_str(),sPassword.c_str(),(int)m_nOutLineState,pAccountInfo->GetUserId(),pAccountInfo->GetPhone());

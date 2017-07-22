@@ -58,15 +58,15 @@ EbClientApp::EbClientApp(QObject *parent)
     , m_dialogViewECard(0)
 
 {
-    // ??? for test
+    // ? for test
     m_nDefaultUIStyleType = EB_UI_STYLE_TYPE_CHAT;
 
     QDesktopWidget* desktopWidget = QApplication::desktop();
-    //获取可用桌面大小
+    /// 获取可用桌面大小
     m_deskRect = desktopWidget->availableGeometry();
-    //获取设备屏幕大小（得到应用程序矩形）
+    /// 获取设备屏幕大小（得到应用程序矩形）
     m_screenRect = desktopWidget->screenGeometry();
-    //获取系统设置的屏幕个数（屏幕拷贝方式该值为1）
+    /// 获取系统设置的屏幕个数（屏幕拷贝方式该值为1）
 //    g_nScreenCount = desktopWidget->screenCount();
 
     m_appDataPath = qApp->applicationDirPath() + "/datas";
@@ -793,7 +793,7 @@ bool EbClientApp::initApp(void)
         const std::string sFileName = sSqliteEbcFile.toStdString();
         if (!m_sqliteEbc->open( sFileName.c_str() )) {
             m_sqliteEbc.reset();
-            // 当前安装目录文件损坏：<br>请重新安装或联系公司客服！
+            /// 当前安装目录文件损坏：<br>请重新安装或联系公司客服！
             QString title = theLocales.getLocalText("message-box.ebc-file-error.title","");
             if (title.isEmpty())
                 title = m_sProductName;
@@ -869,6 +869,7 @@ bool EbClientApp::onLogonSuccess(void)
     }
     const mycp::tstring sLogonAccount = this->m_ebum.EB_GetLogonAccount();
     m_userMainPath = qApp->applicationDirPath() + "/users";
+    checkCreateDir(m_userMainPath);
 //    return m_userMainPath + _T("\\setting.ini");
     if (this->m_ebum.EB_IsLogonVisitor()) {
         m_userMainPath += "/visitor";
