@@ -1,6 +1,6 @@
-#include <QtGui>
-#include "ebccallinfo.h"
+//#include <QtGui>
 #include <ebclientapp.h>
+#include "ebccallinfo.h"
 
 EbcCallInfo::EbcCallInfo()
     : m_bOffLineUser(false)

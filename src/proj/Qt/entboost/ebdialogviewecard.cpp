@@ -391,7 +391,7 @@ void EbDialogViewECard::updateMemberInfo()
     else {
         ui->labelType->setVisible(false);
     }
-    const QString imageFilePath = theApp->memberHeadFilePath(&m_memberInfo);
+    const QString imageFilePath = theApp->memberHeadFilePath(&m_memberInfo).c_str();
     ui->labelImage->setPixmap( QPixmap(imageFilePath).scaled(const_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     QString text = QString("<font color=#ffffff ><b>%1<b> (%2)</font>")
             .arg(m_memberInfo.m_sUserName.c_str())
@@ -454,7 +454,7 @@ void EbDialogViewECard::updateContactInfo()
     else {
         ui->labelType->setVisible(false);
     }
-    const QString imageFilePath = theApp->contactHeadFilePath(&m_contactInfo);
+    const QString imageFilePath = theApp->contactHeadFilePath(&m_contactInfo).c_str();
     ui->labelImage->setPixmap( QPixmap(imageFilePath).scaled(const_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     QString text;
     if (m_contactInfo.m_nContactUserId>0) {

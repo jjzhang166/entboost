@@ -73,8 +73,8 @@ INCLUDEPATH += "/Users/akee/src/mycp/src/ThirdParty"
 #LIBS += "/Users/akee/src/mycp/src/proj/QT5.8/build/libCGCLib.a"
 #}
 #Debug {
-LIBS += "../build/libCGCClass.a"
-LIBS += "../build/libCGCLib.a"
+LIBS += "/Users/akee/src/mycp/src/build/libCGCClass.a"
+LIBS += "/Users/akee/src/mycp/src/build/libCGCLib.a"
 #}
 #LIBS += -L"/Users/akee/src/mycp/src/proj/QT5.8/lib" -llibCGCLib.a -llibCGCClass.a
 LIBS += "/Users/akee/src/boost_1_62_0/stage/lib/libboost_system.a"

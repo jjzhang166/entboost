@@ -80,8 +80,8 @@ INCLUDEPATH += "../../../libchatroom"
 INCLUDEPATH += "../../../libpopusermanager"
 INCLUDEPATH += "../../../include"
 
-LIBS += "../build/libCGCClass.a"
-LIBS += "../build/libCGCLib.a"
+LIBS += "/Users/akee/src/mycp/src/build/libCGCClass.a"
+LIBS += "/Users/akee/src/mycp/src/build/libCGCLib.a"
 #LIBS += "/Users/akee/src/mycp/src/proj/QT5.8/lib/libCGCClass.a"
 #LIBS += "/Users/akee/src/mycp/src/proj/QT5.8/lib/libCGCLib.a"
 LIBS += "/Users/akee/src/boost_1_62_0/stage/lib/libboost_system.a"
@@ -104,8 +104,7 @@ LIBS += -L"../build" -llibebum
 }
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    ../../../include/ebc_public.cpp \
+        ../../../include/ebc_public.cpp \
     ebclientapp.cpp \
     ebclocales.cpp \
     ebmessagebox.cpp \
@@ -175,8 +174,7 @@ SOURCES += main.cpp\
     ebdialogmessagetip.cpp \
     ebdialogmycenter.cpp
 
-HEADERS  += mainwindow.h \
-    ../../../include/ebc_public.h \
+HEADERS  += ../../../include/ebc_public.h \
     ebclientapp.h \
     ebclocales.h \
     ebmessagebox.h \
@@ -248,8 +246,7 @@ HEADERS  += mainwindow.h \
     ebdialogmessagetip.h \
     ebdialogmycenter.h
 
-FORMS    += mainwindow.ui \
-    ebmessagebox.ui \
+FORMS    += ebmessagebox.ui \
     ebdialogfilemanager.ui \
     ebdialogcontactinfo.ui \
     ebdialogrequestaddcontact.ui \

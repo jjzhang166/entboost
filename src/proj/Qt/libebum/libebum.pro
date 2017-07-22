@@ -81,8 +81,8 @@ INCLUDEPATH += "../../../include"
 #INCLUDEPATH += "/Users/akee/src/entboost/src/libchatroom"
 #INCLUDEPATH += "/Users/akee/src/entboost/src/include"
 
-LIBS += "../build/libCGCClass.a"
-LIBS += "../build/libCGCLib.a"
+LIBS += "/Users/akee/src/mycp/src/build/libCGCClass.a"
+LIBS += "/Users/akee/src/mycp/src/build/libCGCLib.a"
 #LIBS += "/Users/akee/src/mycp/src/proj/QT5.8/lib/libCGCClass.a"
 #LIBS += "/Users/akee/src/mycp/src/proj/QT5.8/lib/libCGCLib.a"
 #LIBS += -L"/Users/akee/src/mycp/src/proj/QT5.8/lib" -llibCGCLib.a -llibCGCClass.a
