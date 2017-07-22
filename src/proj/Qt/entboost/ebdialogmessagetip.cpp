@@ -320,7 +320,11 @@ void EbDialogMessageTip::showMsgTip()
     QRect rect;
     rect.setLeft( rectScreen.width()-const_width-10 );
     rect.setRight( rect.x()+const_width );
+#ifdef __MATH__
+    rect.setBottom( m_nScreenHeight-60 );
+#else
     rect.setBottom( m_nScreenHeight-40 );
+#endif
     const int nHeight = WINDOW_TITLE_HEIGHT+MIN(10,ui->listWidgetMessage->count())*40+30;
     rect.setTop( rect.bottom()-nHeight);
     this->setGeometry(rect);
