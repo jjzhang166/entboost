@@ -15,7 +15,8 @@ EbDialogViewECard::EbDialogViewECard(QWidget *parent) :
     ui->setupUi(this);
     resize(const_dialog_view_ecard_size);
     /// 去掉标题栏
-    this->setWindowFlags( Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint );
+    this->setWindowFlags( Qt::FramelessWindowHint );
+//    this->setWindowFlags( Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint );
     /// 设置位置，显示在上面
     this->showTitleBackground(60);
     /// 屏蔽 ESC 按键不退出
@@ -288,7 +289,8 @@ void EbDialogViewECard::timerEvent(QTimerEvent *event)
         if ( rectClient.contains(pos) || this->m_rectValid.contains(pos) ) {
             this->killTimer(m_timerIdCheck2Show);
             m_timerIdCheck2Show = 0;
-            this->setVisible(true);
+            this->show();
+            this->activateWindow();
             if (m_timerIdCheck2Hide!=0) {
                 this->killTimer(m_timerIdCheck2Hide);
             }
