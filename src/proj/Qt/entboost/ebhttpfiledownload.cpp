@@ -87,7 +87,7 @@ void EbHttpFileDownload::replyReadyRead(void)
     if (m_file==NULL) {
         QVariant lastModified = m_reply->header(QNetworkRequest::LastModifiedHeader);
         m_lastModified = lastModified.toString();
-        if (m_oldLastModifited==m_lastModified) {
+        if (!m_oldLastModifited.isEmpty() && m_oldLastModifited==m_lastModified) {
             m_lastErrorCode = QNetworkReply::OperationCanceledError;
             m_downloadFinished = true;
             m_reply->abort();
@@ -96,7 +96,7 @@ void EbHttpFileDownload::replyReadyRead(void)
 
         QFile::remove(m_saveToFilePath);
         m_file = new QFile(m_saveToFilePath);
-        m_file->open(QIODevice::WriteOnly);   //只写方式打开文件
+        m_file->open(QIODevice::WriteOnly);   /// 只写方式打开文件
     }
     m_file->write(m_reply->readAll());
 }

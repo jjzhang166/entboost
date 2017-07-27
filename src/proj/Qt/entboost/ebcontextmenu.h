@@ -62,17 +62,22 @@ public slots:
     void onTriggeredActionCallUser(void);
     void onTriggeredActionViewMsgRecord(void);
     void onTriggeredActionViewGroupShare(void);
+
+    void onTriggeredActionContactMoveTo(void);
 private:
     void hideAllMenuAction(void);
+    void checkGroupAction(eb::bigint groupId, EB_GROUP_TYPE groupType);
 private:
     Type m_type;
     EbWidgetItemInfo::pointer m_itemInfo;
     CLockMap<int,QAction*> m_actionList;
-    QAction * m_adminSeparatorAction;
-    QAction * m_memberSeparatorAction;
-    QAction * m_memberForbidSpeechAction;
-    QMenu * m_menu;
-
+    QAction *m_adminSeparatorAction;
+    QAction *m_memberSeparatorAction;
+    QAction *m_memberForbidSpeechAction;
+    QMenu *m_menuContext;
+    std::vector<EB_UGInfo> m_UGInfoList;
+    QAction *m_actionMoveTo;
+    QMenu *m_menuMoveTo;
 };
 
 #endif // EBCONTEXTMENU_H

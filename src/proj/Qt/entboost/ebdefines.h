@@ -22,18 +22,27 @@ const qint64 theVisitorStartId = 0x2000000000000LL;	// =562949953421312(15位)
 #define is_visitor_uid(id) (id>=theVisitorStartId)
 #endif // is_visitor_uid
 
-static const char * theViewEcard  = "eb-view-ecard";            /// "eb-view-ecard:///[ECARD_DATA]"
-static const char * thePlayVoice  = "eb-play-voice";            /// "eb-play-voice:///[FILE_NAME]"
+/// "eb-view-ecard:///[ECARD_DATA]"
+static const char * theViewEcard  = "eb-view-ecard";
+/// "eb-play-voice:///[FILE_NAME]"
+static const char * thePlayVoice  = "eb-play-voice";
+/// eb-download-resource://[TYPE],[RESOURCEID]
+/// eb-download-resource://[TYPE],[RESOURCEID],[FILENAME]
 static const char * theDownloadResource  = "eb-download-resource";
+/// eb-add-contact://contact_userid,description
 static const char * theReqAddContact  = "eb-add-contact";
 static const char * theCallAccount  = "ebim-call-account";
 static const char * theCallGroup  = "ebim-call-group";
+/// eb-open-subid://[sub_id][,xxx]
+/// eb-open-subid://[sub_id],0[,xxx]	// 当前窗口打开
+/// eb-open-subid://[sub_id],1[,xxx]	// 新窗口打开
 static const char * theOpenSubId  = "eb-open-subid";
 //static const char * theOpenUrl  = "eb-open-url";
+/// eb-open-file:///[FILE_PATH]
 static const char * theOpenFile  = "eb-open-file";
-static const char * theEBWindow2Url  = "eb-open2";
-static const char * theEBWindowUrl  = "eb-open";
-static const char * theClose  = "eb-close";
+static const char * theEBWindow2Url  = "eb-open2";  /// ?
+static const char * theEBWindowUrl  = "eb-open";    /// ?
+static const char * theClose  = "eb-close";         /// ?
 static const char * theExitApp  = "eb-exit-app";
 static const char * theLogout  = "eb-logout";
 static const char * theShowMainFrame  = "eb-show-mainframe";

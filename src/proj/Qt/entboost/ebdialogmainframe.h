@@ -21,6 +21,7 @@ class EbWidgetAppBar;
 class EbLineEdit;
 class EbWidgetSearchResult;
 class EbDialogFileManager;
+class EbDialogPopTip;
 
 //#define USES_EVENT_DATE_TIMER
 class EbDialogMainFrame : public EbDialogBase
@@ -89,7 +90,7 @@ protected:
     virtual void timerEvent( QTimerEvent *e);
 
     void createMenuData(void);
-    void creatTrayIcon(void);
+    bool creatTrayIcon(void);
     void changeTrayTooltip(void);
 private:
     void BuildHeadRect(void);
@@ -135,6 +136,7 @@ private:
     void onEditInfoResponse(QEvent *e);
     void onMemberEditResponse(QEvent *e);
     void onMemberDelete(QEvent *e);
+    void setWindowTitleAndTrayInfo(void);
     void onMemberInfo(QEvent *e);
     void onRejectAdd2Group(QEvent *e);
     void onInviteAdd2Group(QEvent *e);
@@ -170,18 +172,19 @@ private:
     QMenu * m_menuApps;
     QAction * m_actionMyCollection;
     QRect m_rectHead;
-    EbDialogMyCenter * m_pDlgMyCenter;
-    EbDialogFrameList * m_pDlgFrameList;
-    EbDialogMessageTip * m_pDlgMsgTip;
-    EbDialogFileManager * m_dialogFileManager;
+    EbDialogMyCenter *m_pDlgMyCenter;
+    EbDialogFrameList *m_pDlgFrameList;
+    EbDialogMessageTip *m_pDlgMsgTip;
+    EbDialogPopTip *m_dialogBroadcaseMsg;
+    EbDialogFileManager *m_dialogFileManager;
 //    std::vector<EB_SubscribeFuncInfo> m_subscribeFuncList;
-    EbWidgetMyGroup *  m_widgetMyGroup;
-    EbWidgetMyContact *  m_widgetMyContact;
-    EbWidgetMySession *  m_widgetMySession;
-    EbWidgetMyEnterprise * m_widgetMyEnterprise;
-    EbWidgetAppBar * m_widgetMainAppBar;
-    EbLineEdit * m_lineEditSearch;
-    EbWidgetSearchResult * m_widgetSearchResult;
+    EbWidgetMyGroup *m_widgetMyGroup;
+    EbWidgetMyContact *m_widgetMyContact;
+    EbWidgetMySession *m_widgetMySession;
+    EbWidgetMyEnterprise *m_widgetMyEnterprise;
+    EbWidgetAppBar *m_widgetMainAppBar;
+    EbLineEdit *m_lineEditSearch;
+    EbWidgetSearchResult *m_widgetSearchResult;
 //    bool m_canSearch;
     bool m_canUpdateSearchFirst;
 #ifdef USES_EVENT_DATE_TIMER

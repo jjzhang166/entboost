@@ -124,7 +124,9 @@ bool EbClientApp::setDevAppId(QObject* receiver)
         return false;
     }
     this->m_ebum.EB_SetMsgReceiver(this);
-    this->m_ebum.EB_SetDevAppId(278573612908LL,"ec1b9c69094db40d9ada80d657e08cc6",true);
+    if (this->m_ebum.EB_SetDevAppId(278573612908LL,"ec1b9c69094db40d9ada80d657e08cc6",true)!=0) {
+        return false;
+    }
     return true;
 }
 
@@ -132,8 +134,8 @@ bool EbClientApp::setDefaultUIStyleType(EB_UI_STYLE_TYPE newValue)
 {
     if (m_nDefaultUIStyleType != newValue) {
         m_nDefaultUIStyleType = newValue;
-        const std::string userSettingIniFile = this->m_userSettingIniFile.toStdString();
-        WritePrivateProfileIntABoost( "default", "uistyle-type", (int)m_nDefaultUIStyleType, userSettingIniFile.c_str() );
+        WritePrivateProfileIntABoost("default", "uistyle-type", (int)m_nDefaultUIStyleType,
+                                     m_userSettingIniFile.toLocal8Bit().constData());
         return true;
     }
     return false;
@@ -143,8 +145,8 @@ void EbClientApp::setSendKeyType(EB_SEND_KEY_TYPE v)
 {
     if (m_sendKeyType != v) {
         m_sendKeyType = v;
-        const std::string userSettingIniFile = this->m_userSettingIniFile.toStdString();
-        WritePrivateProfileIntABoost( "default", "send-type", (int)m_sendKeyType, userSettingIniFile.c_str() );
+        WritePrivateProfileIntABoost("default", "send-type", (int)m_sendKeyType,
+                                     m_userSettingIniFile.toLocal8Bit().constData());
     }
 }
 
@@ -168,7 +170,7 @@ EbDialogEmotionSelect* EbClientApp::showDialogEmotionSelect(const QPoint& pt,QOb
     return m_dialogEmotionSelect;
 }
 
-EbDialogViewECard *EbClientApp::dialgoViewECard(const QRect &rectValid, bool showImmediate)
+EbDialogViewECard *EbClientApp::dialgoViewECard(const QWidget * wdigetValid, const QRect &rectValid, bool showImmediate)
 {
     if (m_dialogViewECard==0) {
         m_dialogViewECard = new EbDialogViewECard;
@@ -187,7 +189,7 @@ EbDialogViewECard *EbClientApp::dialgoViewECard(const QRect &rectValid, bool sho
         y = this->screenRect().height()-m_dialogViewECard->geometry().height();
     }
     m_dialogViewECard->move(x,y);
-    m_dialogViewECard->setMouseEnter(rectValid,showImmediate);
+    m_dialogViewECard->setMouseEnter(wdigetValid, rectValid, showImmediate);
     return m_dialogViewECard;
 }
 
@@ -385,15 +387,15 @@ QImage EbClientApp::userHeadImage(eb::bigint userId, eb::bigint memberId, const 
     }
     EB_ContactInfo contactInfo;
     if (userId>0 && m_ebum.EB_GetContactInfo2(userId, &contactInfo)) {
-        if ( QFileInfo::exists(contactInfo.m_sHeadResourceFile.c_str()) ) {
+        if ( QFileInfo::exists(contactInfo.m_sHeadResourceFile) ) {
             return contactHeadImage(&contactInfo);
         }
     }
-    const tstring imagePath = memberId>0?":/img/defaultmember.png":":/img/defaultcontact.png";
+    const QString imagePath = memberId>0?":/img/defaultmember.png":":/img/defaultcontact.png";
     return fromHeadImage(imagePath,EB_LINE_STATE_UNKNOWN);
 }
 
-cgcSmartString EbClientApp::userHeadFilePath(mycp::bigint nUserId, eb::bigint memberId, const cgcSmartString &sAccount) const
+QString EbClientApp::userHeadFilePath(mycp::bigint nUserId, eb::bigint memberId, const cgcSmartString &sAccount) const
 {
     EB_MemberInfo pMemberInfo;
     bool findMemberInfo = false;
@@ -408,7 +410,7 @@ cgcSmartString EbClientApp::userHeadFilePath(mycp::bigint nUserId, eb::bigint me
     }
     EB_ContactInfo contactInfo;
     if (nUserId>0 && m_ebum.EB_GetContactInfo2(nUserId, &contactInfo)) {
-        if ( QFileInfo::exists(contactInfo.m_sHeadResourceFile.c_str()) ) {
+        if ( QFileInfo::exists(contactInfo.m_sHeadResourceFile) ) {
             return contactInfo.m_sHeadResourceFile;
         }
     }
@@ -417,14 +419,14 @@ cgcSmartString EbClientApp::userHeadFilePath(mycp::bigint nUserId, eb::bigint me
 
 QImage EbClientApp::funcImage(const EB_SubscribeFuncInfo *funcInfo) const
 {
-    tstring imagePath;
-    if ( funcInfo!=0 && QFileInfo::exists(funcInfo->m_sResFile.c_str()) ) {
+    QString imagePath;
+    if ( funcInfo!=0 && QFileInfo::exists(funcInfo->m_sResFile) ) {
         imagePath = funcInfo->m_sResFile;
     }
-    if (imagePath.empty()) {
+    if (imagePath.isEmpty()) {
         imagePath = ":/img/defaultapp.png";
     }
-    return QImage(imagePath.c_str());
+    return QImage(imagePath);
 }
 
 
@@ -448,17 +450,17 @@ QImage EbClientApp::contactHeadImage(const EB_ContactInfo *contactInfo) const
     return fromHeadImage(contactHeadFilePath(contactInfo),lineState);
 }
 
-cgcSmartString EbClientApp::contactHeadFilePath(const EB_ContactInfo *contactInfo) const
+QString EbClientApp::contactHeadFilePath(const EB_ContactInfo *contactInfo) const
 {
-    if ( contactInfo!=0 && QFileInfo::exists(contactInfo->m_sHeadResourceFile.c_str()) ) {
+    if ( contactInfo!=0 && QFileInfo::exists(contactInfo->m_sHeadResourceFile) ) {
         return contactInfo->m_sHeadResourceFile;
     }
     return ":/img/defaultcontact.png";
 }
 
-QImage EbClientApp::fromHeadImage(const cgcSmartString &imagePath, EB_USER_LINE_STATE lineState) const
+QImage EbClientApp::fromHeadImage(const QString &imagePath, EB_USER_LINE_STATE lineState) const
 {
-    QImage image(imagePath.c_str());
+    QImage image(imagePath);
     /// 在线状态图标
     bool viewGrayImage = false;
     QImage imageLineState;
@@ -491,9 +493,9 @@ QImage EbClientApp::fromHeadImage(const cgcSmartString &imagePath, EB_USER_LINE_
     return image;
 }
 
-cgcSmartString EbClientApp::memberHeadFilePath(const EB_MemberInfo *memberInfo) const
+QString EbClientApp::memberHeadFilePath(const EB_MemberInfo *memberInfo) const
 {
-    if ( memberInfo!=0 && QFileInfo::exists(memberInfo->m_sHeadResourceFile.c_str()) ) {
+    if ( memberInfo!=0 && QFileInfo::exists(memberInfo->m_sHeadResourceFile) ) {
         return memberInfo->m_sHeadResourceFile;
     }
     return ":/img/defaultmember.png";
@@ -681,15 +683,15 @@ void EbClientApp::onAppIdSuccess(QEvent * e)
         this->m_ebum.EB_FreeSystemParameter(EB_SYSTEM_PARAMETER_FORGET_PWD_URL,pForgetPwdUrl);
     }
 
-    const QString sEntLogoImagePath = m_appImgPath + "/entlogo";			// 企业定制LOGO
-    const QString sEntLogoImagePathTemp = m_appImgPath + "/entlogotemp";	// 先保存到临时中间文件
+    const QString sEntLogoImagePath = m_appImgPath + "/entlogo";			/// 企业定制LOGO
+    const QString sEntLogoImagePathTemp = m_appImgPath + "/entlogotemp";	/// 先保存到临时中间文件
     if (m_bLicenseUser) {
-        // 企业LOGO
+        /// 企业LOGO
         unsigned long pEntLogoUrl = 0;
         this->m_ebum.EB_GetSystemParameter(EB_SYSTEM_PARAMETER_ENT_LOGO_URL,&pEntLogoUrl);
-        const std::string sImageTempIniPath = m_appImgPath.toStdString() + "/temp.ini";
+        const std::string sImageTempIniPath = m_appImgPath.toLocal8Bit().toStdString() + "/temp.ini";
         if (pEntLogoUrl!=0 && strlen((const char*)pEntLogoUrl)>0) {
-            // http://test-um.entboost.com/images/entlogo.png
+            /// http://test-um.entboost.com/images/entlogo.png
             const std::string sEntLogoUrl((const char*)pEntLogoUrl);
             this->m_ebum.EB_FreeSystemParameter(EB_SYSTEM_PARAMETER_ENT_LOGO_URL,pEntLogoUrl);
             char lpszEntLogoLastModified[64];
@@ -701,9 +703,13 @@ void EbClientApp::onAppIdSuccess(QEvent * e)
             const QString sOldLastModified(lpszEntLogoLastModified);
             m_httpFileDownload.downloadHttpFile( QString::fromStdString(sEntLogoUrl), sEntLogoImagePathTemp, sOldLastModified );
             if (m_httpFileDownload.getDownloadFinished() && m_httpFileDownload.getLastErrorCode()==QNetworkReply::NoError) {
-                QFile::copy( sEntLogoImagePathTemp,sEntLogoImagePath );
-                QFile::remove(sEntLogoImagePathTemp);
-                WritePrivateProfileStringABoost( "entlogo", "last_modified", m_httpFileDownload.getLastModified().toStdString().c_str(),sImageTempIniPath.c_str());
+                if (QFile::exists(sEntLogoImagePathTemp)) {
+                    QFile::remove(sEntLogoImagePath);
+                    QFile::rename(sEntLogoImagePathTemp, sEntLogoImagePath);
+                    WritePrivateProfileStringABoost("entlogo", "last_modified",
+                                                    m_httpFileDownload.getLastModified().toStdString().c_str(),
+                                                    sImageTempIniPath.c_str());
+                }
 //                if (m_receiver!=NULL)
 //                    QApplication::postEvent(m_receiver, new QEvent((QEvent::Type)EB_COMMAND_UPDATE_ENT_LOGO));
             }
@@ -756,8 +762,8 @@ void EbClientApp::onAppIdError(QEvent *e)
 
 void EbClientApp::loadUserSetting()
 {
-    const std::string sUserSettingIniFile = m_userSettingIniFile.toStdString();
-    m_sendKeyType = (EB_SEND_KEY_TYPE)GetPrivateProfileIntABoost("default","send-type",(int)EB_SEND_KEY_ENTER,sUserSettingIniFile.c_str());
+    m_sendKeyType = (EB_SEND_KEY_TYPE)GetPrivateProfileIntABoost("default","send-type",(int)EB_SEND_KEY_ENTER,
+                                                                 m_userSettingIniFile.toLocal8Bit().constData());
 
 }
 
@@ -774,7 +780,7 @@ void EbClientApp::loadUserSetting()
 
 bool EbClientApp::initApp(void)
 {
-    this->m_setting.load(this->getSettingFile().toStdString().c_str());
+    this->m_setting.load(this->getSettingFile().toLocal8Bit().constData());
     /// default this->setMainColor(0, 162, 232);
     this->setMainColor( this->m_setting.GetDefaultColor(),false );
     this->m_sProductName = QString::fromStdString( this->m_setting.GetEnterprise() );
@@ -790,8 +796,7 @@ bool EbClientApp::initApp(void)
             EbMessageBox::doExec( 0,title, QChar::Null, text, EbMessageBox::IMAGE_WARNING,0,QMessageBox::Ok );
             return false;
         }
-        const std::string sFileName = sSqliteEbcFile.toStdString();
-        if (!m_sqliteEbc->open( sFileName.c_str() )) {
+        if (!m_sqliteEbc->open(sSqliteEbcFile.toStdString().c_str())) {
             m_sqliteEbc.reset();
             /// 当前安装目录文件损坏：<br>请重新安装或联系公司客服！
             QString title = theLocales.getLocalText("message-box.ebc-file-error.title","");
@@ -906,14 +911,14 @@ bool EbClientApp::onLogonSuccess(void)
         if (!QFile::exists(sBoPath)) {
             QDir dir(sBoPath);
             dir.mkdir(sBoPath);
+            QFile::remove(sUserBoFile);
             QFile::copy(sDefaultUserBoFile,sUserBoFile);
         }
-        else if (libEbc::GetFileSize(sUserBoFile.toStdString().c_str())<=0) {
+        else if (libEbc::GetFileSize(sUserBoFile)<=0) {
+            QFile::remove(sUserBoFile);
             QFile::copy(sDefaultUserBoFile,sUserBoFile);
         }
         m_sqliteUser = CSqliteCdbc::create();
-//        sUserBoFile.toUtf8();
-//        if (!m_sqliteUser->open(libEbc::gbk2utf8(sUserBoFile).c_str())) {
         if (!m_sqliteUser->open(sUserBoFile.toStdString().c_str())) {
             m_sqliteUser.reset();
             QString title = theLocales.getLocalText("message-box.ebc-file-error.title","");
@@ -931,7 +936,7 @@ bool EbClientApp::onLogonSuccess(void)
     }
     else {
         /// 检查默认界面类型
-        const std::string sUserSettingIniFile = m_userSettingIniFile.toStdString();
+        const std::string sUserSettingIniFile = m_userSettingIniFile.toLocal8Bit().toStdString();
         const int nDefaultUIStyleType = GetPrivateProfileIntABoost("default","uistyle-type",2,sUserSettingIniFile.c_str());
         if (nDefaultUIStyleType>=2) {
             /// first time
@@ -1025,7 +1030,7 @@ QString EbClientApp::lineStateText(void) const
     return lineStateText( m_ebum.EB_GetLineState() );
 }
 
-eb::bigint EbClientApp::groupMsgSugId()
+eb::bigint EbClientApp::groupMsgSubId()
 {
     if (m_nGroupMsgSubId==0) {
         unsigned long pGroupMsgSubId = 0;
@@ -1038,7 +1043,7 @@ eb::bigint EbClientApp::groupMsgSugId()
     return m_nGroupMsgSubId;
 }
 
-eb::bigint EbClientApp::findAppSugId()
+eb::bigint EbClientApp::findAppSubId()
 {
     if (m_nFindAppSubId==0) {
         unsigned long pFindAppSubId = 0;

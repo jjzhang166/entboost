@@ -140,11 +140,11 @@ void EbDialogEmotionSelect::loadEmotion()
         m_hasEmptyFile = false;
         for (size_t i=0; i<pEnterpriseImageList.size(); i++) {
             const EB_EmotionInfo& pEmotionInfo = pEnterpriseImageList[i];
-            if (pEmotionInfo.m_sResFile.empty()) {
+            if (pEmotionInfo.m_sResFile.isEmpty()) {
                 m_hasEmptyFile = true;
                 break;
             }
-            if ( !QFileInfo::exists(pEmotionInfo.m_sResFile.c_str()) ) {
+            if ( !QFileInfo::exists(pEmotionInfo.m_sResFile) ) {
                 m_hasEmptyFile = true;
                 break;
             }
@@ -152,14 +152,14 @@ void EbDialogEmotionSelect::loadEmotion()
                 /// 前面已经添加，取下一个
                 continue;
             }
-            const QIcon icon(QPixmap::fromImage(QImage(pEmotionInfo.m_sResFile.c_str())).scaled(const_emotion_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+            const QIcon icon(QPixmap::fromImage(QImage(pEmotionInfo.m_sResFile)).scaled(const_emotion_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
             QListWidgetItem * pItem0 = new QListWidgetItem(icon,"", ui->listWidgetEmotion);
             pItem0->setToolTip(pEmotionInfo.m_sDescription.c_str());
             tstring sResourceCmInfo;
             theApp->m_ebum.EB_GetResourceCmInfo(pEmotionInfo.m_sResId,sResourceCmInfo);
             pItem0->setData( Qt::UserRole, QVariant(pEmotionInfo.m_sResId) );
             pItem0->setData( Qt::UserRole+1, QVariant(sResourceCmInfo.c_str()) );
-            pItem0->setData( Qt::UserRole+2, QVariant(pEmotionInfo.m_sResFile.c_str()) );
+            pItem0->setData( Qt::UserRole+2, QVariant(pEmotionInfo.m_sResFile) );
             pItem0->setSizeHint(const_size_hint);
             ui->listWidgetEmotion->addItem(pItem0 );
         }

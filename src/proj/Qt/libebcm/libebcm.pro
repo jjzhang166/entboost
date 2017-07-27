@@ -8,12 +8,24 @@ QT       -= core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-Release {
-TARGET = "../../build/libebcm"
+win32 {
+CONFIG(debug,debug|release) {
+TARGET = "../../build/ebcmd"
 }
-Debug {
-TARGET = "../../build/libebcmd"
+else {
+TARGET = "../../build/ebcm"
 }
+
+}
+else {
+CONFIG(debug,debug|release) {
+TARGET = "../build/ebcmd"
+}
+else {
+TARGET = "../build/ebcm"
+}
+}
+
 #OBJECTS_DIR = "../../build/"
 #TARGET = libebcm
 TEMPLATE = lib
@@ -37,19 +49,19 @@ win32 {
 INCLUDEPATH += F:/THIRDPARTY/zlib-1.2.8
 INCLUDEPATH += F:/THIRDPARTY/boost_1_62_0
 INCLUDEPATH += F:/THIRDPARTY/openssl-1.0.2k/inc32
-INCLUDEPATH += "D:/git/mycp/src"
-INCLUDEPATH += "D:/git/mycp/src/ThirdParty"
+INCLUDEPATH += "D:/dev/mycp/src"
+INCLUDEPATH += "D:/dev/mycp/src/ThirdParty"
 INCLUDEPATH += "F:/THIRDPARTY/zlib-1.2.8"
 
  Release {
-LIBS += -L"D:/git/mycp/src/build" -lCGCLibQt -lCGCClassQt
+LIBS += -L"D:/dev/mycp/src/build" -lCGCLibQt -lCGCClassQt
 LIBS += -L"F:/THIRDPARTY/boost_1_62_0/stage/lib" -llibboost_system-vc140-mt-1_62 -llibboost_thread-vc140-mt-1_62 -llibboost_filesystem-vc140-mt-1_62
 LIBS += -L"F:/THIRDPARTY/zlib-1.2.8/contrib/vstudio/vc14/lib" -lzlibstat
 # libboost_system-mgw53-mt-1_62.a,libboost_thread-mgw53-mt-1_62.a,libboost_filesystem-mgw53-mt-1_62.a
 LIBS += -lWs2_32 -lshlwapi -lWinmm
   }
   Debug {
-LIBS += -L"D:/git/mycp/src/build" -lCGCLibQtd -lCGCClassQtd
+LIBS += -L"D:/dev/mycp/src/build" -lCGCLibQtd -lCGCClassQtd
 LIBS += -L"F:/THIRDPARTY/boost_1_62_0/stage/lib" -llibboost_system-vc140-mt-gd-1_62 -llibboost_thread-vc140-mt-gd-1_62 -llibboost_filesystem-vc140-mt-gd-1_62
 LIBS += -lWs2_32 -lshlwapi -lWinmm
 LIBS += -L"F:/THIRDPARTY/zlib-1.2.8/contrib/vstudio/vc14/lib" -lzlibstatd
@@ -68,14 +80,15 @@ INCLUDEPATH += "/Users/akee/src/mycp/src"
 INCLUDEPATH += "/Users/akee/src/mycp/src/ThirdParty"
 #INCLUDEPATH += "/usr/local/opt/zlib/include"
 
-#Release {
-#LIBS += "/Users/akee/src/mycp/src/proj/QT5.8/build/libCGCClass.a"
-#LIBS += "/Users/akee/src/mycp/src/proj/QT5.8/build/libCGCLib.a"
-#}
-#Debug {
-LIBS += "/Users/akee/src/mycp/src/build/libCGCClass.a"
-LIBS += "/Users/akee/src/mycp/src/build/libCGCLib.a"
-#}
+CONFIG(debug,debug|release) {
+LIBS += "/Users/akee/src/mycp/build/libCGCClassQtd.a"
+LIBS += "/Users/akee/src/mycp/build/libCGCLibQtd.a"
+}
+else {
+LIBS += "/Users/akee/src/mycp/build/libCGCClassQt.a"
+LIBS += "/Users/akee/src/mycp/build/libCGCLibQt.a"
+}
+
 #LIBS += -L"/Users/akee/src/mycp/src/proj/QT5.8/lib" -llibCGCLib.a -llibCGCClass.a
 LIBS += "/Users/akee/src/boost_1_62_0/stage/lib/libboost_system.a"
 LIBS += "/Users/akee/src/boost_1_62_0/stage/lib/libboost_thread.a"

@@ -13,6 +13,8 @@ EbDialogBase::EbDialogBase(QWidget *parent)
     , m_labelTitleLogo(NULL), m_labelTitleText(NULL)
     , m_widgetTitleBackground(NULL)
     , m_pushButtonSysClose(NULL), m_pushButtonSysMin(NULL), m_pushButtonSysMax(0), m_enableDoubleClickMax(false)
+    , m_sizeButton(const_okcancel_button_size)
+    , m_rightInterval(18), m_bottomInterval(10)
     , m_pushButtonOk(NULL), m_pushButtonCancel(NULL)
 {
     m_windowRect = this->rect();
@@ -37,6 +39,11 @@ EbDialogBase::~EbDialogBase(void)
 
 }
 
+void EbDialogBase::setOkCancelButtonSize(const QSize &size)
+{
+    m_sizeButton = size;
+}
+
 //void EbDialogBase::setBackgroundColor(QRgb rgb)
 //{
 //    QPalette pPaletteBg(this->palette());
@@ -51,7 +58,7 @@ EbDialogBase::~EbDialogBase(void)
 const int const_dialog_title_x = 7;
 const int const_dialog_title_y = 7;
 const int const_dialog_title_icon_size = 18;
-void EbDialogBase::showTitleLogoText(const QString& textString, int textSize, QChar logoChar, int logoSize, const QString& titleTextObjectName)
+void EbDialogBase::showTitleLogoText(const QString& textString, int /*textSize*/, QChar logoChar, int logoSize, const QString& titleTextObjectName)
 {
     if (m_labelTitleLogo==NULL && logoChar!=QChar::Null) {
         m_labelTitleLogo = new QLabel(this);
@@ -179,22 +186,22 @@ void EbDialogBase::showPushButtonStdOkCancel(const QString& sOkText, const QStri
 {
     if (m_pushButtonCancel==NULL && !sCancelText.isEmpty()) {
         m_pushButtonCancel = new QPushButton(sCancelText, this);
-        m_pushButtonCancel->resize(const_okcancel_button_size);
+        m_pushButtonCancel->resize(m_sizeButton);
         connect( m_pushButtonCancel,SIGNAL(clicked()),this,SLOT(reject()) );
     }
-    int x = this->rect().width()-const_okcancel_button_size.width()-18;   // *最右边间隔
-    const int y = this->rect().height()-const_okcancel_button_size.height()-10; // *最下面间隔
+    int x = this->rect().width()-m_sizeButton.width()-m_rightInterval;   /// *最右边间隔
+    const int y = this->rect().height()-m_sizeButton.height()-m_bottomInterval; /// *最下面间隔
     if (m_pushButtonCancel!=NULL) {
         m_pushButtonCancel->setObjectName(cancelObjectName);
 //        m_pushButtonCancel->setStyleSheet(sStyleSheetCancel);
         m_pushButtonCancel->move(x,y);
 
-        x -= (const_okcancel_button_size.width()+10);
+        x -= (m_sizeButton.width()+10);
     }
 
     if (m_pushButtonOk==NULL && !sOkText.isEmpty()) {
         m_pushButtonOk = new QPushButton(sOkText, this);
-        m_pushButtonOk->resize(const_okcancel_button_size);
+        m_pushButtonOk->resize(m_sizeButton);
         /// 设置默认回车响应按键
 //        m_pushButtonOk->setShortcut(Qt::Key_Enter); //设置快捷键为enter键
 //        m_pushButtonOk->setShortcut(Qt::Key_Return); //设置快捷键为小键盘上的enter键

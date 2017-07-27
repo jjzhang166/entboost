@@ -45,7 +45,7 @@ protected:
     void saveUrlHistory(void);
 //    void stop(void);
 protected:
-    virtual void onItemSizeChange(const EbWorkItem::pointer& fromWorkItem,int size,int right) {}
+    virtual void onItemSizeChange(const EbWorkItem::pointer& /*fromWorkItem*/,int /*size*/,int /*right*/) {}
 protected:
     QWidget* m_pParent;
     int m_topHeight;

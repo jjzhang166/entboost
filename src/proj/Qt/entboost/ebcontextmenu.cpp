@@ -12,8 +12,10 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
     , m_adminSeparatorAction(0)
     , m_memberSeparatorAction(0)
     , m_memberForbidSpeechAction(0)
+    , m_actionMoveTo(0)
+    , m_menuMoveTo(0)
 {
-    m_menu = new QMenu(parent);
+    m_menuContext = new QMenu(parent);
     QString text;
     QString tooltip;
     QAction * action = 0;
@@ -21,17 +23,17 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
     switch (m_type) {
     case MyEnterprise: {
         /// 管理中心
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.system-manager.text","System Manager") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.system-manager.text","System Manager") );
         action->setToolTip( theLocales.getLocalText("context-menu.system-manager.tooltiop","") );
         actionData = EB_COMMAND_IMPORT_ENT_DATA;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionSystemManager()) );
         m_actionList.insert( actionData,action );
         /// ---------------------------
-        m_menu->addSeparator();
+        m_menuContext->addSeparator();
         /// 新建下级部门
         text = theLocales.getLocalText("context-menu.new-sub-group.text","New Group");
         text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_DEPARTMENT)->name().c_str() );
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         tooltip = theLocales.getLocalText("context-menu.new-sub-group.tooltip","");
         tooltip.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_DEPARTMENT)->name().c_str() );
         action->setToolTip( tooltip );
@@ -41,7 +43,7 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
         /// 新建下级项目组
         text = theLocales.getLocalText("context-menu.new-sub-group.text","New Group");
         text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_PROJECT)->name().c_str() );
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         tooltip = theLocales.getLocalText("context-menu.new-sub-group.tooltip","");
         tooltip.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_PROJECT)->name().c_str() );
         action->setToolTip( tooltip );
@@ -49,14 +51,14 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionNewSubProject()) );
         m_actionList.insert( actionData,action );
         /// ---------------------------
-        m_menu->addSeparator();
+        m_menuContext->addSeparator();
         break;
     }
     case MyGroup: {
         /// 新建个人群组
         text = theLocales.getLocalText("context-menu.new-group.text","New Group");
         text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_GROUP)->name().c_str() );
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         tooltip = theLocales.getLocalText("context-menu.new-group.tooltip","");
         tooltip.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_GROUP)->name().c_str() );
         action->setToolTip( tooltip );
@@ -64,9 +66,9 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionNewGroup()) );
         m_actionList.insert( actionData,action );
         /// ---------------------------
-        m_menu->addSeparator();
+        m_menuContext->addSeparator();
         /// 修改我的名片
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.edit-my-member.text","Edit My Member") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.edit-my-member.text","Edit My Member") );
         action->setToolTip( theLocales.getLocalText("context-menu.edit-my-member.tooltip","") );
         actionData = EB_COMMAND_DEPARTMENT_EDIT_MY_EMP;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionEditMember()) );
@@ -75,39 +77,45 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
     }
     case MyContact: {
         /// 添加联系人
-        action = m_menu->addAction( QIcon(":/img/menuadduser.png"),theLocales.getLocalText("context-menu.add-contact.text","Add Contact") );
+        action = m_menuContext->addAction( QIcon(":/img/menuadduser.png"),theLocales.getLocalText("context-menu.add-contact.text","Add Contact") );
         action->setToolTip( theLocales.getLocalText("context-menu.add-contact.tooltip","") );
         actionData = EB_COMMAND_NEW_CONTACT;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionAddContact()) );
         m_actionList.insert( actionData,action );
         /// ---------------------------
-        m_menu->addSeparator();
+        m_menuContext->addSeparator();
         /// 查看联系人资料
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.edit-contact.text","Edit Contact") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.edit-contact.text","Edit Contact") );
         action->setToolTip( theLocales.getLocalText("context-menu.edit-contact.tooltip","") );
         actionData = EB_COMMAND_EDIT_CONTACT;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionEditContact()) );
         m_actionList.insert( actionData,action );
+        /// 移动至
+        m_menuMoveTo = new QMenu(m_menuContext);
+        m_actionMoveTo = m_menuContext->addMenu(m_menuMoveTo);
+        m_actionMoveTo->setText( theLocales.getLocalText("context-menu.move-contact-to.text","Move Contact To") );
         /// 删除联系人资料
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.delete-contact.text","Delete Contact") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.delete-contact.text","Delete Contact") );
         action->setToolTip( theLocales.getLocalText("context-menu.delete-contact.tooltip","") );
         actionData = EB_COMMAND_DELETE_CONTACT;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionDeleteContact()) );
         m_actionList.insert( actionData,action );
+        /// ---------------------------
+        m_menuContext->addSeparator();
         /// 添加分组
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.add-contact-group.text","Add Contact Group") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.add-contact-group.text","Add Contact Group") );
         action->setToolTip( theLocales.getLocalText("context-menu.add-contact-group.tooltip","") );
         actionData = EB_COMMAND_NEW_GROUP;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionAddContactGroup()) );
         m_actionList.insert( actionData,action );
 //        /// 修改分组 (双击支持直接修改，不需要鼠标右键操作)
-//        action = m_menu->addAction( theLocales.getLocalText("context-menu.rename-contact-group.text","Rename Contact Group") );
+//        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.rename-contact-group.text","Rename Contact Group") );
 //        action->setToolTip( theLocales.getLocalText("context-menu.rename-contact-group.tooltip","") );
 //        actionData = EB_COMMAND_RENAME_GROUP;
 //        this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionRenameContactGroup()) );
 //        m_actionList.insert( actionData,action );
         /// 删除该组
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.delete-contact-group.text","Delete Contact Group") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.delete-contact-group.text","Delete Contact Group") );
         action->setToolTip( theLocales.getLocalText("context-menu.delete-contact-group.tooltip","") );
         actionData = EB_COMMAND_DELETE_GROUP;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionDeleteContactGroup()) );
@@ -119,53 +127,53 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
     }
 
     /// 打开会话
-    action = m_menu->addAction( theLocales.getLocalText("context-menu.open-chat.text","Open Chat") );
+    action = m_menuContext->addAction( theLocales.getLocalText("context-menu.open-chat.text","Open Chat") );
     action->setIcon( QIcon( QPixmap(":/img/menucall.png") ));
     action->setToolTip( theLocales.getLocalText("context-menu.open-chat.tooltip","") );
     actionData = EB_COMMAND_CALL_USER;
     this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionCallUser()) );
     m_actionList.insert( actionData,action );
     /// 聊天记录
-    action = m_menu->addAction( theLocales.getLocalText("context-menu.chat-record.text","Chat Record") );
+    action = m_menuContext->addAction( theLocales.getLocalText("context-menu.chat-record.text","Chat Record") );
     action->setIcon( QIcon( QPixmap(":/img/menumsg.png") ));
     action->setToolTip( theLocales.getLocalText("context-menu.chat-record.tooltip","") );
     actionData = EB_MSG_VIEW_MSG_RECORD;
     this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionViewMsgRecord()) );
     m_actionList.insert( actionData,action );
     /// 群共享
-    action = m_menu->addAction( theLocales.getLocalText("context-menu.group-share.text","Group Share") );
+    action = m_menuContext->addAction( theLocales.getLocalText("context-menu.group-share.text","Group Share") );
     action->setToolTip( theLocales.getLocalText("context-menu.group-share.tooltip","") );
     actionData = EB_COMMAND_VIEW_GROUP_SHARE;
     this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionViewGroupShare()) );
     m_actionList.insert( actionData,action );
     /// ---------------------------
-    m_menu->addSeparator();
-//    m_adminSeparatorAction = m_menu->addSeparator();
+    m_menuContext->addSeparator();
+//    m_adminSeparatorAction = m_menuContext->addSeparator();
     switch (m_type) {
     case MyGroup:
     case MyEnterprise:
     case UserList: {
         /// 加为管理员
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.member-add-admin.text","Add Admin") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.member-add-admin.text","Add Admin") );
         action->setToolTip( theLocales.getLocalText("context-menu.member-add-admin.tooltip","") );
         actionData = EB_COMMAND_MEMBER_ADD_ADMIN;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionMemberAddAdminLevel()) );
         m_actionList.insert( actionData,action );
         /// 取消管理员资格
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.member-del-admin.text","Del Admin") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.member-del-admin.text","Del Admin") );
         action->setToolTip( theLocales.getLocalText("context-menu.member-del-admin.tooltip","") );
         actionData = EB_COMMAND_MEMBER_DEL_ADMIN;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionMemberDelAdminLevel()) );
         m_actionList.insert( actionData,action );
         /// 群禁言
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.group-add-forbid-speech.text","Group Forbid Speech") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.group-add-forbid-speech.text","Group Forbid Speech") );
         action->setIcon( QIcon( QPixmap(":/img/imgstateforbid.png") ));
         action->setToolTip( theLocales.getLocalText("context-menu.group-add-forbid-speech.tooltip","") );
         actionData = EB_COMMAND_MEMBER_ADD_GROUP_FORBID_SPEECH;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionGroupAddForbidSpeech()) );
         m_actionList.insert( actionData,action );
         /// 解除群禁言
-        action = m_menu->addAction( theLocales.getLocalText("context-menu.group-del-forbid-speech.text","Group Delete Forbid Speech") );
+        action = m_menuContext->addAction( theLocales.getLocalText("context-menu.group-del-forbid-speech.text","Group Delete Forbid Speech") );
         action->setToolTip( theLocales.getLocalText("context-menu.group-del-forbid-speech.tooltip","") );
         actionData = EB_COMMAND_MEMBER_DEL_GROUP_FORBID_SPEECH;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionGroupDelForbidSpeech()) );
@@ -173,7 +181,7 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
         /// 修改群资料
         text = theLocales.getLocalText("context-menu.edit-group.text","Edit Group");
         text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_GROUP)->name().c_str() );
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         action->setToolTip( theLocales.getLocalText("context-menu.edit-group.tooltip","") );
         actionData = EB_COMMAND_EDIT_DEPARTMENT;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionEditGroup()) );
@@ -181,7 +189,7 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
         /// 解散该群
         text = theLocales.getLocalText("context-menu.delete-group.text","Delete Group");
         text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_GROUP)->name().c_str() );
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         action->setToolTip( theLocales.getLocalText("context-menu.delete-group.tooltip","") );
         actionData = EB_COMMAND_DELETE_DEPARTMENT;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionDeleteGroup()) );
@@ -189,39 +197,39 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
         /// 退出该群
         text = theLocales.getLocalText("context-menu.exit-group.text","Exit Group");
         text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)EB_GROUP_TYPE_GROUP)->name().c_str() );
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         action->setToolTip( theLocales.getLocalText("context-menu.delete-group.tooltip","") );
         actionData = EB_COMMAND_EXIT_DEPARTMENT;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionExitGroup()) );
         m_actionList.insert( actionData,action );
         ///
         /// ---------------------------
-        m_menu->addSeparator();
+        m_menuContext->addSeparator();
         /// 修改成员名片
         text = theLocales.getLocalText("context-menu.edit-user-member.text","Edit User Member");
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         action->setToolTip( theLocales.getLocalText("context-menu.edid-user-member.tooltip","") );
         actionData = EB_COMMAND_DEPARTMENT_EDIT_USER_EMP;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionEditMember()) );
         m_actionList.insert( actionData,action );
         /// 修改成员名片
         text = theLocales.getLocalText("context-menu.del-member.text","Delete Member");
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         action->setToolTip( theLocales.getLocalText("context-menu.del-member.tooltip","") );
         actionData = EB_COMMAND_DEPARTMENT_DEL_EMP;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionDeleteMember()) );
         m_actionList.insert( actionData,action );
         /// 解除禁言
         text = theLocales.getLocalText("context-menu.member-del-forbid-speech.text","Member Delete Forbid Speech");
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         action->setToolTip( theLocales.getLocalText("context-menu.member-del-forbid-speech.tooltip","") );
         actionData = EB_COMMAND_MEMBER_DEL_FORBID_SPEECH;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionMemberDelForbidSpeech()) );
         m_actionList.insert( actionData,action );
         /// 禁言->
         {
-            QMenu * memberForbidSpeechMenu = new QMenu(m_menu);
-            m_memberForbidSpeechAction = m_menu->addMenu(memberForbidSpeechMenu);
+            QMenu * memberForbidSpeechMenu = new QMenu(m_menuContext);
+            m_memberForbidSpeechAction = m_menuContext->addMenu(memberForbidSpeechMenu);
             m_memberForbidSpeechAction->setIcon( QIcon( QPixmap(":/img/imgstateforbid.png") ));
             m_memberForbidSpeechAction->setText( theLocales.getLocalText("context-menu.member-forbid-speech.text","Forbid Speech") );
             /// 10分钟
@@ -248,8 +256,8 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
         if (MyEnterprise==m_type) {
             /// 新建部门员工/讨论组成员
             /// ---------------------------
-            m_menu->addSeparator();
-            action = m_menu->addAction( QIcon(":/img/menuadduser.png"),"" );
+            m_menuContext->addSeparator();
+            action = m_menuContext->addAction( QIcon(":/img/menuadduser.png"),"" );
             actionData = EB_COMMAND_DEPARTMENT_ADD_EMP;
             this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionNewMember()) );
             m_actionList.insert( actionData,action );
@@ -259,13 +267,13 @@ EbContextMenu::EbContextMenu(Type type,QWidget * parent)
     case MySession: {
         /// ** 最近会话
         /// 删除消息通知（删除会话记录）
-        action = m_menu->addAction( "" );
+        action = m_menuContext->addAction( "" );
         actionData = EB_COMMAND_DELETE_SESSION;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionDeleteSession()) );
         m_actionList.insert( actionData,action );
         /// 清空会话记录
         text = theLocales.getLocalText("context-menu.clear-session.text","Clear Session");
-        action = m_menu->addAction( text );
+        action = m_menuContext->addAction( text );
         action->setToolTip( theLocales.getLocalText("context-menu.clear-session.tooltip","") );
         actionData = EB_COMMAND_CLEAR_SESSION;
         this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionClearSession()) );
@@ -286,7 +294,7 @@ EbContextMenu::~EbContextMenu()
 
 QAction * EbContextMenu::exec(const QPoint &pos)
 {
-    return m_menu->exec(pos);
+    return m_menuContext->exec(pos);
 }
 
 void EbContextMenu::hideAllMenuAction()
@@ -300,11 +308,47 @@ void EbContextMenu::hideAllMenuAction()
     if (m_memberForbidSpeechAction!=0) {
         m_memberForbidSpeechAction->setVisible(false);
     }
+    if (m_actionMoveTo!=0){
+        m_actionMoveTo->setVisible(false);
+    }
     CLockMap<int,QAction*>::iterator iter =  m_actionList.begin();
     for (; iter!=m_actionList.end(); iter++) {
         QAction * action = iter->second;
         if ( action->isSeparator() ) continue;
         action->setVisible(false);
+    }
+}
+
+void EbContextMenu::checkGroupAction(eb::bigint groupId, EB_GROUP_TYPE groupType)
+{
+    if ( !theApp->isDisableGroupShareCloud() ) {
+        this->setMenuActionVisible( EB_COMMAND_VIEW_GROUP_SHARE,true );
+    }
+    if (theApp->m_ebum.EB_IsGroupAdminLevel(groupId)) {
+        /// 群禁言
+        if (theApp->m_ebum.EB_IsGroupForbidSpeech(groupId))
+            this->setMenuActionVisible( EB_COMMAND_MEMBER_DEL_GROUP_FORBID_SPEECH,true );
+        else
+            this->setMenuActionVisible( EB_COMMAND_MEMBER_ADD_GROUP_FORBID_SPEECH,true );
+        /// 我是群管理员
+        QAction * action = this->setMenuActionVisible( EB_COMMAND_EDIT_DEPARTMENT,true );
+        if (action!=0) {
+            QString text = theLocales.getLocalText("context-menu.edit-group.text","Edit Group");
+            text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)groupType)->name().c_str() );
+            action->setText(text);
+        }
+
+        if (theApp->m_ebum.EB_CanDeleteGroupInfo(groupId)) {
+//            if (theApp->m_ebum.EB_IsGroupCreator(groupId) &&
+//                    nGroupType != EB_GROUP_TYPE_DEPARTMENT &&	/// 公司部门
+//                    nGroupType != EB_GROUP_TYPE_PROJECT) {			/// 公司项目组
+            action = this->setMenuActionVisible( EB_COMMAND_DELETE_DEPARTMENT,true );
+            if (action!=0) {
+                QString text = theLocales.getLocalText("context-menu.delete-group.text","Delete Group");
+                text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)groupType)->name().c_str() );
+                action->setText(text);
+            }
+        }
     }
 }
 
@@ -329,7 +373,9 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
     }
     else if (m_type==MySession) {
         /// ** 最近会话
-        if (m_itemInfo->m_nItemType != EbWidgetItemInfo::ITEM_TYPE_SUBMSG) {
+        if (m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_SUBMSG &&
+                (m_itemInfo->m_sGroupCode==0 || theApp->m_ebum.EB_IsMyGroup(m_itemInfo->m_sGroupCode))) {
+            /// 不是验证消息，单人用户，或者是本人群组
             this->setMenuActionVisible( EB_COMMAND_CALL_USER,true );
         }
         QAction * action = this->setMenuActionVisible( EB_COMMAND_DELETE_SESSION,true );
@@ -355,29 +401,27 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
 //            pTreeItemInfo->m_nUserId,pTreeItemInfo->m_nUserId);
 //        if (theApp.m_pBoUsers->select(sSql)>0)
 //        {
-//            m_menu2.InsertODMenu(-1,_T("聊天记录"),MF_BYPOSITION,EB_MSG_VIEW_MSG_RECORD,IDB_BITMAP_MENU_MSG);
-//            //m_menu2.AppendMenu(MF_BYCOMMAND,EB_MSG_VIEW_MSG_RECORD,_T("聊天记录"));
-//            //m_menu2.AppendMenu(MF_BYCOMMAND,EB_COMMAND_DELETE_MSG_RECORD,_T("清空聊天记录"));
-//            m_menu2.AppendMenu(MF_SEPARATOR);
+//            m_menuContext2.InsertODMenu(-1,_T("聊天记录"),MF_BYPOSITION,EB_MSG_VIEW_MSG_RECORD,IDB_BITMAP_MENU_MSG);
+//            //m_menuContext2.AppendMenu(MF_BYCOMMAND,EB_MSG_VIEW_MSG_RECORD,_T("聊天记录"));
+//            //m_menuContext2.AppendMenu(MF_BYCOMMAND,EB_COMMAND_DELETE_MSG_RECORD,_T("清空聊天记录"));
+//            m_menuContext2.AppendMenu(MF_SEPARATOR);
 //        }
-        this->setMenuActionVisible( EB_COMMAND_EDIT_CONTACT,true );
-//        if (m_pGroupItemInfo.size()>1)
-//        {
-//            //
-//            pPopupMenuMoveto.CreatePopupMenu();
-//            BoostReadLock rdlock(m_pGroupItemInfo.mutex());
-//            CLockMap<mycp::bigint,CTreeItemInfo::pointer>::iterator pIter = m_pGroupItemInfo.begin();
-//            int nIndex = 0;
-//            for (; pIter!=m_pGroupItemInfo.end();  pIter++)
-//            {
-//                const CTreeItemInfo::pointer& pGroupItemInfo = pIter->second;
-//                if (pGroupItemInfo->m_sId==const_default_group_ugid || pGroupItemInfo->m_sId==pTreeItemInfo->m_sParentId)
-//                    continue;
-//                pPopupMenuMoveto.AppendMenu(MF_BYCOMMAND,EB_COMMAND_MY_UGINFO+nIndex,pGroupItemInfo->m_sName.c_str());
-//                nIndex++;
-//            }
-//            m_menu2.AppendMenu(MF_POPUP|MF_BYPOSITION,(UINT)pPopupMenuMoveto.m_hMenu,_T("移动至"));
-//        }
+        this->setMenuActionVisible( EB_COMMAND_EDIT_CONTACT, true );
+
+        m_UGInfoList.clear();
+        theApp->m_ebum.EB_GetUGInfoList(m_UGInfoList);
+        if (!m_UGInfoList.empty()) {
+            QList<QAction*> actions = m_menuMoveTo->actions();
+            for (int i=0; i<actions.size(); i++) {
+                m_menuMoveTo->removeAction( actions.at(i) );
+            }
+            m_actionMoveTo->setVisible(true);
+            for (size_t i=0; i<m_UGInfoList.size(); i++) {
+                QAction * action = m_menuMoveTo->addAction(m_UGInfoList[i].m_sGroupName.c_str());
+                action->setData(QVariant(i));
+                this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionContactMoveTo()) );
+            }
+        }
         this->setMenuActionVisible( EB_COMMAND_DELETE_CONTACT,true );
         this->setMenuActionVisible( EB_COMMAND_NEW_GROUP,true );
     }
@@ -450,7 +494,14 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
         }
         else {
             /// 我不是群管理员，普通成员
-            //m_menu2.AppendMenu(nPosIndex++,MF_BYCOMMAND,EB_COMMAND_EXIT_DEPARTMENT,_T("退出该群"));
+            //m_menuContext2.AppendMenu(nPosIndex++,MF_BYCOMMAND,EB_COMMAND_EXIT_DEPARTMENT,_T("退出该群"));
+        }
+
+        if (m_type==UserList) {
+            EB_GROUP_TYPE groupType = EB_GROUP_TYPE_DEPARTMENT;
+            if (theApp->m_ebum.EB_GetGroupType(m_itemInfo->m_sGroupCode, groupType)) {
+                checkGroupAction(m_itemInfo->m_sGroupCode, groupType);
+            }
         }
     }
     else if ( m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_ENTERPRISE ) {
@@ -470,7 +521,7 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
         const EB_GROUP_TYPE nGroupType = (EB_GROUP_TYPE)m_itemInfo->m_nSubType;
         nFuncLocation = EB_FUNC_LOCATION_RIGHT_CLICK_MENU_GROUP;
         //        theApp.m_nSelectGroupId = pTreeItemInfo->m_sGroupCode;
-        //        m_menu2.AppendMenu(MF_SEPARATOR);
+        //        m_menuContext2.AppendMenu(MF_SEPARATOR);
         const eb::bigint myMemberId = m_itemInfo->m_nBigId;
         const bool isMyGroup = myMemberId>0?true:false;
         if (isMyGroup) {
@@ -496,35 +547,36 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
         if (theApp->m_sqliteUser->select(sSql)>0) {
             this->setMenuActionVisible( EB_MSG_VIEW_MSG_RECORD,true );
         }
-        if ( !theApp->isDisableGroupShareCloud() ) {
-            this->setMenuActionVisible( EB_COMMAND_VIEW_GROUP_SHARE,true );
-        }
-        if (theApp->m_ebum.EB_IsGroupAdminLevel(m_itemInfo->m_sGroupCode)) {
-            /// 群禁言
-            if (theApp->m_ebum.EB_IsGroupForbidSpeech(m_itemInfo->m_sGroupCode))
-                this->setMenuActionVisible( EB_COMMAND_MEMBER_DEL_GROUP_FORBID_SPEECH,true );
-            else
-                this->setMenuActionVisible( EB_COMMAND_MEMBER_ADD_GROUP_FORBID_SPEECH,true );
-            /// 我是群管理员
-            QAction * action = this->setMenuActionVisible( EB_COMMAND_EDIT_DEPARTMENT,true );
-            if (action!=0) {
-                QString text = theLocales.getLocalText("context-menu.edit-group.text","Edit Group");
-                text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)nGroupType)->name().c_str() );
-                action->setText(text);
-            }
+        checkGroupAction(m_itemInfo->m_sGroupCode, nGroupType);
+//        if ( !theApp->isDisableGroupShareCloud() ) {
+//            this->setMenuActionVisible( EB_COMMAND_VIEW_GROUP_SHARE,true );
+//        }
+//        if (theApp->m_ebum.EB_IsGroupAdminLevel(m_itemInfo->m_sGroupCode)) {
+//            /// 群禁言
+//            if (theApp->m_ebum.EB_IsGroupForbidSpeech(m_itemInfo->m_sGroupCode))
+//                this->setMenuActionVisible( EB_COMMAND_MEMBER_DEL_GROUP_FORBID_SPEECH,true );
+//            else
+//                this->setMenuActionVisible( EB_COMMAND_MEMBER_ADD_GROUP_FORBID_SPEECH,true );
+//            /// 我是群管理员
+//            QAction * action = this->setMenuActionVisible( EB_COMMAND_EDIT_DEPARTMENT,true );
+//            if (action!=0) {
+//                QString text = theLocales.getLocalText("context-menu.edit-group.text","Edit Group");
+//                text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)nGroupType)->name().c_str() );
+//                action->setText(text);
+//            }
 
-            if (theApp->m_ebum.EB_CanDeleteGroupInfo(m_itemInfo->m_sGroupCode)) {
-//            if (theApp->m_ebum.EB_IsGroupCreator(m_itemInfo->m_sGroupCode) &&
-//                    nGroupType != EB_GROUP_TYPE_DEPARTMENT &&	/// 公司部门
-//                    nGroupType != EB_GROUP_TYPE_PROJECT) {			/// 公司项目组
-                action = this->setMenuActionVisible( EB_COMMAND_DELETE_DEPARTMENT,true );
-                if (action!=0) {
-                    QString text = theLocales.getLocalText("context-menu.delete-group.text","Delete Group");
-                    text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)nGroupType)->name().c_str() );
-                    action->setText(text);
-                }
-            }
-        }
+//            if (theApp->m_ebum.EB_CanDeleteGroupInfo(m_itemInfo->m_sGroupCode)) {
+////            if (theApp->m_ebum.EB_IsGroupCreator(m_itemInfo->m_sGroupCode) &&
+////                    nGroupType != EB_GROUP_TYPE_DEPARTMENT &&	/// 公司部门
+////                    nGroupType != EB_GROUP_TYPE_PROJECT) {			/// 公司项目组
+//                action = this->setMenuActionVisible( EB_COMMAND_DELETE_DEPARTMENT,true );
+//                if (action!=0) {
+//                    QString text = theLocales.getLocalText("context-menu.delete-group.text","Delete Group");
+//                    text.replace( "[GROUP_TYPE_NAME]", theLocales.getGroupTypeName((int)nGroupType)->name().c_str() );
+//                    action->setText(text);
+//                }
+//            }
+//        }
 
         if ( !theApp->m_ebum.EB_IsGroupCreator(m_itemInfo->m_sGroupCode) &&
              nGroupType != EB_GROUP_TYPE_DEPARTMENT &&	/// 公司部门
@@ -559,6 +611,10 @@ void EbContextMenu::onCallItem(const EbWidgetItemInfo::pointer &itemInfo)
         theApp->m_pAutoCallGroupIdList.remove(itemInfo->m_sGroupCode);
         theApp->m_ebum.EB_CallGroup(itemInfo->m_sGroupCode);
     }
+    else if (itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_SUBMSG) {
+        const std::string parameter = itemInfo->m_nSubType==EBC_MSG_TYPE_BC_MSG?"tab_type=bc_msg":"tab_type=sys_msg";
+        theApp->mainWnd()->openSubscribeFuncWindow(theApp->groupMsgSubId(), "", parameter);
+    }
 }
 
 void EbContextMenu::onEditItem(const EbWidgetItemInfo::pointer &itemInfo)
@@ -591,7 +647,7 @@ void EbContextMenu::onTriggeredActionAddContact()
 {
     if (theApp->isAuthContact()) {
         /// 添加好友需要验证
-        if (theApp->findAppSugId()==0) {
+        if (theApp->findAppSubId()==0) {
             /// 暂时未开放添加好友验证功能：\r\n请联系管理员！
             EbMessageBox::doShow( NULL, "", QChar::Null,
                                   theLocales.getLocalText( "message-show.not-support-auth-contact","Not supprt auth contact" ),
@@ -599,10 +655,7 @@ void EbContextMenu::onTriggeredActionAddContact()
         }
         else {
             /// 找群找人
-            EB_SubscribeFuncInfo funcInfo;
-            if (theApp->m_ebum.EB_GetSubscribeFuncInfo(theApp->findAppSugId(),&funcInfo)) {
-                theApp->mainWnd()->openSubscribeFuncWindow(funcInfo);
-            }
+            theApp->mainWnd()->openSubscribeFuncWindow(theApp->findAppSubId());
         }
     }
     else {
@@ -905,6 +958,19 @@ void EbContextMenu::onTriggeredActionViewMsgRecord()
 void EbContextMenu::onTriggeredActionViewGroupShare()
 {
 
+}
+
+void EbContextMenu::onTriggeredActionContactMoveTo()
+{
+    if (m_itemInfo.get()==0 || m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_CONTACT) {
+        return;
+    }
+    bool ok = false;
+    const int index = ((QAction*)sender())->data().toInt(&ok);
+    if (ok && index>=0 && index<(int)m_UGInfoList.size()) {
+        /// 移动至该组
+        theApp->m_ebum.EB_MoveContactTo1(m_itemInfo->m_sId, m_UGInfoList[index].m_nUGId);
+    }
 }
 
 QAction *EbContextMenu::setMenuActionVisible(int commandId, bool visible)

@@ -25,6 +25,7 @@ signals:
     void clickedClose(void);
     void clickedMsgRecord(void);
 public slots:
+    void sendFile(const QString &filePath, bool checkImage);
     void onDropSendFileTextEdit(const QString &filePath);
     void onClickedPushButtonEmotion(void);
     void onClickedPushButtonMsgRecord(void);

@@ -44,7 +44,7 @@ void EbWebEngineDownloadItem::onDownloadFinished()
     fileInfo->m_nMsgId = fileInfo->m_sResId;
     fileInfo->m_nFileSize = (cr::bigint)m_totalBytes;
     fileInfo->m_sSendFrom = fileInfo->m_sResId;
-    fileInfo->m_sFileName = m_path.toStdString();
+    fileInfo->m_sFileName = m_path;
     QCoreApplication::postEvent(theApp->mainWnd(),fileInfo);
     theApp->m_pCancelFileList.remove((eb::bigint)m_msgId);
 //    emit downloadFinished(this);
@@ -88,7 +88,7 @@ void EbWebEngineDownloadItem::onDownloadProgress(qint64 bytesReceived, qint64 by
         fileInfo->m_nMsgId = fileInfo->m_sResId;
         fileInfo->m_sSendFrom = fileInfo->m_sResId;
         fileInfo->m_nFileSize = (cr::bigint)m_totalBytes;
-        fileInfo->m_sFileName = m_path.toStdString();
+        fileInfo->m_sFileName = m_path;
         QCoreApplication::postEvent(theApp->mainWnd(),fileInfo);
     }
 

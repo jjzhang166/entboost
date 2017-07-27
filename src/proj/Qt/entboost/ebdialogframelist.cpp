@@ -118,6 +118,7 @@ void EbDialogFrameList::showFrameList(bool show)
 {
     if (show) {
         this->showNormal();
+        this->activateWindow();
 //        if (this->IsIconic())
 //            this->ShowWindow(SW_RESTORE);
 //        else

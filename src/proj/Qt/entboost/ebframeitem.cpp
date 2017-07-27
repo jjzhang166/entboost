@@ -455,7 +455,7 @@ void EbFrameItem::onGroupInfo(const EB_GroupInfo *pGroupInfo)
         /// Select User 界面需要
         m_dialogChatBase->onGroupInfo(pGroupInfo);
 
-        if (groupId()!=pGroupInfo->m_sGroupCode) {
+        if (groupId()==pGroupInfo->m_sGroupCode) {
             m_itemText = m_dialogChatBase->fromName();
             if ( m_pushButtonLeft!=0 ) {
                 m_pushButtonLeft->setToolTip( m_dialogChatBase->fullName() );

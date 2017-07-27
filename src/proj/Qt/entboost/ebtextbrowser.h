@@ -14,6 +14,7 @@ class EbTextBrowser : public QTextBrowser
 public:
     explicit EbTextBrowser(const EbcCallInfo::pointer &callInfo, QWidget *parent = Q_NULLPTR);
     virtual ~EbTextBrowser(void);
+    static EbTextBrowser * create(const EbcCallInfo::pointer &callInfo, QWidget *parent = 0);
 
     void setCallInfo(const EbcCallInfo::pointer &callInfo);    /// 主要用于更新 CALLID
     void insertUrl(const QString &url);
@@ -43,8 +44,8 @@ protected:
     void getFromToName(bool receive, eb::bigint fromUserId, eb::bigint toUserId, tstring &outFromUserName, tstring &outToUserName);
     void writeTitle(bool writeLeft, eb::bigint msgId, bool aprivate, eb::bigint fromUserId, const tstring &fromName,
                     eb::bigint toUserId, const tstring &toName, time_t msgTime, int nReadFlag, QString *pOutWindowText=0);
-    void writeFileMessage(eb::bigint msgId, eb::bigint resourceId, const char *filePath, eb::bigint fileSize, QString *pOutMsgText=0);
-    void writeVoiceMessage(const char *voiceFile, QString *pOutMsgText=0);
+    void writeFileMessage(eb::bigint msgId, eb::bigint resourceId, const QString &filePath, eb::bigint fileSize, QString *pOutMsgText=0);
+    void writeVoiceMessage(const QString &voiceFile, QString *pOutMsgText=0);
     bool writeCardDataMessage( bool receive, eb::bigint msgId, const char *cardData, QString *pOutMsgText=0);
     void addChatMsgBlock(eb::bigint msgId, bool alignLeft);
 private:

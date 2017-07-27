@@ -12,7 +12,8 @@ public:
     static EbWebEngineUrlSchemeHandler* instance(void);
     EbWebEngineUrlSchemeHandler(QObject *parent=0);
 
-    void requestUrl(const QUrl &url);
+    void requestUrl(const QUrl &url, QWebEngineUrlRequestJob *job=0);
+    bool openSubId(const QString &info, QWebEngineUrlRequestJob *job=0);
 protected:
     virtual void requestStarted(QWebEngineUrlRequestJob *job);
 private:

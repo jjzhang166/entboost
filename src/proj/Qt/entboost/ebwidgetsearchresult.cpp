@@ -15,12 +15,14 @@ EbWidgetSearchResult::EbWidgetSearchResult(EB_SEARCH_FROM_FLAG fromFlag, QWidget
 //    this->setStyleSheet("QWidget:{border: none;}");
 
     m_listWidgetResults = new EbListWidget(this);
+    m_listWidgetResults->setCursor( QCursor(Qt::PointingHandCursor) );
     m_listWidgetResults->setObjectName("SelectedUser");
     m_listWidgetResults->setIconSize(const_tree_icon_size);
     connect( m_listWidgetResults,SIGNAL(keyPressEnter(const QListWidgetItem*)),this,SLOT(onKeyPressEnterItem(const QListWidgetItem*)) );
     m_listWidgetResults->setMouseTracking(true);
     connect( m_listWidgetResults,SIGNAL(itemEntered(QListWidgetItem*)),this,SLOT(onItemEntered(QListWidgetItem*)) );
-    connect( m_listWidgetResults,SIGNAL(itemDoubleClicked(QListWidgetItem*)),this,SLOT(onItemDoubleClicked(QListWidgetItem*)) );
+    connect( m_listWidgetResults,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(onItemDoubleClicked(QListWidgetItem*)) );
+//    connect( m_listWidgetResults,SIGNAL(itemDoubleClicked(QListWidgetItem*)),this,SLOT(onItemDoubleClicked(QListWidgetItem*)) );
 //    connect( m_listWidgetResults,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(onItemClicked(QListWidgetItem*)) );
     m_menu = new QMenu(this);
     /// 复制
@@ -170,6 +172,7 @@ void EbWidgetSearchResult::onClickedItemLabel()
     if ( !url.isEmpty() ) {
         emit clickedSearchResultUrl(url);
     }
+    this->hide();
 }
 
 void EbWidgetSearchResult::onTriggeredActionCopy()

@@ -26,6 +26,7 @@ public slots:
     void onClickedPushButtonMySetting(void);
     void onClickedPushButtonModifyPassword(void);
     void udpateClickedPushButton(const QObject *sender);
+    void onClickedPushButtonDefaultMember(void);
 protected:
     virtual void accept(void);
 private:

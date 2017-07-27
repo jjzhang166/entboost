@@ -32,30 +32,6 @@
 //        }
 //    }
 //}
-//void TestStandardPaths(void)
-//{
-//    QString sStringTemp = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-//    std::string m_sAppDataPath = sStringTemp.toStdString();
-//    //m_sAppDataPath += "\\entboost";
-//    //if (!QFileInfo::isDir(m_sAppDataPath))
-//    QDir pDir1(m_sAppDataPath.c_str());
-//    if (!pDir1.exists()) {
-//        pDir1.mkdir(m_sAppDataPath.c_str());
-//    }
-//}
-
-//void TestDirFile(void)
-//{
-//    {
-//        QDir pDir1;
-//        pDir1.mkdir("d:\\tn\\qt_dir\\mkdir1");
-//    }
-////    QFile::copy("d:\\tn\\qt_dir\\111.txt", "d:\\tn\\qt_dir\\mkdir1\\");
-//    QFile::copy("d:\\tn\\qt_dir\\111.txt", "d:\\tn\\qt_dir\\222.txt");
-//    QFile::remove("d:\\tn\\qt_dir\\222.txt");
-//    QDir pDir2;
-//    pDir2.rmdir("d:\\tn\\qt_dir\\mkdir1");
-//}
 
 //QTranslator g_tran;//必须设置成全局变量，如果是局部变量，设置将失效。
 //void setLanguage(int lan)//全局函数，可供其他文件调用
@@ -93,50 +69,18 @@ bool findSysFontFamily(void)
     return ret;
 }
 
-//#include <Q
-//void getCPUInfo()
-//{
-////    SYSTEM_INFO sysInfo;
-////    GetSystemInfo(&sysInfo);
-
-////    m_pageSize->setText(QString("分页大小:\t%1").arg(sysInfo.dwPageSize));
-////    char buff[32];
-////    sprintf(buff, "%p", sysInfo.lpMinimumApplicationAddress);
-////    m_minAddress->setText(QString("最小寻址:\t%1").arg(buff));
-////    sprintf(buff, "%p", sysInfo.lpMaximumApplicationAddress);
-////    m_maxAddress->setText(QString("最大寻址:\t%1").arg(buff));
-////    m_mask->setText(QString("掩码:\t\t%1").arg(sysInfo.dwActiveProcessorMask));
-////    m_processorNum->setText(QString("处理器个数:\t%1").arg(sysInfo.dwNumberOfProcessors));
-////    m_processorType->setText(QString("类型:\t\t%1").arg(sysInfo.dwProcessorType));
-////    m_processorLevel->setText(QString("等级:\t\t%1").arg(sysInfo.wProcessorLevel));
-////    m_processorVersion->setText(QString("版本:\t\t%1").arg(sysInfo.wProcessorRevision));
-
-//    QString lpRootPathName = "C:\\";
-//    LPTSTR lpVolumeNameBuffer=new TCHAR[12];//磁盘卷标
-//    DWORD nVolumeNameSize=12;// 卷标的字符串长度
-//    DWORD VolumeSerialNumber;//硬盘序列号
-//    DWORD MaximumComponentLength;// 最大的文件长度
-//    LPTSTR lpFileSystemNameBuffer=new TCHAR[10];// 存储所在盘符的分区类型的长指针变量
-//    DWORD nFileSystemNameSize=10;// 分区类型的长指针变量所指向的字符串长度
-//    DWORD FileSystemFlags;// 文件系统的一此标志
-//    GetVolumeInformation((LPTSTR)lpRootPathName.utf16(),
-//                         lpVolumeNameBuffer, nVolumeNameSize,
-//                         &VolumeSerialNumber, &MaximumComponentLength,
-//                         &FileSystemFlags,
-//                         lpFileSystemNameBuffer, nFileSystemNameSize);
-//    qDebug() << VolumeSerialNumber;
-
-//}
-
 //#define USES_CEF
 int main(int argc, char *argv[])
 {
-//    getCPUInfo();
-//    return 1;
 //    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
     /// 加了这行代码，会有问题；
 //    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+//#if defined(Q_OS_OSX)
+//    QApplication::setQuitOnLastWindowClosed(false);
+//#else
+//    QApplication::setQuitOnLastWindowClosed(true);
+//#endif
 
 //    QtWebEngine::initialize();
 
@@ -168,7 +112,7 @@ int main(int argc, char *argv[])
     theApp = EbClientApp::create();
 
 //    setLanguage(1);//调用全局函数
-    //加载Qt标准对话框的中文翻译文件
+    /// 加载Qt标准对话框的中文翻译文件
     QTranslator tranMain;
     if (tranMain.load(QString(":/qm/qt_zh_CN.qm"))) {
         a.installTranslator(&tranMain);
@@ -182,15 +126,9 @@ int main(int argc, char *argv[])
 //    TestStandardPaths();
 //    TestHostAddressList();
 
-//    QString path;
-//    QDir dir;
-//    //path=dir.currentPath();
-//    path = QCoreApplication::applicationDirPath();
-//    path = QCoreApplication::applicationFilePath();
-
     /// 加载默认中文
     const QString localFileName = theApp->getAppLocalesPath()+"/zh-CN.json";
-    theLocales.loadLocaleFile(localFileName.toStdString());
+    theLocales.loadLocaleFile(localFileName.toLocal8Bit().toStdString());
     if (!theApp->initApp()) {
         return 1;
     }
@@ -223,8 +161,12 @@ int main(int argc, char *argv[])
     QWebEngineProfile::defaultProfile()->installUrlSchemeHandler( QByteArray(theCallGroup), new EbWebEngineUrlSchemeHandler() );
     QWebEngineProfile::defaultProfile()->setCachePath( m_sCefCachePath );
     QWebEngineProfile::defaultProfile()->setHttpCacheType( QWebEngineProfile::DiskHttpCache );
+    QWebEngineSettings::defaultSettings()->setAttribute( QWebEngineSettings::PluginsEnabled, true );
     QWebEngineSettings::defaultSettings()->setAttribute( QWebEngineSettings::HyperlinkAuditingEnabled, true );
-//    QWebEngineSettings::defaultSettings()->setAttribute( QWebEngineSettings::PluginsEnabled, true );
+
+    //    command_line->AppendSwitchWithValue("--ppapi-flash-path", "PepperFlash/pepflashplayer.dll");	// *单独加载可以使用，但Flash: 显示版本不对
+//	//manifest.json中的version
+//	command_line->AppendSwitchWithValue("--ppapi-flash-version", "21.0.0.213");										// *测试过，替换其他版本的pepflashplayer.dll也能正常使用
 
     /// 不设置大小，由系统内部自动管理
 //    const int nMaximumSize = 100*1024*1024; // 100MB

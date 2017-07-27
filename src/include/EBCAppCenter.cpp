@@ -59,7 +59,11 @@ int CEBCAppCenter::Start(const CCgcAddress & address, const tstring & sAppName, 
 
 	m_bKilled = false;
 	boost::thread_attributes attrs;
-	attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#ifdef _QT_MAKE_
+    attrs.set_stack_size(CGC_THREAD_STACK_MAX);
+#else
+    attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#endif
 	//if (m_pResponseThread == NULL)
 	//	m_pResponseThread = new boost::thread(attrs,boost::bind(response_thread_svr, (void*)this));
 	if (m_pProcessThread.get() == NULL)

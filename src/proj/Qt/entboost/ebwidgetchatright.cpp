@@ -57,6 +57,14 @@ void EbWidgetChatRight::onUserExit(eb::bigint nUserId, bool bExitDep)
     }
 }
 
+//void EbWidgetChatRight::lineStateChange(eb::bigint userId, EB_USER_LINE_STATE lineState)
+//{
+//    EbWidgetUserList * widgetUserList = EbDialogWorkFrame::widgetUserList();
+//    if ( widgetUserList!=0 ) {
+//        widgetUserList->lineStateChange(userId, lineState);
+//    }
+//}
+
 void EbWidgetChatRight::setCallInfo(const EbcCallInfo::pointer &pCallInfo)
 {
     m_callInfo = pCallInfo;

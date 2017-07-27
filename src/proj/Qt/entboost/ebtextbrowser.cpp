@@ -44,6 +44,16 @@ EbTextBrowser::~EbTextBrowser()
 
 }
 
+EbTextBrowser *EbTextBrowser::create(const EbcCallInfo::pointer &callInfo, QWidget *parent)
+{
+    EbTextBrowser *textBrowser = new EbTextBrowser(callInfo, parent);
+    textBrowser->setStyleSheet("border: none;");
+    textBrowser->setReadOnly(true);
+    /// ** 屏蔽打开链接（打开会刷新整个界面白屏），由程序内部处理
+    textBrowser->setOpenLinks(false);
+    return textBrowser;
+}
+
 void EbTextBrowser::setCallInfo(const EbcCallInfo::pointer &pCallInfo)
 {
     m_callInfo = pCallInfo;
@@ -252,8 +262,7 @@ void EbTextBrowser::addRichMsg(bool saveHistory, bool bReceive, const CCrRichInf
             if (libEbc::ParseString(sResourceInfo.c_str(),";",pList)>=3) {
                 const tstring sResourceId(pList[0]);
                 const tstring sDescription = pList.size()>3?pList[3]:"";
-                char sImageFileName[260];
-                sprintf(sImageFileName,"%s/%s", theApp->m_ebum.EB_GetResourcePath().c_str(),sResourceId.c_str());
+                QString sImageFileName = QString("%1/%2").arg(theApp->m_ebum.EB_GetResourcePath()).arg(sResourceId.c_str());
                 if (sOutFirstMsg1!=0 && nOutMsgLength<const_max_length) {
                     const QString sTemp = QString("<img src=\"%1\" alt=\"%2\"/>").arg(sImageFileName).arg(sDescription.c_str());
                     nOutMsgLength += 30;
@@ -276,13 +285,13 @@ void EbTextBrowser::addRichMsg(bool saveHistory, bool bReceive, const CCrRichInf
                     sprintf(sSql,"INSERT INTO msg_record_t(%smsg_id,dep_code,from_uid,from_name,to_uid,to_name,private,msg_type,msg_name,msg_text,read_flag) "
                                  "VALUES(%s%lld,%lld,%lld,'%s',%lld,'%s',%d,%d,'%s','%s',%d)",
                             sDBMsgTimeField.c_str(),sDBMsgTimeValue,pRichMsg->GetMsgId(),this->m_callInfo->m_pCallInfo.m_sGroupCode,pCrMsgInfo->m_sSendFrom,sInFromName.c_str(),
-                        sSaveDbToAccount,sInToName.c_str(),(int)(pCrMsgInfo->m_bPrivate?1:0),(int)MRT_JPG,sImageFileName,sDescription.c_str(),nReadFlag);
+                        sSaveDbToAccount,sInToName.c_str(),(int)(pCrMsgInfo->m_bPrivate?1:0),(int)MRT_JPG,sImageFileName.toStdString().c_str(),sDescription.c_str(),nReadFlag);
                     theApp->m_sqliteUser->execute(sSql);
                 }
             }
         }
         else if (pMsgItem->GetType() == EB_ChatRoomMsgItem::MIT_OBJECT) {
-            char sObjectFileName[2048];
+            QString sObjectFileName;
             tstring sObjectSaveData;	// ** to save msg_text
             const EB_RICH_SUB_TYPE nSubType = (EB_RICH_SUB_TYPE)pCrMsgInfo->m_pRichMsg->GetSubType();
             bool bIsFile = true;
@@ -292,11 +301,11 @@ void EbTextBrowser::addRichMsg(bool saveHistory, bool bReceive, const CCrRichInf
                 static_index++;
                 if (nSubType == EB_RICH_SUB_TYPE_JPG) {
                     nRecordType = MRT_JPG;
-                    sprintf(sObjectFileName,"%s/%x%02x%02x.jpg", theApp->userImagePath().toStdString().c_str(), (int)time(0),rand()%0xff,(static_index)%0xff);
+                    sObjectFileName = QString("%1/%2%3%4.jpg").arg(theApp->userImagePath()).arg(time(0)).arg(rand()%0xff).arg(static_index%0xff);
                 }
                 else if (nSubType==EB_RICH_SUB_TYPE_AUDIO) {	/// wav格式
                     nRecordType = MRT_WAV;
-                    sprintf(sObjectFileName,"%s/%x%02x%02x.wav", theApp->userImagePath().toStdString().c_str(), (int)time(0),rand()%0xff,(static_index)%0xff);
+                    sObjectFileName = QString("%1/%2%3%4.wav").arg(theApp->userImagePath()).arg(time(0)).arg(rand()%0xff).arg(static_index%0xff);
                 }
                 else if (nSubType==EB_RICH_SUB_TYPE_MAP_POS) {	/// 地图位置
                     bIsFile = false;
@@ -311,18 +320,18 @@ void EbTextBrowser::addRichMsg(bool saveHistory, bool bReceive, const CCrRichInf
                 }
                 else if (nSubType==EB_RICH_SUB_TYPE_USER_DATA) {	/// 用户自定义数据
                     nRecordType = MRT_USER_DATA;
-                    sprintf(sObjectFileName,"%s/%x%02x%02x", theApp->userImagePath().toStdString().c_str(), (int)time(0),rand()%0xff,(static_index)%0xff);
+                    sObjectFileName = QString("%1/%2%3%4").arg(theApp->userImagePath()).arg(time(0)).arg(rand()%0xff).arg(static_index%0xff);
                 }
                 else {
                     /// 普通文件；
                     nRecordType = MRT_FILE;
-                    sprintf(sObjectFileName,"%s/%x%02x%02x", theApp->userImagePath().toStdString().c_str(), (int)time(0),rand()%0xff,(static_index)%0xff);
+                    sObjectFileName = QString("%1/%2%3%4").arg(theApp->userImagePath()).arg(time(0)).arg(rand()%0xff).arg(static_index%0xff);
                 }
                 if (bIsFile) {
                 //if (nRecordType != MRT_MAP_POS) {
                     const char * lpObjectData = pMsgItem->GetData();
                     const unsigned long dwDataSize = pMsgItem->GetSize();
-                    FILE * hFile = fopen(sObjectFileName,"wb");
+                    FILE * hFile = fopen(sObjectFileName.toLocal8Bit().constData(),"wb");
                     if (hFile!=0) {
                         fwrite(lpObjectData,dwDataSize,1,hFile);
                         fclose(hFile);
@@ -330,7 +339,7 @@ void EbTextBrowser::addRichMsg(bool saveHistory, bool bReceive, const CCrRichInf
                 }
             }
             else {
-                strcpy(sObjectFileName, pMsgItem->GetText().c_str());
+                sObjectFileName = pMsgItem->GetText().c_str();
                 if (nSubType == EB_RICH_SUB_TYPE_AUDIO)
                     nRecordType = MRT_WAV;
                 else if (nSubType == EB_RICH_SUB_TYPE_MAP_POS)		/// ??
@@ -423,7 +432,7 @@ void EbTextBrowser::addRichMsg(bool saveHistory, bool bReceive, const CCrRichInf
                 sprintf(sSql,"INSERT INTO msg_record_t(%smsg_id,dep_code,from_uid,from_name,to_uid,to_name,private,msg_type,msg_name,msg_text,read_flag) "
                              "VALUES(%s%lld,%lld,%lld,'%s',%lld,'%s',%d,%d,'%s','%s',%d)",
                         sDBMsgTimeField.c_str(),sDBMsgTimeValue,pRichMsg->GetMsgId(),this->m_callInfo->m_pCallInfo.m_sGroupCode,pCrMsgInfo->m_sSendFrom,sInFromName.c_str(),
-                        sSaveDbToAccount,sInToName.c_str(),(int)(pCrMsgInfo->m_bPrivate?1:0),nRecordType,sObjectFileName,sObjectSaveData.c_str(),nReadFlag);
+                        sSaveDbToAccount,sInToName.c_str(),(int)(pCrMsgInfo->m_bPrivate?1:0),nRecordType,sObjectFileName.toStdString().c_str(),sObjectSaveData.c_str(),nReadFlag);
                 theApp->m_sqliteUser->execute(sSql);
             }
         }
@@ -545,13 +554,13 @@ void EbTextBrowser::addFileMsg(bool bReceive, const CCrFileInfo *fileInfo)
 //        const long nReceiptFlag = bUpdateMsgReceiptData?(EBC_CONTRON_RECEIPT_FLAG_TRUE|EBC_CONTRON_RECEIPT_FLAG_SHOW):EBC_CONTRON_RECEIPT_FLAG_SHOW;
 //        m_pMrFrameInterface->SetReceiptFlag(nReceiptFlag);
 //    }
-    const int nWavTimeLength = libEbc::GetWaveTimeLength(fileInfo->m_sFileName.c_str());
+    const int nWavTimeLength = libEbc::GetWaveTimeLength(fileInfo->m_sFileName);
     if (nWavTimeLength > 0) {
         /// 是WAV语音文件
-        this->writeVoiceMessage(fileInfo->m_sFileName.c_str());
+        this->writeVoiceMessage(fileInfo->m_sFileName);
     }
     else {
-        writeFileMessage( msgId,fileInfo->m_sResId,fileInfo->m_sFileName.c_str(),fileInfo->m_nFileSize );
+        writeFileMessage( msgId,fileInfo->m_sResId,fileInfo->m_sFileName,fileInfo->m_nFileSize );
     }
 
 //    if (bUpdateMsgReceiptData)
@@ -742,11 +751,11 @@ void EbTextBrowser::onAnchorClicked(const QUrl & url)
             EB_GroupInfo pGroupInfo;
             if ( pUserECard.m_sMemberCode>0 &&
                  theApp->m_ebum.EB_GetMemberInfoByMemberCode(&pMemberInfo,&pGroupInfo,pUserECard.m_sMemberCode) ) {
-                theApp->dialgoViewECard(rectValid,true)->setMemberInfo(&pMemberInfo,&pGroupInfo);
+                theApp->dialgoViewECard(this,rectValid,true)->setMemberInfo(&pMemberInfo,&pGroupInfo);
             }
             else if ( pUserECard.m_nMemberUserId>0 &&
                       theApp->m_ebum.EB_GetMemberInfoByUserId2(&pMemberInfo,&pGroupInfo,pUserECard.m_nMemberUserId) ) {
-                theApp->dialgoViewECard(rectValid,true)->setMemberInfo(&pMemberInfo,&pGroupInfo);
+                theApp->dialgoViewECard(this,rectValid,true)->setMemberInfo(&pMemberInfo,&pGroupInfo);
             }
             else {
                 EB_ContactInfo pContactInfo;
@@ -759,7 +768,7 @@ void EbTextBrowser::onAnchorClicked(const QUrl & url)
                 pContactInfo.m_sTel = pUserECard.m_sTel;
                 pContactInfo.m_sEmail = pUserECard.m_sEmail;
                 pContactInfo.m_sAddress = pUserECard.m_sAddress;
-                theApp->dialgoViewECard(rectValid,true)->setContactInfo(&pContactInfo);
+                theApp->dialgoViewECard(this,rectValid,true)->setContactInfo(&pContactInfo);
             }
         }
     }
@@ -1269,16 +1278,18 @@ void EbTextBrowser::loadMsgRecord(const char *sql, bool desc)
             if (nFind == std::string::npos) {
                 break;
             }
-            const tstring& sFileName = sMsgName;
+            const QString sFileName = sMsgName.c_str();
             const mycp::bigint nResourceId = cgc_atoi64(sMsgText.substr(0,nFind).c_str());
             const mycp::bigint nFileSize = cgc_atoi64(sMsgText.substr(nFind+1).c_str());
-            writeFileMessage( msgId,nResourceId,sFileName.c_str(),nFileSize );
+            writeFileMessage( msgId,nResourceId,sFileName,nFileSize );
             break;
         }
-        case MRT_FILE:
+        case MRT_FILE: {
             /// 文件
-            writeFileMessage( msgId,0,sMsgText.c_str(),0 );
+            const QString sFileName = sMsgText.c_str();
+            writeFileMessage(msgId, 0, sFileName, 0);
             break;
+        }
         default:
             break;
         }
@@ -1443,7 +1454,7 @@ void EbTextBrowser::writeTitle(bool writeLeft,eb::bigint msgId, bool bPrivate, e
 
 }
 
-void EbTextBrowser::writeFileMessage(eb::bigint msgId, eb::bigint resourceId,const char *filePath,eb::bigint fileSizeOrg,QString *pOutMsgText)
+void EbTextBrowser::writeFileMessage(eb::bigint msgId, eb::bigint resourceId,const QString &filePath,eb::bigint fileSizeOrg,QString *pOutMsgText)
 {
     moveTextBrowserToEnd();
     bool isImage = false;
@@ -1459,12 +1470,12 @@ void EbTextBrowser::writeFileMessage(eb::bigint msgId, eb::bigint resourceId,con
     else if (resourceId==0){
         QFileIconProvider icon_provider;
         QIcon icon = icon_provider.icon( QFileInfo(filePath) );
-        this->document()->addResource(QTextDocument::ImageResource, QUrl(filePath), icon);
+        this->document()->addResource(QTextDocument::ImageResource, QUrl(filePath), icon.pixmap(24,24));
         this->textCursor().insertImage(filePath);
 //        QString sTemp = QString("<img src=\"%1\" alt=\"%2\"/><br>").arg(filePath).arg(filePath);
 //        this->insertHtml(sTemp);
     }
-    const tstring fileName = libEbc::GetFileName(filePath);
+    const tstring fileName = libEbc::GetFileName(filePath.toStdString());
     if (pOutMsgText!=0) {
         *pOutMsgText = fileName.c_str();
     }
@@ -1513,7 +1524,7 @@ void EbTextBrowser::writeFileMessage(eb::bigint msgId, eb::bigint resourceId,con
 
 }
 
-void EbTextBrowser::writeVoiceMessage(const char *voiceFile,QString *pOutMsgText)
+void EbTextBrowser::writeVoiceMessage(const QString &voiceFile,QString *pOutMsgText)
 {
     const int nWavTimeLength = libEbc::GetWaveTimeLength(voiceFile);
     QString sText;
@@ -1581,7 +1592,7 @@ bool EbTextBrowser::writeCardDataMessage( bool bReceive,mycp::bigint msgId, cons
                 //                "<hr style=\"margin:0px;height:1px;border:0px;background-color:#D5D5D5;color:#D5D5D5;\"/></div>";
         /// <HR align=left width=50 SIZE=2>
 //        const QString line = "<div style=\"margin:0;padding:0; width:80px;height:1px;background-color:#EFEFEF;overflow:hidden;margin-top: 15px;\"></div>";
-        const tstring sFilePath = theApp->userHeadFilePath(pUserECard.m_nMemberUserId,pUserECard.m_sMemberCode,"");
+        const QString sFilePath = theApp->userHeadFilePath(pUserECard.m_nMemberUserId,pUserECard.m_sMemberCode,"");
         const QString align = bReceive?"left":"right";
         const QString html = QString("<p align=\"%1\"><table width=\"200\" border=\"0\" style=\"margin-left:10px; margin-right:10px;\">"
                              "<tr>"
@@ -1597,7 +1608,7 @@ bool EbTextBrowser::writeCardDataMessage( bool bReceive,mycp::bigint msgId, cons
                              "</table></p>")
                 .arg(align)
                 .arg(theViewEcard).arg(cardData)
-                .arg(sFilePath.c_str()).arg(pUserECard.m_sAccountName.c_str())
+                .arg(sFilePath).arg(pUserECard.m_sAccountName.c_str())
                 .arg(sUserEcardText);
         this->insertHtml(html);
 //        updateBlockMsgId(msgId);

@@ -423,7 +423,8 @@ typedef enum EB_SYS_EXT_KEY
 	, EB_SYS_EXT_KEY_ECARD_INFO_FLAG						// 85 默认电子名片资料开放设置，0:默认 1:禁止开放联系电话和手机号码
 	, EB_SYS_EXT_KEY_MAX_BCMSG_SAVE_DAYS				// 86 广播消息，保存天数，默认30天，超过自动删除
 	, EB_SYS_EXT_KEY_EB_SERVER_VERSION					// 87 服务端版本号，如 544=1.25.0.544 
-	, EB_SYS_EXT_KEY_DEFAULT_URL								// 88 默认URL网址，默认 http://www.entboost.com
+	, EB_SYS_EXT_KEY_DEFAULT_URL						// 88 默认URL网址，默认 http://www.entboost.com
+	, EB_SYS_EXT_KEY_SYSTEM_BANDWIDTH					// 89 系统带宽设置，默认 10MB，主要用于限制下行速度
 	, EB_SYS_EXT_KEY_ATTEND_START_DATE	= 2000	// 2000 考勤开始时期，格式:YYYY-mm-dd 默认空未开始
 	, EB_SYS_EXT_KEY_ATTEND_DAILY_JOB_DATE			// 2001 考勤每天作业时期，格式:YYYY-mm-dd 默认空未开始
 

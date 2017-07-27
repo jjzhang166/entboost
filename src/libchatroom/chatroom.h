@@ -72,14 +72,17 @@ public:
 	int SendRichBuffser(cr::bigint sTo=0,bool nPrivate=false);
 	int SendMapPos(const char * sPosData);
 	int SendRich(const EB_ChatRoomRichMsg* pRichMsg,cr::bigint sTo=0,bool bPrivate=false);
+    int SendFile(const EBFileString &sFilePath,cr::bigint sTo=0,bool bPrivate=false,bool bSendOffFile=false);
 	int SendFile(const char * sFilePath,cr::bigint sTo=0,bool bPrivate=false,bool bSendOffFile=false);
+    int SendResource(cr::bigint sResourceId,const EBFileString &sFilePath,bool bNewUpload);
 	int SendResource(cr::bigint sResourceId,const char * sFilePath,bool bNewUpload);
 	int CancelSendingFile(cr::bigint nMsgId);
 	int ReceiveFile(cr::bigint nMsgId, const char * sSaveTo);
 	int SaveFile2CloudDrive(cr::bigint nMsgId);
 	int ResendMsg(cr::bigint nMsgId);
 	int MsgAck(cr::bigint nMsgId,int nAckType);
-	int RecviveResource(cr::bigint sResourceId,const char* sSaveTo);
+    int RecviveResource(cr::bigint sResourceId,const EBFileString &sSaveTo);
+    int RecviveResource(cr::bigint sResourceId,const char* sSaveTo);
 
 	int SetDestAddress(int nUserIndex,const tstring& sToAddress);
 	int SendP2PRequest(cr::bigint nFromUid,cr::bigint nChatId,cr::bigint nToAccount,const tstring& sLocalIp,int nRequestData);

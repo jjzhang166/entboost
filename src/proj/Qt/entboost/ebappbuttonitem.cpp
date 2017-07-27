@@ -17,16 +17,17 @@ EbAppButtonItem::EbAppButtonItem(const QRect &rect, const EB_SubscribeFuncInfo &
     m_buttonApp->setToolTip( m_subscribeFuncInfo.m_sFunctionName.c_str() );
     m_buttonApp->setVisible( true );
     m_buttonApp->resize( rect.size() );
-    if ( m_subscribeFuncInfo.m_sResFile.empty() || !QFile::exists(m_subscribeFuncInfo.m_sResFile.c_str()) ) {
+    if ( m_subscribeFuncInfo.m_sResFile.isEmpty() || !QFile::exists(m_subscribeFuncInfo.m_sResFile) ) {
         /// 11 是默认字体图标大小
         EbIconHelper::Instance()->SetIcon( subscribeFuncInfo.m_nSubscribeId,m_buttonApp,11);
     }
     else {
-        updateIcon( m_subscribeFuncInfo.m_sResFile.c_str() );
+        updateIcon( m_subscribeFuncInfo.m_sResFile );
     }
 
     m_labelMsg = new QLabel(parent);
     m_labelMsg->setObjectName("UnreadMsg");
+    m_labelMsg->setAlignment(Qt::AlignCenter);
     m_labelMsg->resize(const_msg_label_size);
     m_labelMsg->setVisible(false);
 

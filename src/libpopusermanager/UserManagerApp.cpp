@@ -53,6 +53,7 @@ using namespace Gdiplus;
 //#pragma comment(lib, "zlibstat.lib")
 //#endif
 
+#ifndef _QT_MAKE_
 #ifdef _DLL
 #ifdef _DEBUG
 //#pragma comment(lib, "videoroomd.lib")
@@ -100,41 +101,46 @@ using namespace Gdiplus;
 #else
 #pragma comment(lib, "libebmm.lib")
 #endif
-#endif
+
+#endif  /// _DLL
+
+#endif  /// _QT_MAKE_
+
 
 #endif // _MSC_VER
 
 
 namespace entboost {
 
-mycp::bigint EbGetFileSize(const char* sFilePath)
+mycp::bigint EbGetFileSize(const EBFileString &sFilePath)
 {
 #ifdef _QT_MAKE_
     QFile file(sFilePath);
     if ( !file.open(QFile::ReadOnly) ) {
         return -1;
     }
-    const mycp::bigint nFileSize = file.size();
+    const mycp::bigint fileSize = file.size();
     file.close();
+    return fileSize;
 #else
-	FILE * f = fopen(sFilePath, "rb");
-	if (f == NULL) {
-		return -1;
-	}
+    FILE * f = fopen(sFilePath.c_str(), "rb");
+    if (f == NULL) {
+        return -1;
+    }
 #ifdef WIN32
-	_fseeki64(f, 0, SEEK_END);
-	const mycp::bigint nFileSize = _ftelli64(f);
+    _fseeki64(f, 0, SEEK_END);
+    const mycp::bigint fileSize = _ftelli64(f);
 #else
-	fseeko(f, 0, SEEK_END);
-	const mycp::bigint nFileSize = ftello(f);
+    fseeko(f, 0, SEEK_END);
+    const mycp::bigint fileSize = ftello(f);
 #endif
-	fclose(f);
+    fclose(f);
+    return fileSize;
 #endif
-	return nFileSize;
 }
 
 const unsigned int theOneMB = 1024*1024;
-bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFileMd5)
+bool GetFileMd5(const EBFileString &sFilePath, mycp::bigint& pOutFileSize, tstring& pOutFileMd5)
 {
 #ifdef _QT_MAKE_
     QFile file(sFilePath);
@@ -158,7 +164,7 @@ bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFi
     pOutFileMd5 = md5.hex_digest();
     delete[] lpszBuffer;
 #else
-	FILE * f = fopen(sFilePath, "rb");
+    FILE * f = fopen(sFilePath.c_str(), "rb");
 	if (f == NULL) return false;
 #ifdef WIN32
 	_fseeki64(f, 0, SEEK_END);
@@ -575,26 +581,26 @@ CUserManagerApp::CUserManagerApp(void)
 	m_pMyAccountInfo = CEBAccountInfo::create(0,"");
 #ifdef _QT_MAKE_
     const QString pApplicationDirPath = QCoreApplication::applicationDirPath();
-    m_sAppPath = pApplicationDirPath.toStdString();
-	m_sImgPath = m_sAppPath+_T("/img");
+    m_sAppPath = pApplicationDirPath;
+    m_sImgPath = m_sAppPath+"/img";
 	{
-		QDir pDir1(m_sImgPath.c_str());
+        QDir pDir1(m_sImgPath);
 		if (!pDir1.exists()) {
-			pDir1.mkdir(m_sImgPath.c_str());
+            pDir1.mkdir(m_sImgPath);
 		}
 	}
-	m_sEbResourcePath = m_sAppPath+_T("\\res");
+    m_sEbResourcePath = m_sAppPath+"/res";
 	{
-		QDir pDir1(m_sEbResourcePath.c_str());
+        QDir pDir1(m_sEbResourcePath);
 		if (!pDir1.exists()) {
-			pDir1.mkdir(m_sEbResourcePath.c_str());
+            pDir1.mkdir(m_sEbResourcePath);
 		}
 	}
-	m_sEbDataPath = m_sAppPath+_T("\\datas");
+    m_sEbDataPath = m_sAppPath+"/datas";
 	{
-		QDir pDir1(m_sEbDataPath.c_str());
+        QDir pDir1(m_sEbDataPath);
 		if (!pDir1.exists()) {
-			pDir1.mkdir(m_sEbDataPath.c_str());
+            pDir1.mkdir(m_sEbDataPath);
 		}
 	}
 
@@ -604,7 +610,7 @@ CUserManagerApp::CUserManagerApp(void)
 //    const QString sStringTemp = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     /// C:/Users/pc/AppData/Roaming/ebcd
     const QString sStringTemp = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    m_sAppDataPath = sStringTemp.toStdString();
+    m_sAppDataPath = sStringTemp;
 //    m_sAppDataPath += _T("/entboost");
 #else
 	char lpszBuffer[MAX_PATH];
@@ -635,16 +641,16 @@ CUserManagerApp::CUserManagerApp(void)
 
 #ifdef _QT_MAKE_
 	{
-		QDir pDir1(m_sAppDataPath.c_str());
+        QDir pDir1(m_sAppDataPath);
 		if (!pDir1.exists()) {
-			pDir1.mkdir(m_sAppDataPath.c_str());
+            pDir1.mkdir(m_sAppDataPath);
 		}
 	}
-	m_sAppDataTempPath = m_sAppDataPath+_T("\\temp");
+    m_sAppDataTempPath = m_sAppDataPath+"/temp";
 	{
-		QDir pDir1(m_sAppDataTempPath.c_str());
+        QDir pDir1(m_sAppDataTempPath);
 		if (!pDir1.exists()) {
-			pDir1.mkdir(m_sAppDataTempPath.c_str());
+            pDir1.mkdir(m_sAppDataTempPath);
 		}
 	}
 #else
@@ -709,7 +715,11 @@ CUserManagerApp::CUserManagerApp(void)
 		m_pRsa.SetPrivatePwd("");
 	}
 	//m_file = NULL;
+#ifdef _QT_MAKE_
+    const std::string sSettingIniFile = m_sEbDataPath.toLocal8Bit().toStdString()+"/setting.ini";
+#else
 	const tstring sSettingIniFile = m_sEbDataPath+_T("\\setting.ini");
+#endif
 #ifdef WIN32
     m_bLogDebug = GetPrivateProfileIntA("system","debug",1,sSettingIniFile.c_str())==1?true:false;
 #else
@@ -745,7 +755,7 @@ CUserManagerApp::~CUserManagerApp(void)
 	for (size_t i=0;i<m_pExit2DeleteFileList.size(); i++)
 	{
 #ifdef _QT_MAKE_
-        QFile::remove(m_pExit2DeleteFileList[i].c_str());
+        QFile::remove(m_pExit2DeleteFileList[i]);
 #else
         DeleteFileA(m_pExit2DeleteFileList[i].c_str());
 #endif
@@ -893,7 +903,11 @@ void CUserManagerApp::DoProcess(void)
 					if (theREsendIdList.find(nMsgId,pCallToSendInfo,true))
 					{
 						const mycp::bigint sCallId = pProcessMsgInfo->m_nBigInt2;
-						SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#ifdef _QT_MAKE_
+                        SendCrFile(sCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#else
+                        SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#endif
 					}
 				}break;
 #endif
@@ -925,8 +939,13 @@ void CUserManagerApp::DoProcess(void)
 				{
 					const mycp::bigint sCallId = pProcessMsgInfo->m_nCallGroupId;
 					const mycp::bigint sResourceId = pProcessMsgInfo->m_nBigInt1;
-					const tstring sFileName(pProcessMsgInfo->m_sString1);
+#ifdef _QT_MAKE_
+                    const QString sFileName(pProcessMsgInfo->m_sString1);
+                    SendCrFile(sCallId,sFileName,sResourceId);
+#else
+                    const tstring sFileName(pProcessMsgInfo->m_sString1);
 					SendCrFile(sCallId,sFileName.c_str(),sResourceId);
+#endif
 				}break;
 			case CProcessMsgInfo::PROCESS_MSG_TYPE_LOAD_RESOURCE_INFO:
 				{
@@ -961,17 +980,18 @@ void CUserManagerApp::DoProcess(void)
 					if (m_pLogDebug==NULL)
 					{
 						char sDebugFile[260];
-						if (is_visitor_uid(m_pMyAccountInfo->GetUserId()))
-							sprintf(sDebugFile, "%s\\debug_visitor.txt", m_sAppPath.c_str());
-						else
-							sprintf(sDebugFile, "%s\\debug_%lld.txt", m_sAppPath.c_str(), m_pMyAccountInfo->GetUserId());
 #ifdef _QT_MAKE_
-                        const QString filePathTemp(sDebugFile);
-                        const QByteArray byteArrayFilePathTemp = filePathTemp.toLocal8Bit();
-                        m_pLogDebug = fopen(byteArrayFilePathTemp.constData(),"w");
+                        if (is_visitor_uid(m_pMyAccountInfo->GetUserId()))
+                            sprintf(sDebugFile, "%s/debug_visitor.txt", m_sAppPath.toLocal8Bit().constData());
+                        else
+                            sprintf(sDebugFile, "%s/debug_%lld.txt", m_sAppPath.toLocal8Bit().constData(), m_pMyAccountInfo->GetUserId());
 #else
-						m_pLogDebug = fopen(sDebugFile,"w");
+                        if (is_visitor_uid(m_pMyAccountInfo->GetUserId()))
+                            sprintf(sDebugFile, "%s\\debug_visitor.txt", m_sAppPath.c_str());
+                        else
+                            sprintf(sDebugFile, "%s\\debug_%lld.txt", m_sAppPath.c_str(), m_pMyAccountInfo->GetUserId());
 #endif
+                        m_pLogDebug = fopen(sDebugFile,"w");
 						if (m_pLogDebug==NULL)
 							break;
 					}
@@ -980,7 +1000,12 @@ void CUserManagerApp::DoProcess(void)
 					char lpszDateTime[64];
 					sprintf(lpszDateTime, "%02d-%02d %02d:%02d:%02d ",newtime->tm_mon+1,newtime->tm_mday, newtime->tm_hour,newtime->tm_min,newtime->tm_sec);
 					fwrite(lpszDateTime,1,strlen(lpszDateTime),m_pLogDebug);
-					fwrite(pProcessMsgInfo->m_sString1.c_str(),1,pProcessMsgInfo->m_sString1.size(),m_pLogDebug);
+#ifdef _QT_MAKE_
+                    const std::string sData = pProcessMsgInfo->m_sString1.toStdString();
+                    fwrite(sData.c_str(), 1, sData.size(), m_pLogDebug);
+#else
+                    fwrite(pProcessMsgInfo->m_sString1.c_str(),1,pProcessMsgInfo->m_sString1.size(),m_pLogDebug);
+#endif
 					//fwrite("\r\n",1,2,m_pLogDebug);
 					fflush(m_pLogDebug);
 				}break;
@@ -1004,7 +1029,7 @@ void CUserManagerApp::DoProcess(void)
 						continue;
 					}
 					//LogMessage("PROCESS_MSG_TYPE_RECEIVE_RESOURCE_FILE... RecviveResource\r\n");
-					pProcessMsgInfo->m_pChatRoom->RecviveResource(pProcessMsgInfo->m_nBigInt1,pProcessMsgInfo->m_sString1.c_str());
+                    pProcessMsgInfo->m_pChatRoom->RecviveResource(pProcessMsgInfo->m_nBigInt1,pProcessMsgInfo->m_sString1);
 				}break;
 			case CProcessMsgInfo::PROCESS_MSG_TYPE_RESET_DEVAPPID:
 				SetDevAppId(m_sDevAppId,m_sDevAppKey,true);	// 登录前，需要重新验证appkey
@@ -1139,9 +1164,17 @@ int CUserManagerApp::UmMsgAck(mycp::bigint nMsgId,EB_CALL_ACK_TYPE nAckType)
 
 void CUserManagerApp::SaveLCAddressIndex(int nIndex)
 {
-	if (m_sEbDataPath.empty()) return;
+#ifdef _QT_MAKE_
+    if (m_sEbDataPath.isEmpty()) return;
+#else
+    if (m_sEbDataPath.empty()) return;
+#endif
 	char sTempIniFile[260];
+#ifdef _QT_MAKE_
+    sprintf(sTempIniFile,"%s/temp.ini",m_sEbDataPath.toLocal8Bit().constData());
+#else
 	sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#endif
 	char lpszBuffer[24];
 	if (m_nCurrentIndex>=0)
 	{
@@ -1158,7 +1191,11 @@ void CUserManagerApp::SaveLCAddressIndex(int nIndex)
 void CUserManagerApp::SaveLCAddressList(const tstring& sFullAddress)
 {
 	char sTempIniFile[260];
-	sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#ifdef _QT_MAKE_
+    sprintf(sTempIniFile,"%s/temp.ini",m_sEbDataPath.toLocal8Bit().constData());
+#else
+    sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#endif
 #ifdef WIN32
     WritePrivateProfileStringA(m_sServerAddress.c_str(),_T("lc_list"),sFullAddress.c_str(),sTempIniFile);
 #else
@@ -1176,7 +1213,11 @@ tstring CUserManagerApp::GetLCAddressList(int& nOutLCIndex, time_t& pOutLastTime
 {
 	char lpszBuffer[1024];
 	char sTempIniFile[260];
+#ifdef _QT_MAKE_
+    sprintf(sTempIniFile,"%s/temp.ini",m_sEbDataPath.toLocal8Bit().constData());
+#else
 	sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#endif
 	
 #ifdef WIN32
     nOutLCIndex = GetPrivateProfileIntA(m_sServerAddress.c_str(),_T("lc_index"),0,sTempIniFile);
@@ -1209,7 +1250,11 @@ void CUserManagerApp::SaveAddressList(const tstring& sFullAddress)
 		if (sAddress!=sIp)
 		{
 			char sTempIniFile[260];
-			sprintf(sTempIniFile,"%s\\temp.ini",m_sAppDataTempPath.c_str());
+#ifdef _QT_MAKE_
+            sprintf(sTempIniFile,"%s/temp.ini",m_sAppDataTempPath.toLocal8Bit().constData());
+#else
+            sprintf(sTempIniFile,"%s\\temp.ini",m_sAppDataTempPath.c_str());
+#endif
 #ifdef WIN32
             WritePrivateProfileStringA(_T("address_list"),sAddress.c_str(),sIp.c_str(),sTempIniFile);
 #else
@@ -1227,7 +1272,11 @@ tstring CUserManagerApp::GetAddressList(const tstring& sFullAddress)
 		sAddress = pList[0];
 	}
 	char sTempIniFile[260];
-	sprintf(sTempIniFile,"%s\\temp.ini",m_sAppDataTempPath.c_str());
+#ifdef _QT_MAKE_
+    sprintf(sTempIniFile,"%s/temp.ini",m_sAppDataTempPath.toLocal8Bit().constData());
+#else
+    sprintf(sTempIniFile,"%s\\temp.ini",m_sAppDataTempPath.c_str());
+#endif
 	char lpszIp[101];
 	memset(lpszIp,0,101);
 #ifdef WIN32
@@ -1246,7 +1295,11 @@ tstring CUserManagerApp::GetAddressList(const tstring& sFullAddress)
 		result.append(":");
 		result.append(pList[1]);
 	}
-	LogMessage("GetAddressList... m_sAppDataTempPath=%s,sFullAddres%s,result=%s,size=%d\r\n",m_sAppDataTempPath.c_str(),sFullAddress.c_str(),result.c_str(),(int)pList.size());
+#ifdef _QT_MAKE_
+    LogMessage("GetAddressList... m_sAppDataTempPath=%s,sFullAddres%s,result=%s,size=%d\r\n",m_sAppDataTempPath.toStdString().c_str(),sFullAddress.c_str(),result.c_str(),(int)pList.size());
+#else
+    LogMessage("GetAddressList... m_sAppDataTempPath=%s,sFullAddres%s,result=%s,size=%d\r\n",m_sAppDataTempPath.c_str(),sFullAddress.c_str(),result.c_str(),(int)pList.size());
+#endif
 	return result;
 }
 
@@ -1301,7 +1354,11 @@ int CUserManagerApp::Logon(const CPOPLogonInfo::pointer & pLogonInfo, bool bReLo
 	if (m_nSDKVersion==0 || m_sCallKey.empty())
 	{
 		CEBParseSetting theSetting;
+#ifdef _QT_MAKE_
+        const std::string sSettingFile = m_sAppPath.toLocal8Bit().toStdString()+"/datas/setting";
+#else
 		const tstring sSettingFile = m_sAppPath + _T("\\datas\\setting");
+#endif
 		theSetting.load(sSettingFile.c_str());
 		m_sCallKey = theSetting.GetCallKey();
 		m_nSDKVersion = theSetting.GetSDKVersion();
@@ -1415,22 +1472,41 @@ int CUserManagerApp::SetDevAppId(mycp::bigint sAppId, const tstring& sAppKey,boo
 			int ret = m_pLogonCenter->Start(CCgcAddress(m_sServerAddress, CCgcAddress::ST_UDP),0,1);
 			if (ret==-1)	
 			{
-				// 域名解析问题，再试一次；
+                /// 域名解析问题，再试一次；
 				m_pLogonCenter.reset();
 				const tstring sServerAddress = GetAddressList(m_sServerAddress);
-				if (sServerAddress.empty()) return ret;
+                if (sServerAddress.empty()) {
+                    if (m_pHwnd!=0) {
+#ifdef _QT_MAKE_
+                        EB_Event * pEvent = new EB_Event((QEvent::Type)EB_WM_APPID_ERROR);
+                        pEvent->SetEventParameter((long)EB_STATE_ERROR);
+                        QCoreApplication::postEvent( m_pHwnd, pEvent,thePostEventPriority );
+#else
+                        ::PostMessage(m_pHwnd, EB_WM_APPID_ERROR, EB_STATE_ERROR, 0);
+#endif
+                    }
+                    return ret;
+                }
 				m_pLogonCenter = CPOPCLogonCenter::create(this);
 				m_pLogonCenter->SetSslKey(m_pRsa.GetPublicKey().c_str(),m_pRsa.GetPrivateKey().c_str(),m_pRsa.GetPrivatePwd().c_str());
 				ret = m_pLogonCenter->Start(CCgcAddress(sServerAddress, CCgcAddress::ST_UDP),0,1);
 				bRetry = true;
 				//LogMessage("SetDevAppId2... m_sServerAddress=%s(%s),ret=%d\r\n",m_sServerAddress.c_str(),sServerAddress.c_str(),ret);
 			}
-			if (ret!=0)
-			{
+            if (ret!=0) {
 				m_pLogonCenter.reset();
+                if (m_pHwnd!=0) {
+    #ifdef _QT_MAKE_
+                    EB_Event * pEvent = new EB_Event((QEvent::Type)EB_WM_APPID_ERROR);
+                    pEvent->SetEventParameter((long)EB_STATE_ERROR);
+                    QCoreApplication::postEvent( m_pHwnd, pEvent,thePostEventPriority );
+    #else
+                    ::PostMessage(m_pHwnd, EB_WM_APPID_ERROR, EB_STATE_ERROR, 0);
+    #endif
+                }
 				return ret;
 			}
-			// 成功记下，域名和IP地址；
+            /// 成功记下，域名和IP地址；
 			if (!bRetry)
 			{
 				SaveAddressList(m_sServerAddress);
@@ -1772,13 +1848,12 @@ int CUserManagerApp::SetDepHead(mycp::bigint sDepCode,const tstring& sFilePath)
 int CUserManagerApp::SetDepResHead(mycp::bigint sDepCode,mycp::bigint sResourceId)
 {
 	if (m_pUserManager.get() == NULL) return -1;
-	char sResourceFile[260];
-	sprintf(sResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
-	//const tstring sResourceFile = m_sEbResourcePath + "\\" + sResId;
-
 #ifdef _QT_MAKE_
+    const QString sResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(sResourceId);
 	if (!QFileInfo::exists(sResourceFile)) {
 #else
+    char sResourceFile[260];
+    sprintf(sResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
 	if (!::PathFileExistsA(sResourceFile)) {
 #endif
 		return -1;
@@ -1933,7 +2008,7 @@ int CUserManagerApp::DeleteRes(mycp::bigint sResourceId)
 	pSotpRequestInfo->m_pRequestList.SetParameter(CGC_PARAMETER("r_id", sResourceId));
 	return m_pUserManager->SendRDelete(0,sResourceId,pSotpRequestInfo);
 }
-int CUserManagerApp::DownloadFileRes(mycp::bigint sResourceId,const tstring& sSaveTo)
+int CUserManagerApp::DownloadFileRes(mycp::bigint sResourceId,const EBFileString& sSaveTo)
 {
 	//LogMessage("DownloadFileRes ResourceId=%lld\r\n",sResourceId);
 	CEBResourceInfo::pointer pResourceInfo;
@@ -1942,7 +2017,11 @@ int CUserManagerApp::DownloadFileRes(mycp::bigint sResourceId,const tstring& sSa
 		if (sResourceId==0 || m_pUserManager.get() == NULL) return -1;
 		CPOPSotpRequestInfo::pointer pSotpRequestInfo = CPOPSotpRequestInfo::create(0);
 		pSotpRequestInfo->m_pRequestList.SetParameter(CGC_PARAMETER("download_resource_id", sResourceId));
+#ifdef _QT_MAKE_
+        pSotpRequestInfo->m_pRequestList.SetParameter(CGC_PARAMETER("download_save_to", sSaveTo.toStdString()));
+#else
 		pSotpRequestInfo->m_pRequestList.SetParameter(CGC_PARAMETER("download_save_to", sSaveTo));
+#endif
 		//LogMessage("DownloadFileRes SendRLoad()...\r\n");
 		m_pUserManager->SendRLoad(1,sResourceId,0,0,EB_RESOURCE_FROM_TYPE_UNKNOWN,-1,1,0,0,-1,0,pSotpRequestInfo);
 		return 1;
@@ -2451,23 +2530,23 @@ void CUserManagerApp::LoadDepartmentInfo(mycp::bigint sEntCode, CEBSearchCallbac
 	CLockMap<mycp::bigint, CEBGroupInfo::pointer>::const_iterator pIterDepartment = theDepartmentList.begin();
 	for (; pIterDepartment!=theDepartmentList.end(); pIterDepartment++)
 	{
-		CEBGroupInfo::pointer pDepartmentInfo = pIterDepartment->second;
-		if (sEntCode==0 || pDepartmentInfo->m_sEnterpriseCode == sEntCode)
+        const CEBGroupInfo::pointer &groupInfo = pIterDepartment->second;
+        if (sEntCode==0 || groupInfo->m_sEnterpriseCode == sEntCode)
 		{
 			if (pEnterpriseInfo.get()==NULL)
 			{
-				theEnterpriseList.find(pDepartmentInfo->m_sEnterpriseCode,pEnterpriseInfo);
+                theEnterpriseList.find(groupInfo->m_sEnterpriseCode,pEnterpriseInfo);
 			}
-			if (pDepartmentInfo->m_sParentCode>0 && !pCallBackList.exist(pDepartmentInfo->m_sParentCode))
+            if (groupInfo->m_sParentCode>0 && !pCallBackList.exist(groupInfo->m_sParentCode))
 			{
-				pTempDepartmentList.insert(pDepartmentInfo->m_sParentCode, pDepartmentInfo);
+                pTempDepartmentList.insert(groupInfo->m_sParentCode, groupInfo);
 				continue;
 			}
-			const mycp::bigint sGroupCode = pDepartmentInfo->m_sGroupCode;
+            const mycp::bigint sGroupCode = groupInfo->m_sGroupCode;
 			pCallBackList.insert(sGroupCode,true,false);
 
-			CallbackGroupAndMemberInfo(pEnterpriseInfo, pDepartmentInfo, pCallback, dwParam);
-			// 处理未处理下一级
+            CallbackGroupAndMemberInfo(pEnterpriseInfo, groupInfo, pCallback, dwParam);
+            /// 处理未处理下一级
 			std::vector<CEBGroupInfo::pointer> pSubDepartmentInfos; 
 			pTempDepartmentList.find(sGroupCode, pSubDepartmentInfos);
 			for (size_t i=0; i<pSubDepartmentInfos.size(); i++)
@@ -2874,30 +2953,37 @@ int CUserManagerApp::GetFuncInfo(EB_FUNC_LOCATION nFuncLocation,std::vector<EB_S
 		{
 			EB_SubscribeFuncInfo pFuncInfo(pSubscrieFuncInfo.get());
 #ifdef _QT_MAKE_
-            if (pFuncInfo.m_sResFile.empty() || !QFileInfo::exists(pFuncInfo.m_sResFile.c_str()))
+            if (pFuncInfo.m_sResFile.isEmpty() || !QFileInfo::exists(pFuncInfo.m_sResFile))
 #else
             if (pFuncInfo.m_sResFile.empty() || !::PathFileExistsA(pFuncInfo.m_sResFile.c_str()))
 #endif
 			{
-				char lpszSubIdFile[260];
-				sprintf(lpszSubIdFile,"%s/subid_%lld.png",m_sImgPath.c_str(),pFuncInfo.m_nSubscribeId);
+
 #ifdef _QT_MAKE_
-                if (QFileInfo::exists(lpszSubIdFile))
+                QString lpszSubIdFile = QString("%1/subid_%2.png").arg(m_sImgPath).arg(pFuncInfo.m_nSubscribeId);
+                if (QFileInfo::exists(lpszSubIdFile)) {
+                    pFuncInfo.m_sResFile = lpszSubIdFile;
+                }
+                else if (pFuncInfo.m_nFromSubscribeId>0)
+                {
+                    lpszSubIdFile = QString("%1/subid_%2.png").arg(m_sImgPath).arg(pFuncInfo.m_nFromSubscribeId);
+                    if (QFileInfo::exists(lpszSubIdFile)) {
+                        pFuncInfo.m_sResFile = lpszSubIdFile;
+                    }
+                }
 #else
+                char lpszSubIdFile[260];
+                sprintf(lpszSubIdFile,"%s/subid_%lld.png",m_sImgPath.c_str(),pFuncInfo.m_nSubscribeId);
                 if (::PathFileExistsA(lpszSubIdFile))
-#endif
 				{
 					pFuncInfo.m_sResFile = lpszSubIdFile;
 				}else if (pFuncInfo.m_nFromSubscribeId>0)
 				{
 					sprintf(lpszSubIdFile,"%s/subid_%lld.png",m_sImgPath.c_str(),pFuncInfo.m_nFromSubscribeId);
-#ifdef _QT_MAKE_
-                    if (QFileInfo::exists(lpszSubIdFile))
-#else
                     if (::PathFileExistsA(lpszSubIdFile))
-#endif
 						pFuncInfo.m_sResFile = lpszSubIdFile;
 				}
+#endif
 			}
 			pOutFuncInfo.push_back(pFuncInfo);
 		}
@@ -3904,42 +3990,49 @@ int CUserManagerApp::RequestCollectMsg(eb::bigint sCallId,mycp::bigint nMsgId, b
 	return pCallInfo->m_pChatRoom->MsgAck(nMsgId,(int)(bGroupCollection?EB_MAT_GROUP_COLLECT:EB_MAT_SELF_COLLECT));
 }
 
-bool CUserManagerApp::SendWaitingProcessCallback(eb::bigint sCallId,const char* sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
+bool CUserManagerApp::SendWaitingProcessCallback(eb::bigint sCallId, const EBFileString &sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
 {
-		const tstring sFileName(sFilePath);
-		if (m_pWaitingProcessFileList.exist(sFileName))
-		{
-			return false;
-		}
-		const unsigned long nWaitingProcessMsgId = this->GetNextId();
-		m_pWaitingProcessFileList.insert(sFileName,nWaitingProcessMsgId);
-		CCrFileInfo * pCrFileInfo = new CCrFileInfo(0,sCallId,sCallId,EB_STATE_WAITING_PROCESS);
+    if (m_pWaitingProcessFileList.exist(sFilePath))
+    {
+        return false;
+    }
+    const unsigned long nWaitingProcessMsgId = this->GetNextId();
+    m_pWaitingProcessFileList.insert(sFilePath,nWaitingProcessMsgId);
+    CCrFileInfo * pCrFileInfo = new CCrFileInfo(0,sCallId,sCallId,EB_STATE_WAITING_PROCESS);
 #ifdef _QT_MAKE_
-		pCrFileInfo->SetQEventType((QEvent::Type)CR_WM_SENDING_FILE);
-		//pVideoInfo->SetEventParameter((long)EB_STATE_ALREADY_IN_REMOTE_DESKTOP);
-		//pVideoInfo->SetEventData((void*)&pUserVideoInfo);
+    pCrFileInfo->SetQEventType((QEvent::Type)CR_WM_SENDING_FILE);
+    //pVideoInfo->SetEventParameter((long)EB_STATE_ALREADY_IN_REMOTE_DESKTOP);
+    //pVideoInfo->SetEventData((void*)&pUserVideoInfo);
 #endif
-		pCrFileInfo->m_sFileName = sFileName;
-        pCrFileInfo->m_nFileSize = EbGetFileSize(sFilePath);
-		pCrFileInfo->m_bOffFile = bOffFile;
-		pCrFileInfo->m_sSendFrom = this->m_pMyAccountInfo->GetUserId();
-		pCrFileInfo->m_sSendTo = sTo;
-		pCrFileInfo->m_bPrivate = bPrivate;
-		pCrFileInfo->m_nMsgId = (mycp::bigint)nWaitingProcessMsgId;
-		if (m_callback)
-			m_callback->OnSendingFile(*pCrFileInfo);
-		if (m_pHwnd!=NULL) {
+    pCrFileInfo->m_sFileName = sFilePath;
+    pCrFileInfo->m_nFileSize = EbGetFileSize(sFilePath);
+    pCrFileInfo->m_bOffFile = bOffFile;
+    pCrFileInfo->m_sSendFrom = this->m_pMyAccountInfo->GetUserId();
+    pCrFileInfo->m_sSendTo = sTo;
+    pCrFileInfo->m_bPrivate = bPrivate;
+    pCrFileInfo->m_nMsgId = (mycp::bigint)nWaitingProcessMsgId;
+    if (m_callback)
+        m_callback->OnSendingFile(*pCrFileInfo);
+    if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
-            QCoreApplication::postEvent(m_pHwnd, pCrFileInfo, thePostEventPriority);
+        QCoreApplication::postEvent(m_pHwnd, pCrFileInfo, thePostEventPriority);
 #else
-			::SendMessage(m_pHwnd, CR_WM_SENDING_FILE, (WPARAM)pCrFileInfo, 0);
-			delete pCrFileInfo;
+        ::SendMessage(m_pHwnd, CR_WM_SENDING_FILE, (WPARAM)pCrFileInfo, 0);
+        delete pCrFileInfo;
 #endif
-		}
-		else {
-			delete pCrFileInfo;
-		}
-		return true;
+    }
+    else {
+        delete pCrFileInfo;
+    }
+    return true;
+}
+int CUserManagerApp::SendCrFile(eb::bigint sCallId,const EBFileString &sFilePath,mycp::bigint nResourceId)
+{
+#ifdef _QT_MAKE_
+    return SendCrFile(sCallId, sFilePath.toStdString().c_str(), nResourceId);
+#else
+    return SendCrFile(sCallId, sFilePath.c_str(), nResourceId);
+#endif
 }
 int CUserManagerApp::SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::bigint nResourceId)
 {
@@ -3972,6 +4065,14 @@ int CUserManagerApp::SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::b
 	if(pCallInfo->m_pChatRoom.get()==NULL)
 		return 2;
 	return pCallInfo->m_pChatRoom->SendResource(nResourceId,sFilePath,false);
+}
+int CUserManagerApp::SendCrFile(eb::bigint sCallId,const EBFileString &sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile, bool bFromToSendList,bool* pOutInviteCall,bool bNeedWaitingCallback)
+{
+#ifdef _QT_MAKE_
+    return SendCrFile(sCallId, sFilePath.toStdString().c_str(), sTo, bPrivate, bOffFile, bFromToSendList, pOutInviteCall, bNeedWaitingCallback);
+#else
+    return SendCrFile(sCallId, sFilePath.c_str(), sTo, bPrivate, bOffFile, bFromToSendList, pOutInviteCall, bNeedWaitingCallback);
+#endif
 }
 int CUserManagerApp::SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile, bool bFromToSendList,bool* pOutInviteCall,bool bNeedWaitingCallback)
 {
@@ -6255,7 +6356,11 @@ void CUserManagerApp::OnProcessTimer(const CPOPCUserManager* pUMOwner)
 				//}
 				//DeleteOnlineFileList(sCallId,pCallToSendInfo->m_nMsgId);
 				// 重新发送
-				SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#ifdef _QT_MAKE_
+                SendCrFile(sCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#else
+                SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#endif
 			}
 		}
 	}
@@ -6350,7 +6455,11 @@ void CUserManagerApp::OnProcessTimer(const CPOPCUserManager* pUMOwner)
 								const CToSendInfo::pointer& pCallToSendInfo = *pIter;
 								if (!pCallToSendInfo->m_bOffFile && pCallToSendInfo->m_nMsgId>0)
 								{
-									LogMessage("OnProcessTimer->resend file... (msgid=%lld,%s)\r\n",pCallToSendInfo->m_nMsgId,pCallToSendInfo->m_sFilePath.c_str());
+#ifdef _QT_MAKE_
+                                    LogMessage("OnProcessTimer->resend file... (msgid=%lld,%s)\r\n",pCallToSendInfo->m_nMsgId,pCallToSendInfo->m_sFilePath.toStdString().c_str());
+#else
+                                    LogMessage("OnProcessTimer->resend file... (msgid=%lld,%s)\r\n",pCallToSendInfo->m_nMsgId,pCallToSendInfo->m_sFilePath.c_str());
+#endif
 									pCallInfo->m_pChatRoom->ResendMsg(pCallToSendInfo->m_nMsgId);
 									//pResendFileList.push_back(pCallToSendInfo);
 								}
@@ -6682,9 +6791,19 @@ void CUserManagerApp::ProcessTimeout(const CPOPSotpRequestInfo::pointer& pSotpRe
 			return;
 		}
 		const tstring sFindLCAddress(GetNextLCAddress());
+#ifdef _QT_MAKE_
+        if (sFindLCAddress.empty() || m_sServerAddress==sFindLCAddress) {
+            static unsigned int theIndex = 0;
+            if ((theIndex++)%10==0) {
+                EB_Event * pEvent = new EB_Event((QEvent::Type)EB_WM_APPID_ERROR);
+                pEvent->SetEventParameter((long)EB_STATE_TIMEOUT_ERROR);
+                QCoreApplication::postEvent( m_pHwnd, pEvent,thePostEventPriority );
+            }
+        }
+#endif
 		if (!sFindLCAddress.empty())
 		{
-			m_sServerAddress = sFindLCAddress;
+            m_sServerAddress = sFindLCAddress;
 			//LogMessage("ProcessTimeout... (sFindLCAddress=%s)\r\n",sFindLCAddress.c_str());
 
 			if (m_sDevAppId==0)
@@ -7685,7 +7804,12 @@ void CUserManagerApp::SetServerAddress(const tstring& sAddress,const tstring& sO
 	if (m_pOrgServerList.size()>=2)
 	{
 		char sTempIniFile[260];
-		sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#ifdef _QT_MAKE_
+        sprintf(sTempIniFile,"%s/temp.ini",m_sEbDataPath.toLocal8Bit().constData());
+#else
+        sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#endif
+
 #ifdef WIN32
         const int nOutLCIndex = GetPrivateProfileIntA(m_sOrgServerAddress.c_str(),_T("lc_org_index"),-1,sTempIniFile);
 #else
@@ -7806,7 +7930,11 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 			if (m_pOrgServerList.size()>=2 && m_nOrgServerIndex>=0 && m_nOrgServerIndex<(int)m_pOrgServerList.size())
 			{
 				char sTempIniFile[260];
-				sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#ifdef _QT_MAKE_
+                sprintf(sTempIniFile,"%s/temp.ini",m_sEbDataPath.toLocal8Bit().constData());
+#else
+                sprintf(sTempIniFile,"%s\\temp.ini",m_sEbDataPath.c_str());
+#endif
 				char lpszBuffer[24];
 				sprintf(lpszBuffer,"%d",m_nOrgServerIndex);
 #ifdef WIN32
@@ -7964,7 +8092,7 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 			}
 			return;
 		}
-		// 下面是普通登录
+        /// 下面是普通登录
 		if (sDefaultEmp>0)
 		{
 			if (m_pDefaultEntEmployeeInfo.get()==NULL)
@@ -7978,76 +8106,79 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 		}
 		if (m_nDeployId>0 && !m_pMyAccountInfo->IsLogonVisitor())
 		{
-			// **检查本地数据文件；
-			const tstring sDefaultEBDatasFile = GetAppPath() + _T("\\datas\\bodb\\syncdatas");
+            /// **检查本地数据文件；
+            const EBFileString sDefaultEBDatasFile = GetAppPath()+"/datas/bodb/syncdatas";
 #ifdef _QT_MAKE_
-            const bool bExistDefaultEBDatasFile = QFileInfo::exists(sDefaultEBDatasFile.c_str());
+            const bool bExistDefaultEBDatasFile = QFileInfo::exists(sDefaultEBDatasFile);
+            QString lpszBuffer = QString("%1/users").arg(GetAppPath());
 #else
             const BOOL bExistDefaultEBDatasFile = ::PathFileExistsA(sDefaultEBDatasFile.c_str());
+            char lpszBuffer[260];
+            sprintf(lpszBuffer,"%s/users",GetAppPath().c_str());
 #endif
-			char lpszBuffer[260];
-			sprintf(lpszBuffer,"%s\\users",GetAppPath().c_str());
-			// *数据库路径
-			// \users
-			tstring sCurrentLogonServerBoPath(lpszBuffer);
+            /// *数据库路径
+            /// \users
+            EBFileString sCurrentLogonServerBoPath(lpszBuffer);
 #ifdef _QT_MAKE_
-            if (!QFileInfo::exists(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile)
+            if (!QFileInfo::exists(sCurrentLogonServerBoPath) && bExistDefaultEBDatasFile)
 #else
             if (!::PathFileExistsA(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile)
 #endif
 			{
 #ifdef _QT_MAKE_
 				QDir pDir;
-				pDir.mkdir(sCurrentLogonServerBoPath.c_str());
+                pDir.mkdir(sCurrentLogonServerBoPath);
 #else
                 ::CreateDirectoryA(sCurrentLogonServerBoPath.c_str(), NULL);
 #endif
 			}
-			// \users\[account]
-			sprintf(lpszBuffer,"%s\\%s",sCurrentLogonServerBoPath.c_str(),m_pMyAccountInfo->GetAccount().c_str());
-			sCurrentLogonServerBoPath = lpszBuffer;
+            /// \users\[account]
 #ifdef _QT_MAKE_
-            if (!QFileInfo::exists(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile)
+            sCurrentLogonServerBoPath = QString("%1/%2").arg(sCurrentLogonServerBoPath).arg(m_pMyAccountInfo->GetAccount().c_str());
+            if (!QFileInfo::exists(sCurrentLogonServerBoPath) && bExistDefaultEBDatasFile)
 #else
+            sprintf(lpszBuffer,"%s\\%s",sCurrentLogonServerBoPath.c_str(),m_pMyAccountInfo->GetAccount().c_str());
+            sCurrentLogonServerBoPath = lpszBuffer;
             if (!::PathFileExistsA(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile)
 #endif
 			{
 #ifdef _QT_MAKE_
 				QDir pDir;
-				pDir.mkdir(sCurrentLogonServerBoPath.c_str());
+                pDir.mkdir(sCurrentLogonServerBoPath);
 #else
                 ::CreateDirectoryA(sCurrentLogonServerBoPath.c_str(), NULL);
 #endif
 			}
-			// \users\[account]\[deployid]
-			sprintf(lpszBuffer,"%s\\%lld",sCurrentLogonServerBoPath.c_str(),m_nDeployId);
-			sCurrentLogonServerBoPath = lpszBuffer;
+            /// \users\[account]\[deployid]
 #ifdef _QT_MAKE_
-            if (!QFileInfo::exists(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile)
+            sCurrentLogonServerBoPath = QString("%1/%2").arg(sCurrentLogonServerBoPath).arg(m_nDeployId);
+            if (!QFileInfo::exists(sCurrentLogonServerBoPath) && bExistDefaultEBDatasFile)
 #else
+            sprintf(lpszBuffer,"%s\\%lld",sCurrentLogonServerBoPath.c_str(),m_nDeployId);
+            sCurrentLogonServerBoPath = lpszBuffer;
             if (!::PathFileExistsA(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile)
 #endif
 			{
 #ifdef _QT_MAKE_
 				QDir pDir;
-				pDir.mkdir(sCurrentLogonServerBoPath.c_str());
+                pDir.mkdir(sCurrentLogonServerBoPath);
 #else
                 ::CreateDirectoryA(sCurrentLogonServerBoPath.c_str(), NULL);
 #endif
 			}
-			const tstring sDelPath = sCurrentLogonServerBoPath + _T("\\bodb\\ebdatas");
+            const EBFileString sDelPath = sCurrentLogonServerBoPath+"/bodb/ebdatas";
 #ifdef _QT_MAKE_
-            if (QFileInfo::exists(sDelPath.c_str())) {
+            if (QFileInfo::exists(sDelPath)) {
 #else
             if (::PathFileExistsA(sDelPath.c_str())) {
 #endif
-				tstring sDelFile = sDelPath + _T("\\ebdatas.bdf");
+                EBFileString sDelFile = sDelPath+"/ebdatas.bdf";
 #ifdef _QT_MAKE_
-				QFile::remove(sDelFile.c_str());
-				sDelFile = sDelPath + _T("\\ebdatas.bdf.bk");
-                QFile::remove(sDelFile.c_str());
+                QFile::remove(sDelFile);
+                sDelFile = sDelPath+"/ebdatas.bdf.bk";
+                QFile::remove(sDelFile);
 				QDir pDir;
-                pDir.rmdir(sDelPath.c_str());
+                pDir.rmdir(sDelPath);
 				//QDir pDir(sDelPath.c_str());
 				//pDir.rmdir(QDir::toNativeSeparators(pDir.path()));
 #else
@@ -8058,12 +8189,12 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 #endif
 			}
 
-			// \users\[account]\[deployid]\bodb
-			sCurrentLogonServerBoPath = sCurrentLogonServerBoPath + _T("\\bodb");
+            /// \users\[account]\[deployid]\bodb
+            sCurrentLogonServerBoPath = sCurrentLogonServerBoPath+"/bodb";
 #ifdef _QT_MAKE_
-            if (!QFileInfo::exists(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile) {
+            if (!QFileInfo::exists(sCurrentLogonServerBoPath) && bExistDefaultEBDatasFile) {
 				QDir pDir;
-				pDir.mkdir(sCurrentLogonServerBoPath.c_str());
+                pDir.mkdir(sCurrentLogonServerBoPath);
 			}
 #else
             if (!::PathFileExistsA(sCurrentLogonServerBoPath.c_str()) && bExistDefaultEBDatasFile) {
@@ -8073,7 +8204,7 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 
 			// *数据库文件
 			// \users\[account]\[deployid]\bodb\ebdatas
-			const tstring sCurrentLogonServerBoFile = sCurrentLogonServerBoPath + _T("\\syncdatas");
+            const EBFileString sCurrentLogonServerBoFile = sCurrentLogonServerBoPath+"\\syncdatas";
             //if (!::PathFileExistsA(sCurrentLogonServerBoFile.c_str()) && bExistDefaultEBDatasFile)
 			//{
             //	::CreateDirectoryA(sCurrentLogonServerBoFile.c_str(), NULL);
@@ -8082,12 +8213,13 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 			//sCurrentLogonServerBoFile = sCurrentLogonServerBoFile + _T("\\ebdatas.bdf");
 			//const tstring sCurrentLogonServerBoFileBk = sCurrentLogonServerBoFile + _T(".bk");
 			//bool bNewCopyFile = false;
-			if (EbGetFileSize(sCurrentLogonServerBoFile.c_str())<=0 && bExistDefaultEBDatasFile)
+            if (EbGetFileSize(sCurrentLogonServerBoFile)<=0 && bExistDefaultEBDatasFile)
             //if (!::PathFileExistsA(sCurrentLogonServerBoFile.c_str()) && bExistDefaultEBDatasFile)
 			{
 				//bNewCopyFile = true;
 #ifdef _QT_MAKE_
-                QFile::copy(sDefaultEBDatasFile.c_str(), sCurrentLogonServerBoFile.c_str());
+                QFile::remove(sCurrentLogonServerBoFile);
+                QFile::copy(sDefaultEBDatasFile, sCurrentLogonServerBoFile);
 #else
                 CopyFileA(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str(),FALSE);
 #endif
@@ -8107,27 +8239,27 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 				m_pEBDatas.reset();
 			}
 #ifdef _QT_MAKE_
-            if (QFileInfo::exists(sCurrentLogonServerBoFile.c_str()))
+            if (QFileInfo::exists(sCurrentLogonServerBoFile))
 #else
             if (::PathFileExistsA(sCurrentLogonServerBoFile.c_str()))
 #endif
 			{
 				m_pEBDatas = CSqliteCdbc::create();
 #ifdef _QT_MAKE_
-				if (!m_pEBDatas->open(CEBParseSetting::str2utf8(sCurrentLogonServerBoFile.c_str(),"GBK").c_str()))
+                if (!m_pEBDatas->open(sCurrentLogonServerBoFile.toStdString().c_str()))
 #else
 				if (!m_pEBDatas->open(CEBParseSetting::str_convert(sCurrentLogonServerBoFile.c_str(),CP_ACP,CP_UTF8).c_str()))
 #endif
 				{
 					m_pEBDatas.reset();
 #ifdef _QT_MAKE_
-                    QFile::remove(sCurrentLogonServerBoFile.c_str());
+                    QFile::remove(sCurrentLogonServerBoFile);
 #else
                     DeleteFileA(sCurrentLogonServerBoFile.c_str());
 #endif
 				}else
 				{
-					// ** 检查 eb_contact_info_t 表 1.25 版本代码，1.28以后版本删除下面代码
+                    /// ** 检查 eb_contact_info_t 表 1.25 版本代码，1.28以后版本删除下面代码
 					if (m_pEBDatas.get()!=NULL && m_pEBDatas->select("SELECT con_id FROM eb_contact_info_t WHERE con_id=0 LIMIT 1")<0)
 					{
 						const char* pCreateDatabaseTable = "CREATE TABLE eb_contact_info_t \
@@ -8163,22 +8295,22 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 							m_pEBDatas.reset();
 							// **删除文件，下次登录会重新创建
 #ifdef _QT_MAKE_
-                            QFile::remove(sCurrentLogonServerBoFile.c_str());
-                            QFile::copy(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str());
+                            QFile::remove(sCurrentLogonServerBoFile);
+                            QFile::copy(sDefaultEBDatasFile,sCurrentLogonServerBoFile);
 #else
                             DeleteFileA(sCurrentLogonServerBoFile.c_str());
                             CopyFileA(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str(),FALSE);
 #endif
 							m_pEBDatas = CSqliteCdbc::create();
 #ifdef _QT_MAKE_
-							if (!m_pEBDatas->open(CEBParseSetting::str2utf8(sCurrentLogonServerBoFile.c_str(),"GBK").c_str()))
+                            if (!m_pEBDatas->open(sCurrentLogonServerBoFile.toStdString().c_str()))
 #else
 							if (!m_pEBDatas->open(CEBParseSetting::str_convert(sCurrentLogonServerBoFile.c_str(),CP_ACP,CP_UTF8).c_str()))
 #endif
 							{
 								m_pEBDatas.reset();
 #ifdef _QT_MAKE_
-                                QFile::remove(sCurrentLogonServerBoFile.c_str());
+                                QFile::remove(sCurrentLogonServerBoFile);
 #else
                                 DeleteFileA(sCurrentLogonServerBoFile.c_str());
 #endif
@@ -8186,7 +8318,7 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 						}
 					}
 
-					// ** 检查 eb_emp_info_t 表 1.25 版本代码，1.28 以后版本删除下面代码
+                    /// ** 检查 eb_emp_info_t 表 1.25 版本代码，1.28 以后版本删除下面代码
 					if (m_pEBDatas.get()!=NULL && m_pEBDatas->select("SELECT display_index FROM eb_emp_info_t LIMIT 1")<0)
 					{
 						const char* pAlterTable = "ALTER TABLE eb_emp_info_t ADD display_index smallint DEFAULT 0;";
@@ -8197,22 +8329,22 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 							m_pEBDatas.reset();
 							// **删除文件，下次登录会重新创建
 #ifdef _QT_MAKE_
-                            QFile::remove(sCurrentLogonServerBoFile.c_str());
-                            QFile::copy(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str());
+                            QFile::remove(sCurrentLogonServerBoFile);
+                            QFile::copy(sDefaultEBDatasFile,sCurrentLogonServerBoFile);
 #else
                             DeleteFileA(sCurrentLogonServerBoFile.c_str());
                             CopyFileA(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str(),FALSE);
 #endif
 							m_pEBDatas = CSqliteCdbc::create();
 #ifdef _QT_MAKE_
-							if (!m_pEBDatas->open(CEBParseSetting::str2utf8(sCurrentLogonServerBoFile.c_str(),"GBK").c_str()))
+                            if (!m_pEBDatas->open(sCurrentLogonServerBoFile.toStdString().c_str()))
 #else
 							if (!m_pEBDatas->open(CEBParseSetting::str_convert(sCurrentLogonServerBoFile.c_str(),CP_ACP,CP_UTF8).c_str()))
 #endif
 							{
 								m_pEBDatas.reset();
 #ifdef _QT_MAKE_
-                                QFile::remove(sCurrentLogonServerBoFile.c_str());
+                                QFile::remove(sCurrentLogonServerBoFile);
 #else
                                 DeleteFileA(sCurrentLogonServerBoFile.c_str());
 #endif
@@ -8230,22 +8362,22 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 							m_pEBDatas.reset();
 							// **删除文件，下次登录会重新创建
 #ifdef _QT_MAKE_
-                            QFile::remove(sCurrentLogonServerBoFile.c_str());
-                            QFile::copy(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str());
+                            QFile::remove(sCurrentLogonServerBoFile);
+                            QFile::copy(sDefaultEBDatasFile,sCurrentLogonServerBoFile);
 #else
                             DeleteFileA(sCurrentLogonServerBoFile.c_str());
                             CopyFileA(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str(),FALSE);
 #endif
 							m_pEBDatas = CSqliteCdbc::create();
 #ifdef _QT_MAKE_
-							if (!m_pEBDatas->open(CEBParseSetting::str2utf8(sCurrentLogonServerBoFile.c_str(),"GBK").c_str()))
+                            if (!m_pEBDatas->open(sCurrentLogonServerBoFile.toStdString().c_str()))
 #else
 							if (!m_pEBDatas->open(CEBParseSetting::str_convert(sCurrentLogonServerBoFile.c_str(),CP_ACP,CP_UTF8).c_str()))
 #endif
 							{
 								m_pEBDatas.reset();
 #ifdef _QT_MAKE_
-                                QFile::remove(sCurrentLogonServerBoFile.c_str());
+                                QFile::remove(sCurrentLogonServerBoFile);
 #else
                                 DeleteFileA(sCurrentLogonServerBoFile.c_str());
 #endif
@@ -8253,7 +8385,7 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 						}
 					}
 
-					// ** 检查 eb_dep_info_t 表 1.25 版本代码，1.28 以后版本删除下面代码 (2017-03-29)
+                    /// ** 检查 eb_dep_info_t 表 1.25 版本代码，1.28 以后版本删除下面代码 (2017-03-29)
 					if (m_pEBDatas.get()!=NULL && m_pEBDatas->select("SELECT ext_data FROM eb_dep_info_t LIMIT 1")<0)
 					{
 						const char* pAlterTable = "ALTER TABLE eb_dep_info_t ADD ext_data int DEFAULT 0;";
@@ -8262,24 +8394,24 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 							// 错误
 							m_pEBDatas->close();
 							m_pEBDatas.reset();
-							// **删除文件，下次登录会重新创建
+                            /// **删除文件，下次登录会重新创建
 #ifdef _QT_MAKE_
-                            QFile::remove(sCurrentLogonServerBoFile.c_str());
-                            QFile::copy(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str());
+                            QFile::remove(sCurrentLogonServerBoFile);
+                            QFile::copy(sDefaultEBDatasFile,sCurrentLogonServerBoFile);
 #else
                             DeleteFileA(sCurrentLogonServerBoFile.c_str());
                             CopyFileA(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str(),FALSE);
 #endif
 							m_pEBDatas = CSqliteCdbc::create();
 #ifdef _QT_MAKE_
-							if (!m_pEBDatas->open(CEBParseSetting::str2utf8(sCurrentLogonServerBoFile.c_str(),"GBK").c_str()))
+                            if (!m_pEBDatas->open(sCurrentLogonServerBoFile.toStdString().c_str()))
 #else
 							if (!m_pEBDatas->open(CEBParseSetting::str_convert(sCurrentLogonServerBoFile.c_str(),CP_ACP,CP_UTF8).c_str()))
 #endif
 							{
 								m_pEBDatas.reset();
 #ifdef _QT_MAKE_
-                                QFile::remove(sCurrentLogonServerBoFile.c_str());
+                                QFile::remove(sCurrentLogonServerBoFile);
 #else
                                 DeleteFileA(sCurrentLogonServerBoFile.c_str());
 #endif
@@ -8339,22 +8471,22 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 							m_pEBDatas.reset();
 							// **删除文件，下次登录会重新创建
 #ifdef _QT_MAKE_
-                            QFile::remove(sCurrentLogonServerBoFile.c_str());
-                            QFile::copy(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str());
+                            QFile::remove(sCurrentLogonServerBoFile);
+                            QFile::copy(sDefaultEBDatasFile,sCurrentLogonServerBoFile);
 #else
                             DeleteFileA(sCurrentLogonServerBoFile.c_str());
                             CopyFileA(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str(),FALSE);
 #endif
 							m_pEBDatas = CSqliteCdbc::create();
 #ifdef _QT_MAKE_
-							if (!m_pEBDatas->open(CEBParseSetting::str2utf8(sCurrentLogonServerBoFile.c_str(),"GBK").c_str()))
+                            if (!m_pEBDatas->open(sCurrentLogonServerBoFile.toStdString().c_str()))
 #else
 							if (!m_pEBDatas->open(CEBParseSetting::str_convert(sCurrentLogonServerBoFile.c_str(),CP_ACP,CP_UTF8).c_str()))
 #endif
 							{
 								m_pEBDatas.reset();
 #ifdef _QT_MAKE_
-                                QFile::remove(sCurrentLogonServerBoFile.c_str());
+                                QFile::remove(sCurrentLogonServerBoFile);
 #else
                                 DeleteFileA(sCurrentLogonServerBoFile.c_str());
 #endif
@@ -8372,22 +8504,22 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 							m_pEBDatas.reset();
 							// **删除文件，下次登录会重新创建
 #ifdef _QT_MAKE_
-                            QFile::remove(sCurrentLogonServerBoFile.c_str());
-                            QFile::copy(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str());
+                            QFile::remove(sCurrentLogonServerBoFile);
+                            QFile::copy(sDefaultEBDatasFile,sCurrentLogonServerBoFile);
 #else
                             DeleteFileA(sCurrentLogonServerBoFile.c_str());
                             CopyFileA(sDefaultEBDatasFile.c_str(),sCurrentLogonServerBoFile.c_str(),FALSE);
 #endif
 							m_pEBDatas = CSqliteCdbc::create();
 #ifdef _QT_MAKE_
-							if (!m_pEBDatas->open(CEBParseSetting::str2utf8(sCurrentLogonServerBoFile.c_str(),"GBK").c_str()))
+                            if (!m_pEBDatas->open(sCurrentLogonServerBoFile.toStdString().c_str()))
 #else
 							if (!m_pEBDatas->open(CEBParseSetting::str_convert(sCurrentLogonServerBoFile.c_str(),CP_ACP,CP_UTF8).c_str()))
 #endif
 							{
 								m_pEBDatas.reset();
 #ifdef _QT_MAKE_
-                                QFile::remove(sCurrentLogonServerBoFile.c_str());
+                                QFile::remove(sCurrentLogonServerBoFile);
 #else
                                 DeleteFileA(sCurrentLogonServerBoFile.c_str());
 #endif
@@ -8444,7 +8576,11 @@ void CUserManagerApp::OnLCULLogonResponse(const CPOPSotpRequestInfo::pointer & p
 
 		// get usersignid
 		char sTempFile[260];
-		sprintf(sTempFile,"%s\\ebc.temp",m_sAppDataTempPath.c_str());
+#ifdef _QT_MAKE_
+        sprintf(sTempFile,"%s/ebc.temp",m_sAppDataTempPath.toLocal8Bit().constData());
+#else
+        sprintf(sTempFile,"%s\\ebc.temp",m_sAppDataTempPath.c_str());
+#endif
 		char lpszBuffer[60];
 		memset(lpszBuffer,0,sizeof(lpszBuffer));
 #ifdef WIN32
@@ -8977,20 +9113,21 @@ void CUserManagerApp::OnVersionCheckResponse(const CPOPSotpRequestInfo::pointer 
 			}
 		}
 
-		char sVersionResourceFile[260];
-		sprintf(sVersionResourceFile,"%s\\%lld",m_sAppDataTempPath.c_str(),m_nDeployId);
 #ifdef _QT_MAKE_
+        QString sVersionResourceFile = QString("%1/%2").arg(m_sAppDataTempPath).arg(m_nDeployId);
 		if (!QFileInfo::exists(sVersionResourceFile)) {
 			QDir pDir;
             pDir.mkdir(sVersionResourceFile);
 		}
+        sVersionResourceFile = QString("%1/%2/%3%4").arg(m_sAppDataTempPath).arg(m_nDeployId).arg(sResourceId).arg(sExt.c_str());
 #else
+        char sVersionResourceFile[260];
+        sprintf(sVersionResourceFile,"%s\\%lld",m_sAppDataTempPath.c_str(),m_nDeployId);
         if (!::PathFileExistsA(sVersionResourceFile)) {
             ::CreateDirectoryA(sVersionResourceFile, NULL);
 		}
+        sprintf(sVersionResourceFile,"%s\\%lld\\%lld%s",m_sAppDataTempPath.c_str(),m_nDeployId,sResourceId,sExt.c_str());
 #endif
-		sprintf(sVersionResourceFile,"%s\\%lld\\%lld%s",m_sAppDataTempPath.c_str(),m_nDeployId,sResourceId,sExt.c_str());
-		//sprintf(sVersionResourceFile,"%s\\%lld%s",m_sAppDataTempPath.c_str(),sResourceId,sExt.c_str());
 		if (!sServerVersion.empty() && m_pVersionInfo.m_sVersion != sServerVersion)
 		{
 			m_pVersionInfo.m_sVersion = sServerVersion;
@@ -9043,7 +9180,7 @@ void CUserManagerApp::OnVersionCheckResponse(const CPOPSotpRequestInfo::pointer 
 				theResourceChatRoom.insert(sResourceId,pChatRoom);
 				if (!pChatRoom->IsEnterOk())
 					pChatRoom->EnterRoom(m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetACMKey("").c_str(),m_pMyAccountInfo->GetLogonType());
-				pChatRoom->RecviveResource(sResourceId,sVersionResourceFile);
+                pChatRoom->RecviveResource(sResourceId,sVersionResourceFile);
 			}else
 			{
 				// 资源文件已经存在，并且文件MD5正确，直接回调
@@ -11755,7 +11892,11 @@ void CUserManagerApp::ProcessToSendList(mycp::bigint nCallId, bool bSendGroupCal
 	if ((bSendGroupCall && pCallToSendList->m_nGroupCode>0) ||
 		(!bSendGroupCall && pCallToSendList->m_nGroupCode==0))
 	{
-		CLockMap<tstring,bool> pSendFileList;		// **预防发送多次；
+#ifdef _QT_MAKE_
+        CLockMap<QString,bool> pSendFileList;		// **预防发送多次；
+#else
+        CLockMap<tstring,bool> pSendFileList;		// **预防发送多次；
+#endif
 		CToSendInfo::pointer pCallToSendInfoTemp;	// 用于记录文件是否已经处理；
 		while(!pCallToSendList->m_list.empty())
 		{
@@ -11790,10 +11931,17 @@ void CUserManagerApp::ProcessToSendList(mycp::bigint nCallId, bool bSendGroupCal
 				if (!pSendFileList.exist(pCallToSendInfo->m_sFilePath))
 				{
 					pSendFileList.insert(pCallToSendInfo->m_sFilePath,true,false);
-					if (pCallToSendInfo->m_nResourceId>0)
+#ifdef _QT_MAKE_
+                    if (pCallToSendInfo->m_nResourceId>0)
+                        SendCrFile(nCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_nResourceId);
+                    else
+                        SendCrFile(nCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile,true);
+#else
+                    if (pCallToSendInfo->m_nResourceId>0)
 						SendCrFile(nCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_nResourceId);
 					else
 						SendCrFile(nCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile,true);
+#endif
 				}
 			}
 		}
@@ -12013,7 +12161,7 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 			EnterpriseLoad(pCallInfo->m_sGroupCode,0,0,0,0,pCrMsgInfo.m_sSendFrom);	// 预防万一
 		}
 	}
-	CLockMap<tstring,bool> pDownloadFileList;	// 这里是企业图标文件，先简单做，用延时等待下载完成，加超时处理
+    CLockMap<EBFileString,bool> pDownloadFileList;	/// 这里是企业图标文件，先简单做，用延时等待下载完成，加超时处理
 	// 检查资源文件，是否存在
 	const EB_ChatRoomRichMsg * pRichMsg = pCrMsgInfo.m_pRichMsg;
 	const std::vector<EB_ChatRoomMsgItem*>& pRichMsgList = pRichMsg->GetList();
@@ -12035,14 +12183,18 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 				//}
 				//const tstring sCmAppName = pList[2];
 				//const tstring sDescription = pList.size()>3?pList[3]:"";
-				tstring sResourceFile = m_sEbResourcePath + "\\";
-				sResourceFile.append(lpszResourceId);
 #ifdef _QT_MAKE_
-                if (!QFileInfo::exists(sResourceFile.c_str()))
+                const QString sResourceFileTemp = QString("%1/%2").arg(m_sEbResourcePath).arg(lpszResourceId.c_str());
+                if (!QFileInfo::exists(sResourceFileTemp))
 #else
+                tstring sResourceFile = m_sEbResourcePath + "\\";
+                sResourceFile.append(lpszResourceId);
                 if (!::PathFileExistsA(sResourceFile.c_str()))
 #endif
 				{
+#ifdef _QT_MAKE_
+                    const EBFileString sResourceFile = sResourceFileTemp;
+#endif
 					// 资源文件不存在
 					if (pDownloadFileList.exist(sResourceFile) || theResourceChatRoom.exist(sResourceId))
 					{
@@ -12066,7 +12218,11 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 						theResourceFilePath.insert(sResourceId,pFilePathInfo);
 						if (!pChatRoom->IsEnterOk())
 							pChatRoom->EnterRoom(m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetACMKey("").c_str(),m_pMyAccountInfo->GetLogonType());
-						pChatRoom->RecviveResource(sResourceId,sResourceFile.c_str());
+#ifdef _QT_MAKE_
+                        pChatRoom->RecviveResource(sResourceId,sResourceFile);
+#else
+                        pChatRoom->RecviveResource(sResourceId,sResourceFile.c_str());
+#endif
 					}
 				}
 			}
@@ -12079,12 +12235,12 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 		while (nWaitSecond<4)	// 4秒超时处理
 		{
 			bool bFileNotExist = false;
-			CLockMap<tstring,bool>::iterator pIter = pDownloadFileList.begin();
+            CLockMap<EBFileString,bool>::iterator pIter = pDownloadFileList.begin();
 			for (;pIter!=pDownloadFileList.end();pIter++)
 			{
-				const tstring& sResourceFile = pIter->first;
+                const EBFileString& sResourceFile = pIter->first;
 #ifdef _QT_MAKE_
-                if (QFileInfo::exists(sResourceFile.c_str()))
+                if (QFileInfo::exists(sResourceFile))
 #else
                 if (::PathFileExistsA(sResourceFile.c_str()))
 #endif
@@ -12092,7 +12248,7 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 					pDownloadFileList.erase(pIter);
 					if (!pDownloadFileList.empty())
 					{
-						// 处理下一个
+                        /// 处理下一个
 						bFileNotExist = true;
 					}
 					break;
@@ -12110,7 +12266,7 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 			}
 			if (!bFileNotExist)
 			{
-				// 文件下载完成
+                /// 文件下载完成
 				break;
 			}
 		}
@@ -12313,7 +12469,11 @@ void CUserManagerApp::OnSendingFile(const CCrFileInfo& pFileInfo)
 				if (bResendFile)
 				{
 					bool bInviteCall = false;
-					this->SendCrFile(sCallId,pFileInfo.m_sFileName.c_str(),pFileInfo.m_sSendTo,pFileInfo.m_bPrivate,pFileInfo.m_bOffFile,false,&bInviteCall);
+#ifdef _QT_MAKE_
+                    this->SendCrFile(sCallId,pFileInfo.m_sFileName,pFileInfo.m_sSendTo,pFileInfo.m_bPrivate,pFileInfo.m_bOffFile,false,&bInviteCall);
+#else
+                    this->SendCrFile(sCallId,pFileInfo.m_sFileName.c_str(),pFileInfo.m_sSendTo,pFileInfo.m_bPrivate,pFileInfo.m_bOffFile,false,&bInviteCall);
+#endif
 					if (bInviteCall)
 						bP2Pequest = false;
 				}
@@ -12337,7 +12497,7 @@ void CUserManagerApp::OnSendingFile(const CCrFileInfo& pFileInfo)
 		if (pFileInfo.GetParam()!=0)
 			const_cast<CCrFileInfo&>(pFileInfo).SetParam(0);
 		unsigned long nWaitingProcessMsgId = 0;
-		m_pWaitingProcessFileList.find(pFileInfo.m_sFileName.string(),nWaitingProcessMsgId,true);
+        m_pWaitingProcessFileList.find(pFileInfo.m_sFileName,nWaitingProcessMsgId,true);
 		const_cast<CCrFileInfo&>(pFileInfo).SetParam(nWaitingProcessMsgId);
 		if (m_callback)
 			m_callback->OnSendingFile(pFileInfo);
@@ -12384,7 +12544,7 @@ void CUserManagerApp::OnSendingFile(const CCrFileInfo& pFileInfo)
 			//const_cast<CCrFileInfo&>(pFileInfo).m_sResId = 0;
 		}
 		unsigned long nWaitingProcessMsgId = 0;
-		m_pWaitingProcessFileList.find(pFileInfo.m_sFileName.string(),nWaitingProcessMsgId,true);
+        m_pWaitingProcessFileList.find(pFileInfo.m_sFileName,nWaitingProcessMsgId,true);
 		const_cast<CCrFileInfo&>(pFileInfo).SetParam(nWaitingProcessMsgId);
 		if (m_callback)
 			m_callback->OnSendingFile(pFileInfo);
@@ -12407,7 +12567,7 @@ void CUserManagerApp::OnSentFile(const CCrFileInfo& pFileInfo)
 	if (!bFineFile)
 		bFineFile = DeleteP2PFileList(sCallId, pFileInfo.m_nMsgId);
 
-	m_pWaitingProcessFileList.remove(pFileInfo.m_sFileName.string());
+    m_pWaitingProcessFileList.remove(pFileInfo.m_sFileName);
 	CEBCallInfo::pointer pCallInfo;
 	if (theCallInfoList.find(sCallId, pCallInfo))
 	{
@@ -12473,13 +12633,18 @@ void CUserManagerApp::OnSentFile(const CCrFileInfo& pFileInfo)
 				CEBMemberInfo::pointer pEmployeeInfo = GetEmployeeInfo2(sResourceId);
 				if (pEmployeeInfo.get()!=NULL)
 				{
-					char lpszHeadResourceFile[260];
-					sprintf(lpszHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
-					//const tstring sHeadResourceFile = m_sEbResourcePath + "\\" + sResourceId;
-					pEmployeeInfo->m_sHeadResourceFile = lpszHeadResourceFile;
 #ifdef _QT_MAKE_
-                    QFile::copy(pFilePathInfo->m_sFilePath.c_str(),lpszHeadResourceFile);
+                    const QString lpszHeadResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(sResourceId);
+                    pEmployeeInfo->m_sHeadResourceFile = lpszHeadResourceFile;
+                    if (lpszHeadResourceFile!=pFilePathInfo->m_sFilePath) {
+                        QFile::remove(lpszHeadResourceFile);
+                        QFile::copy(pFilePathInfo->m_sFilePath,lpszHeadResourceFile);
+                    }
 #else
+                    char lpszHeadResourceFile[260];
+                    sprintf(lpszHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
+                    //const tstring sHeadResourceFile = m_sEbResourcePath + "\\" + sResourceId;
+                    pEmployeeInfo->m_sHeadResourceFile = lpszHeadResourceFile;
                     CopyFileA(pFilePathInfo->m_sFilePath.c_str(),lpszHeadResourceFile,FALSE);
 #endif
 
@@ -12619,7 +12784,11 @@ void CUserManagerApp::OnCancelFile(const CCrFileInfo& pFileInfo)
 		CToSendInfo::pointer pCallToSendInfo;
 		if (theREsendIdList.find(pFileInfo.m_nMsgId,pCallToSendInfo,true))
 		{
-			SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#ifdef _QT_MAKE_
+            SendCrFile(sCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#else
+            SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
+#endif
 		}
 #endif
 		return;
@@ -12636,15 +12805,17 @@ void CUserManagerApp::OnCancelFile(const CCrFileInfo& pFileInfo)
 		CFilePathInfo::pointer pFilePathInfo;
 		if (theResourceFilePath.find(sResourceId,pFilePathInfo,true)) {
 			if (pFilePathInfo->m_bDownload) {
-				// ** 因为 libebcm 保存下载文件，会保存到 .ebtemp临时文件，所以只删除 .ebtemp 临时文件
-				// ** 原正式文件不删除，避免删除替换下载文件问题；
-				if (pFilePathInfo->m_sFilePath.find(".ebtemp")!=std::string::npos) {
+                /// ** 因为 libebcm 保存下载文件，会保存到 .ebtemp临时文件，所以只删除 .ebtemp 临时文件
+                /// ** 原正式文件不删除，避免删除替换下载文件问题；
 #ifdef _QT_MAKE_
-                    QFile::remove(pFilePathInfo->m_sFilePath.c_str());
+                if (pFilePathInfo->m_sFilePath.indexOf(".ebtemp")>0) {
+                    QFile::remove(pFilePathInfo->m_sFilePath);
+                }
 #else
+                if (pFilePathInfo->m_sFilePath.find(".ebtemp")!=std::string::npos) {
                     DeleteFileA(pFilePathInfo->m_sFilePath.c_str());
+                }
 #endif
-				}
 			}
 			else {
 				// 取消上传
@@ -12898,31 +13069,29 @@ void CUserManagerApp::OnReceivedFile(const CCrFileInfo& pFileInfo)
 		if (m_pVersionInfo.m_sVersionFile!=pFileInfo.m_sFileName)
 		{
 			//　临时文件有问题，删除临时文件
-			char sTempFile[260];
-			sprintf(sTempFile,"%s.ebtemp",m_pVersionInfo.m_sVersionFile.c_str());
+            const EBFileString sTempFile = m_pVersionInfo.m_sVersionFile+".ebtemp";
 #ifdef _QT_MAKE_
             QFile::remove(sTempFile);
 #else
-            DeleteFileA(sTempFile);
+            DeleteFileA(sTempFile.c_str());
 #endif
 			// 更新升级文件
 			m_pVersionInfo.m_sVersionFile = pFileInfo.m_sFileName;
 		}
-		GetFileMd5(m_pVersionInfo.m_sVersionFile.c_str(),nFileSize,sFileMd5String);
+        GetFileMd5(m_pVersionInfo.m_sVersionFile,nFileSize,sFileMd5String);
 		if (sFileMd5String!=m_pVersionInfo.m_sMD5)
 		{
-			// 删除后重新下载；
+            /// 删除后重新下载；
 #ifdef _QT_MAKE_
-            QFile::remove(m_pVersionInfo.m_sVersionFile.c_str());
+            QFile::remove(m_pVersionInfo.m_sVersionFile);
 #else
             DeleteFileA(m_pVersionInfo.m_sVersionFile.c_str());
 #endif
-			char sTempFile[260];
-			sprintf(sTempFile,"%s.ebtemp",m_pVersionInfo.m_sVersionFile.c_str());
+            const EBFileString sTempFile = m_pVersionInfo.m_sVersionFile+".ebtemp";
 #ifdef _QT_MAKE_
             QFile::remove(sTempFile);
 #else
-            DeleteFileA(sTempFile);
+            DeleteFileA(sTempFile.c_str());
 #endif
 		}else
 		{
@@ -12963,10 +13132,10 @@ void CUserManagerApp::OnReceivedFile(const CCrFileInfo& pFileInfo)
 
 		CFilePathInfo::pointer pFilePathInfo;
 		if (theResourceFilePath.find(sResourceId,pFilePathInfo,true)) {
-			if (pFilePathInfo->m_sFilePath != pFileInfo.m_sFileName) {
+            if (pFilePathInfo->m_sFilePath!=pFileInfo.m_sFileName) {
 #ifdef _QT_MAKE_
-                QFile::copy(pFileInfo.m_sFileName.c_str(),pFilePathInfo->m_sFilePath.c_str());
-                QFile::remove(pFileInfo.m_sFileName.c_str());
+                QFile::remove(pFilePathInfo->m_sFilePath);
+                QFile::rename(pFileInfo.m_sFileName,pFilePathInfo->m_sFilePath);
 #else
                 CopyFileA(pFileInfo.m_sFileName.c_str(),pFilePathInfo->m_sFilePath.c_str(),FALSE);
                 DeleteFileA(pFileInfo.m_sFileName.c_str());
@@ -14063,13 +14232,12 @@ void CUserManagerApp::ProcessContactHeadInfo(const CEBContactInfo::pointer& pCon
 	const tstring sHeadCmServer(pContactInfo->m_sHeadCmServer);
 	if (sHeadResourceId>0 && !sHeadCmServer.empty())
 	{
-		char sHeadResourceFile[260];
-		sprintf(sHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sHeadResourceId);
-		//const tstring sHeadResourceFile = m_sEbResourcePath + "\\" + sHeadResourceId;
-		//pEmployeeInfo->m_sHeadResourceFile = sHeadResourceFile;
 #ifdef _QT_MAKE_
+        const EBFileString sHeadResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(sHeadResourceId);
         if (QFileInfo::exists(sHeadResourceFile))
 #else
+        char sHeadResourceFile[260];
+        sprintf(sHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sHeadResourceId);
         if (::PathFileExistsA(sHeadResourceFile))
 #endif
 		{
@@ -14100,7 +14268,7 @@ void CUserManagerApp::ProcessContactHeadInfo(const CEBContactInfo::pointer& pCon
 				}
 			}else
 			{
-				// 判断MD5值
+                /// 判断MD5值
 				mycp::bigint nFileSize = 0;
 				tstring sFileMd5String;
 				GetFileMd5(sHeadResourceFile,nFileSize,sFileMd5String);
@@ -14183,13 +14351,12 @@ void CUserManagerApp::ProcessAccountHeadInfo(const CEBAccountInfo::pointer& pAcc
 	const tstring sHeadCmServer(pAccountInfo->m_pFromCardInfo.m_sHeadCmServer);
 	if (sHeadResourceId>0 && !sHeadCmServer.empty())
 	{
-		char sHeadResourceFile[260];
-		sprintf(sHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sHeadResourceId);
-		//const tstring sHeadResourceFile = m_sEbResourcePath + "\\" + sHeadResourceId;
-		//pEmployeeInfo->m_sHeadResourceFile = sHeadResourceFile;
 #ifdef _QT_MAKE_
+        const EBFileString sHeadResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(sHeadResourceId);
         if (QFileInfo::exists(sHeadResourceFile))
 #else
+        char sHeadResourceFile[260];
+        sprintf(sHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sHeadResourceId);
         if (::PathFileExistsA(sHeadResourceFile))
 #endif
 		{
@@ -14258,8 +14425,8 @@ void CUserManagerApp::ProcessAccountHeadInfo(const CEBAccountInfo::pointer& pAcc
 
 			if (!pChatRoom->IsEnterOk())
 				pChatRoom->EnterRoom(m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetACMKey("").c_str(),m_pMyAccountInfo->GetLogonType());
-			pChatRoom->RecviveResource(sHeadResourceId,sHeadResourceFile);
-			//char sTempFile[260];
+            pChatRoom->RecviveResource(sHeadResourceId,sHeadResourceFile);
+            //char sTempFile[260];
 			//sprintf(sTempFile,"%s.ebtemp",sHeadResourceFile);
 			//pChatRoom->RecviveResource(sHeadResourceId,sTempFile);
 		}
@@ -14274,18 +14441,17 @@ void CUserManagerApp::ProcessMemberHeadInfo(const CEBMemberInfo::pointer& pEmplo
 	const tstring sHeadCmServer(pEmployeeInfo->m_sHeadCmServer);
 	if (sHeadResourceId>0 && !sHeadCmServer.empty())
 	{
-		char sHeadResourceFile[260];
-		sprintf(sHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sHeadResourceId);
-		//const tstring sHeadResourceFile = m_sEbResourcePath + "\\" + sHeadResourceId;
-		//pEmployeeInfo->m_sHeadResourceFile = sHeadResourceFile;
 		bool bNeedReDownload = false;
 #ifdef _QT_MAKE_
+        const EBFileString sHeadResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(sHeadResourceId);
         if (QFileInfo::exists(sHeadResourceFile))
 #else
+        char sHeadResourceFile[260];
+        sprintf(sHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sHeadResourceId);
         if (::PathFileExistsA(sHeadResourceFile))
 #endif
 		{
-			// ??检查头像是否正确，后期删除这个检查
+            /// ??检查头像是否正确，后期删除这个检查
 			if (pEmployeeInfo->m_sHeadMd5.empty())
 			{
 #ifdef _QT_MAKE_
@@ -16589,7 +16755,7 @@ void CUserManagerApp::DeleteOldHeadFile(const CEBMemberInfo::pointer& pEmployeeI
 			{
 				// 不是其他成员头像，删除该头像文件
 #ifdef _QT_MAKE_
-				if (!QFile::remove(pEmployeeInfo->m_sHeadResourceFile.c_str()) && QFileInfo::exists(pEmployeeInfo->m_sHeadResourceFile.c_str())) {
+                if (!QFile::remove(pEmployeeInfo->m_sHeadResourceFile) && QFileInfo::exists(pEmployeeInfo->m_sHeadResourceFile)) {
 #else
 				if (!DeleteFileA(pEmployeeInfo->m_sHeadResourceFile.c_str()) && ::PathFileExistsA(pEmployeeInfo->m_sHeadResourceFile.c_str())) {
 #endif
@@ -16608,12 +16774,13 @@ void CUserManagerApp::DeleteOldHeadFile(mycp::bigint nHeadResourceId)
 	// 不属于系统头像
 	CEBMemberInfo::pointer pTemoEmployeeInfo = GetEmployeeInfo2(nHeadResourceId);
 	if (pTemoEmployeeInfo.get()!=NULL) return;	// 其他成员头像
-	// 不是其他成员头像，删除该头像文件
-	char lpszHeadResourceFile[260];
-	sprintf(lpszHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),nHeadResourceId);
+    /// 不是其他成员头像，删除该头像文件
 #ifdef _QT_MAKE_
+    const EBFileString lpszHeadResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(nHeadResourceId);
 	if (!QFile::remove(lpszHeadResourceFile) && QFileInfo::exists(lpszHeadResourceFile)) {
 #else
+    char lpszHeadResourceFile[260];
+    sprintf(lpszHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),nHeadResourceId);
 	if (!DeleteFileA(lpszHeadResourceFile) && ::PathFileExistsA(lpszHeadResourceFile)) {
 #endif
 		m_pExit2DeleteFileList.push_back(lpszHeadResourceFile);
@@ -16680,12 +16847,12 @@ void CUserManagerApp::SaveLocalEmotionInfo(const CEBEmotionInfo::pointer& pEmoti
 	BoostReadLock rdLock(m_mutexEBDatas);
 	if (m_pEBDatas.get()!=NULL)
 	{
-		// 保存本地数据库
+        /// 保存本地数据库
 		tstring sDescription(pEmotionInfo->m_sDescription);
 		CSqliteCdbc::escape_string_in(sDescription);
 		char lpszBuffer[1024*2];
 #ifdef _QT_MAKE_
-		const std::string sDescriptionString(CEBParseSetting::str2utf8(sDescription.c_str(),"GBK"));
+        const std::string sDescriptionString(sDescription.string());
 #else
 		const std::string sDescriptionString(CEBParseSetting::str_convert(sDescription.c_str(),CP_ACP,CP_UTF8));
 #endif
@@ -17000,17 +17167,18 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 				SplitString(pMsgInfo->GetMsgContent(), "icon_cm_server=", ";", sIconCmServer);
 				if (!sIconCmServer.empty())
 				{
-					char sResourceFile[260];
-					sprintf(sResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),pSubscrieFuncInfo->m_nIconResId);
 #ifdef _QT_MAKE_
+                    const EBFileString sResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(pSubscrieFuncInfo->m_nIconResId);
                     if (QFileInfo::exists(sResourceFile))
 #else
+                    char sResourceFile[260];
+                    sprintf(sResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),pSubscrieFuncInfo->m_nIconResId);
                     if (::PathFileExistsA(sResourceFile))
 #endif
 					{
 						if (!sResMd5.empty())
 						{
-							// 检查文件MD5是否相同；
+                            /// 检查文件MD5是否相同；
 							mycp::bigint nFileSize = 0;
 							tstring sFileMd5String;
 							GetFileMd5(sResourceFile,nFileSize,sFileMd5String);
@@ -17031,7 +17199,11 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 							pSubscrieFuncInfo->m_sResFile = sResourceFile;
 						}
 					}
+#ifdef _QT_MAKE_
+                    if (pSubscrieFuncInfo->m_sResFile.isEmpty())
+#else
 					if (pSubscrieFuncInfo->m_sResFile.empty())
+#endif
 					{
 						//pEmotionInfo->m_sResFile = sResourceFile;	// 下载成功再保存
 						// 资源文件不存在（或MD5不正确），请求下载
@@ -17637,18 +17809,18 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 			pEmotionInfo->m_sDescription = sDescription;
 			pEmotionInfo->m_sCmServer = sCmServer;
 			//pEmotionInfo->m_sCmAppName = sCmAppName;
-			char sResourceFile[260];
-			sprintf(sResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
-			//const tstring sResourceFile = m_sEbResourcePath + "\\" + sResourceId;
 #ifdef _QT_MAKE_
+            const EBFileString sResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(sResourceId);
             if (QFileInfo::exists(sResourceFile))
 #else
+            char sResourceFile[260];
+            sprintf(sResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
             if (::PathFileExistsA(sResourceFile))
 #endif
 			{
 				if (!sResMd5.empty())
 				{
-					// 检查文件MD5是否相同；
+                    /// 检查文件MD5是否相同；
 					mycp::bigint nFileSize = 0;
 					tstring sFileMd5String;
 					GetFileMd5(sResourceFile,nFileSize,sFileMd5String);
@@ -17661,7 +17833,11 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 					pEmotionInfo->m_sResFile = sResourceFile;
 				}
 			}
-			if (pEmotionInfo->m_sResFile.empty())
+#ifdef _QT_MAKE_
+            if (pEmotionInfo->m_sResFile.isEmpty())
+#else
+            if (pEmotionInfo->m_sResFile.empty())
+#endif
 			{
 				//pEmotionInfo->m_sResFile = sResourceFile;	// 下载成功再保存
 				// 资源文件不存在（或MD5不对，下载不完整），下载
@@ -18371,10 +18547,11 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 			if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
 				pAccountInfo->SetQEventType((QEvent::Type)EB_WM_REQUEST_ADDCONTACT);
+                pAccountInfo->SetEventData((void*)(const EB_APMsgInfo*)&pApMsgInfo);
                 const unsigned long resultKey = (unsigned long)pAccountInfo;
                 pAccountInfo->setReceiver(this,resultKey);
                 QCoreApplication::postEvent( m_pHwnd, pAccountInfo, thePostEventPriority);
-                // 等待最长 60 秒
+                /// 等待最长 60 秒
                 waitEventResult(resultKey,60);
 #else
 				::SendMessage(m_pHwnd, EB_WM_REQUEST_ADDCONTACT, (WPARAM)pAccountInfo, (LPARAM)&pApMsgInfo);
@@ -18763,8 +18940,11 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 
 			// **记下删除标识，统计成员数量时，不会计算
 			//pEmployeeInfo->m_bDeleteFlag = true;
-			pDepartmentInfo->m_nEmpCount = max(0,(pDepartmentInfo->m_pMemberList.size()-1));
-			SetLocalGroupEmpCount(pDepartmentInfo->m_sGroupCode,pDepartmentInfo->m_nEmpCount);
+            pDepartmentInfo->m_nEmpCount = max(0,(pDepartmentInfo->m_pMemberList.size()-1));
+            if (pEmployeeInfo->IsFullOnineState() && pDepartmentInfo->m_nOnlineSize>0) {
+                pDepartmentInfo->m_nOnlineSize -= 1;
+            }
+            SetLocalGroupEmpCount(pDepartmentInfo->m_sGroupCode,pDepartmentInfo->m_nEmpCount);
 			if (pMsgInfo->GetMsgType()==EB_MSG_REMOVE_GROUP)
 			{
 				if (m_callback)
@@ -18783,8 +18963,8 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 					::SendMessage(m_pHwnd, EB_WM_REMOVE_GROUP, (WPARAM)(const EB_GroupInfo*)pDepartmentInfo.get(), (LPARAM)(const EB_MemberInfo*)pEmployeeInfo.get());
 #endif
 				}
-			}else
-			{
+            }
+            else {
 				if (m_callback)
 					m_callback->onExitGroup(pDepartmentInfo.get(),pEmployeeInfo.get());
 				if (m_pHwnd!=NULL) {
@@ -19123,13 +19303,29 @@ void CUserManagerApp::OnUMSMOnlineResponse(const CPOPSotpRequestInfo::pointer & 
 					pEmotionInfo->m_sDescription = sDescription;
 					pEmotionInfo->m_sCmServer = sCmServer;
 					//pEmotionInfo->m_sCmAppName = sCmAppName;
-					sprintf(lpszBuffer,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
-					//const tstring sResourceFile = m_sEbResourcePath + "\\" + sResourceId;
 #ifdef _QT_MAKE_
-                    if (QFileInfo::exists(lpszBuffer))
+                    const QString fileTemp = QString("%1/%2").arg(m_sEbResourcePath).arg(sResourceId);
+                    strcpy(lpszBuffer,fileTemp.toStdString().c_str());
+                    if (QFileInfo::exists(fileTemp)) {
+
+                        if (!sResMd5.empty()) {
+                            // 检查文件MD5是否相同；
+                            mycp::bigint nFileSize = 0;
+                            tstring sFileMd5String;
+                            GetFileMd5(lpszBuffer,nFileSize,sFileMd5String);
+                            if (sFileMd5String==sResMd5)
+                            {
+                                pEmotionInfo->m_sResFile = fileTemp;
+                            }
+                        }
+                        else {
+                            pEmotionInfo->m_sResFile = fileTemp;
+                        }
+                    }
 #else
+                    sprintf(lpszBuffer,"%s\\%lld",m_sEbResourcePath.c_str(),sResourceId);
+                    const tstring fileTemp = lpszBuffer;
                     if (::PathFileExistsA(lpszBuffer))
-#endif
 					{
 						if (!sResMd5.empty())
 						{
@@ -19146,7 +19342,13 @@ void CUserManagerApp::OnUMSMOnlineResponse(const CPOPSotpRequestInfo::pointer & 
 							pEmotionInfo->m_sResFile = lpszBuffer;
 						}
 					}
-					if (pEmotionInfo->m_sResFile.empty() && !theResourceChatRoom.exist(sResourceId))
+#endif
+
+#ifdef _QT_MAKE_
+                    if (pEmotionInfo->m_sResFile.isEmpty() && !theResourceChatRoom.exist(sResourceId))
+#else
+                    if (pEmotionInfo->m_sResFile.empty() && !theResourceChatRoom.exist(sResourceId))
+#endif
 					{
 						//pEmotionInfo->m_sResFile = sResourceFile;	// 下载成功再保存
 						// 资源文件不存在（或MD5不对，下载不完整），下载
@@ -19165,7 +19367,7 @@ void CUserManagerApp::OnUMSMOnlineResponse(const CPOPSotpRequestInfo::pointer & 
 						//sprintf(lpszKey,"%s%lld",sCmServer.c_str(),sResourceId);
 						theChatRoomList.insert(lpszKey,pChatRoom,false);
 						theResourceChatRoom.insert(sResourceId,pChatRoom);
-						CFilePathInfo::pointer pFilePathInfo = CFilePathInfo::create(CFilePathInfo::FILE_ENT_IMAGE,lpszBuffer,false);
+                        CFilePathInfo::pointer pFilePathInfo = CFilePathInfo::create(CFilePathInfo::FILE_ENT_IMAGE,fileTemp,false);
 						pFilePathInfo->m_nBigData = sEntCode;
 						theResourceFilePath.insert(sResourceId,pFilePathInfo);
 						//pChatRoom->EnterRoom(m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetACMKey("").c_str(),m_pMyAccountInfo->GetLogonType());
@@ -19173,7 +19375,7 @@ void CUserManagerApp::OnUMSMOnlineResponse(const CPOPSotpRequestInfo::pointer & 
 						CProcessMsgInfo::pointer pProcessMsgInfo = CProcessMsgInfo::create(CProcessMsgInfo::PROCESS_MSG_TYPE_RECEIVE_RESOURCE_FILE);
 						pProcessMsgInfo->m_pChatRoom = pChatRoom;
 						pProcessMsgInfo->m_nBigInt1 = sResourceId;
-						pProcessMsgInfo->m_sString1 = lpszBuffer;
+                        pProcessMsgInfo->m_sString1 = fileTemp;
 						//pProcessMsgInfo->m_sString1.append(".ebtemp");
 						m_pProcessMsgList.add(pProcessMsgInfo);
 						//Sleep(50);
@@ -19194,7 +19396,11 @@ void CUserManagerApp::OnUMSMOnlineResponse(const CPOPSotpRequestInfo::pointer & 
 		m_nOnlineExtData = nOnlineExtData;
         // write usersignid
 		char sTempFile[260];
-		sprintf(sTempFile,"%s\\ebc.temp",m_sAppDataTempPath.c_str());
+#ifdef _QT_MAKE_
+        sprintf(sTempFile,"%s/ebc.temp",m_sAppDataTempPath.toLocal8Bit().constData());
+#else
+        sprintf(sTempFile,"%s\\ebc.temp",m_sAppDataTempPath.c_str());
+#endif
 		char lpszBuffer[24];
 		sprintf(lpszBuffer,"%lld",nUserSignId);
 #ifdef WIN32
@@ -19343,7 +19549,7 @@ void CUserManagerApp::OnUMSHead(const CPOPSotpRequestInfo::pointer & pSotpReques
 {
 	if (pSotpRequestInfo.get() == NULL) return ;
 	const mycp::bigint sDepCode = pSotpRequestInfo->m_pRequestList.getParameterValue("dep-code",(mycp::bigint)0);
-	const tstring sFilePath(pSotpRequestInfo->m_pRequestList.getParameterValue("file-path"));
+    const EBFileString sFilePath(pSotpRequestInfo->m_pRequestList.getParameterValue("file-path"));
 	const int nResultValue = pSotpResponseInfo->GetResultValue();
 	const tstring sHeadCmServer(pSotpResponseInfo->m_pResponseList.getParameterValue("cm-server"));
 	//const tstring sHeadCmAppName = pSotpResponseInfo->m_pResponseList.getParameterValue("cm-appname");
@@ -19365,14 +19571,17 @@ void CUserManagerApp::OnUMSHead(const CPOPSotpRequestInfo::pointer & pSotpReques
 		}
 		DeleteOldHeadFile(pEmployeeInfo);
 
-		char lpszHeadResourceFile[260];
+#ifdef _QT_MAKE_
+        const QString lpszHeadResourceFile = QString("%1/%2").arg(m_sEbResourcePath).arg(sHeadResourceId);
+#else
+        char lpszHeadResourceFile[260];
 		sprintf(lpszHeadResourceFile,"%s\\%lld",m_sEbResourcePath.c_str(),sHeadResourceId);
-		//const tstring sHeadResourceFile = m_sEbResourcePath + "\\" + sHeadResourceId;
+#endif
 		pEmployeeInfo->m_sHeadResourceId = sHeadResourceId;
 
 		if (sHeadCmServer.empty())// || sHeadCmAppName.empty())
 		{
-			// 不需要上传头像
+            /// 不需要上传头像
 			if (m_pDefaultEntEmployeeInfo.get()!=NULL && m_pDefaultEntEmployeeInfo.get()!=pEmployeeInfo.get() &&
 				m_pDefaultEntEmployeeInfo->m_sMemberCode==pEmployeeInfo->m_sMemberCode && m_pDefaultEntEmployeeInfo->m_sHeadResourceId!=sHeadResourceId)
 			{
@@ -19413,7 +19622,11 @@ void CUserManagerApp::OnUMSHead(const CPOPSotpRequestInfo::pointer & pSotpReques
 			//pChatRoom->SetParam(sHeadResourceId);
 			pChatRoom->EnterRoom(m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetUserId(),
 				m_pMyAccountInfo->GetACMKey("").c_str(),m_pMyAccountInfo->GetLogonType());
+#ifdef _QT_MAKE_
+            pChatRoom->SendResource(sHeadResourceId,sFilePath,true);
+#else
 			pChatRoom->SendResource(sHeadResourceId,sFilePath.c_str(),true);
+#endif
 		}
 	}else
 	{
@@ -19449,7 +19662,7 @@ void CUserManagerApp::OnUMQuery(const CPOPSotpRequestInfo::pointer & pSotpReques
 		const mycp::bigint nSendCardToUid = pSotpRequestInfo->m_pRequestList.getParameterValue("send-usercard-to-uid",(mycp::bigint)0);
 		const bool bSendCardPrivate = pSotpRequestInfo->m_pRequestList.getParameterValue("send-usercard-private",false);
 #ifdef _QT_MAKE_
-		const std::string sUserECardString = CEBParseSetting::str2utf8(sFromInfo.c_str(),"GBK");
+        const std::string sUserECardString(sFromInfo.string());
 #else
 		const std::string sUserECardString = CEBParseSetting::str_convert(sFromInfo.c_str(),CP_ACP,CP_UTF8);
 #endif
@@ -19457,7 +19670,7 @@ void CUserManagerApp::OnUMQuery(const CPOPSotpRequestInfo::pointer & pSotpReques
 		pRichMsg.SetSubType(EB_RICH_SUB_TYPE_CARD_INFO);
 		const size_t nDataSize = sUserECardString.size();
 		char * pObjectData = new char[nDataSize+16];
-		const int n = sprintf(pObjectData,"%d,",1);			// 1=用户名片
+        const int n = sprintf(pObjectData,"%d,",1);			/// 1=用户名片
 		memcpy(pObjectData+n,sUserECardString.c_str(),nDataSize);
 		pRichMsg.AddObject(pObjectData,n+nDataSize);
 		SendCrRich(nSendCardCallId,&pRichMsg,nSendCardToUid,bSendCardPrivate);
@@ -19545,7 +19758,7 @@ void CUserManagerApp::OnResEditResponse(const CPOPSotpRequestInfo::pointer & pSo
 	const mycp::bigint sOldParentResId = pSotpRequestInfo->m_pRequestList.getParameterValue("old-parent-res-id",(mycp::bigint)0);
 	const mycp::bigint sNewParentResId = pSotpRequestInfo->m_pRequestList.getParameterValue("new-parent-res-id",(mycp::bigint)0);
 	
-	const tstring sFilePath(pSotpRequestInfo->m_pRequestList.getParameterValue("file-path"));
+    const EBFileString sFilePath(pSotpRequestInfo->m_pRequestList.getParameterValue("file-path"));
 	const mycp::bigint sParentResId = pSotpRequestInfo->m_pRequestList.getParameterValue("pr_id",(mycp::bigint)0);
 	const mycp::bigint nFromId = pSotpRequestInfo->m_pRequestList.getParameterValue("from-id",(mycp::bigint)0);
 	const EB_RESOURCE_FROM_TYPE nFromType = (EB_RESOURCE_FROM_TYPE)pSotpRequestInfo->m_pRequestList.getParameterValue("from-type",(int)EB_RESOURCE_FROM_TYPE_UNKNOWN);
@@ -19648,7 +19861,11 @@ void CUserManagerApp::OnResEditResponse(const CPOPSotpRequestInfo::pointer & pSo
 			theResourceFilePath.insert(sResId,CFilePathInfo::create(CFilePathInfo::FILE_PAHT_RESOURCE,sFilePath,false));
 			pChatRoom->SetCallBack(this);
 			pChatRoom->EnterRoom(m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetUserId(),m_pMyAccountInfo->GetACMKey("").c_str(),m_pMyAccountInfo->GetLogonType());
+#ifdef _QT_MAKE_
+            pChatRoom->SendResource(sResId,sFilePath,true);
+#else
 			pChatRoom->SendResource(sResId,sFilePath.c_str(),true);
+#endif
 		}
 	}
 }
@@ -19658,7 +19875,7 @@ void CUserManagerApp::ProcessSubResourceInfo(mycp::bigint sResId)
 	theTempResourceList.find(sResId, pSubInfos);
 	for (size_t i=0; i<pSubInfos.size(); i++)
 	{
-		// 找到下一级部门，需要处理
+        /// 找到下一级部门，需要处理
 		const CEBResourceInfo::pointer pResourceInfo = pSubInfos[i];
 		theResourceList.insert(pResourceInfo->m_sResId,pResourceInfo);
 		if (this->m_callback)
@@ -19680,7 +19897,7 @@ void CUserManagerApp::ProcessSubResourceInfo(mycp::bigint sResId)
 void CUserManagerApp::OnResInfo(const CPOPSotpRequestInfo::pointer & pReqeustInfo, const CPOPSotpResponseInfo::pointer & pSotpResponseInfo,const CPOPCUserManager* pUMOwner)
 {
 	const mycp::bigint nDownloadResourceId = pReqeustInfo.get()==NULL?0:pReqeustInfo->m_pRequestList.getParameterValue("download_resource_id",(mycp::bigint)0);
-	const tstring sDownloadSaveTo = pReqeustInfo.get()==NULL?"":pReqeustInfo->m_pRequestList.getParameterValue("download_save_to");
+    const EBFileString sDownloadSaveTo = pReqeustInfo.get()==NULL?"":pReqeustInfo->m_pRequestList.getParameterValue("download_save_to");
 
 	const int sResCount = pSotpResponseInfo->m_pResponseList.getParameterValue("r-count",(int)-1);
 	const int nResOffset = pSotpResponseInfo->m_pResponseList.getParameterValue("r-offset",(int)-1);
@@ -19803,14 +20020,21 @@ void CUserManagerApp::OnResInfo(const CPOPSotpRequestInfo::pointer & pReqeustInf
 		::SendMessage(m_pHwnd, EB_WM_RESOURCE_INFO, (WPARAM)(const EB_ResourceInfo*)pResourceInfo.get(), 0);
 #endif
 	}
-	// 处理前面未处理，下一级资源数据
-	if (pResourceInfo->m_nResType == EB_RESOURCE_DIR)
+    /// 处理前面未处理，下一级资源数据
+    if (pResourceInfo->m_nResType == EB_RESOURCE_DIR) {
 		ProcessSubResourceInfo(sResId);
+    }
 
+#ifdef _QT_MAKE_
+    if (nDownloadResourceId==sResId && !sDownloadSaveTo.isEmpty() && pSotpResponseInfo->GetResultValue()==EB_STATE_OK) {
+        DownloadFileRes(nDownloadResourceId,sDownloadSaveTo);
+    }
+#else
 	if (nDownloadResourceId==sResId && !sDownloadSaveTo.empty() && pSotpResponseInfo->GetResultValue()==EB_STATE_OK)
 	{
 		DownloadFileRes(nDownloadResourceId,sDownloadSaveTo);
 	}
+#endif
 }
 
 //#include <boost/shared_ptr.hpp>

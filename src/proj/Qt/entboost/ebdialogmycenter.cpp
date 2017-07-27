@@ -64,6 +64,15 @@ EbDialogMyCenter::EbDialogMyCenter(QWidget *parent) :
         connect( ui->pushButtonModifyPassword,SIGNAL(clicked()),this,SLOT(onClickedPushButtonModifyPassword()) );
     }
 
+    /// 默认名片
+    ui->pushButtonDefaultMember->setObjectName("RequestAddContact");
+    ui->pushButtonDefaultMember->setGeometry(20, height()-42, 60, 22);
+    connect( ui->pushButtonDefaultMember, SIGNAL(clicked()), this, SLOT(onClickedPushButtonDefaultMember()) );
+    eb::bigint nMyDefaultmemberCode = 0;
+    if (!theApp->m_ebum.EB_GetMyDefaultMemberCode(nMyDefaultmemberCode) || nMyDefaultmemberCode==0) {
+        ui->pushButtonDefaultMember->setVisible(false);
+    }
+
     /// 默认选择第一个
     onClickedPushButtonAccountInfo();
 
@@ -94,6 +103,9 @@ void EbDialogMyCenter::updateLocaleInfo()
     ui->pushButtonModifyPassword->setText(  theLocales.getLocalText("my-center-dialog.button-modify-password.text","Modify Password") );
     ui->pushButtonModifyPassword->setToolTip( theLocales.getLocalText("my-center-dialog.button-modify-password.tooltip","") );
 
+    /// 默认名片
+    ui->pushButtonDefaultMember->setText(  theLocales.getLocalText("my-center-dialog.button-default-member.text","Defalt Member") );
+    ui->pushButtonDefaultMember->setToolTip( theLocales.getLocalText("my-center-dialog.button-default-member.tooltip","") );
 
 }
 
@@ -150,6 +162,14 @@ void EbDialogMyCenter::udpateClickedPushButton(const QObject *sender)
     ui->pushButtonModifyPassword->setChecked( sender==ui->pushButtonModifyPassword?true:false );
     if (m_widgetModifyPassword!=0)
         m_widgetModifyPassword->setVisible( sender==ui->pushButtonModifyPassword?true:false );
+}
+
+void EbDialogMyCenter::onClickedPushButtonDefaultMember()
+{
+    EB_MemberInfo pMemberInfo;
+    if (theApp->m_ebum.EB_GetMyDefaultMemberInfo(&pMemberInfo)) {
+        theApp->editMemberInfo(&pMemberInfo);
+    }
 }
 
 void EbDialogMyCenter::accept()

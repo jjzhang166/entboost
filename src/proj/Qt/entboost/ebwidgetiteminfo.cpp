@@ -109,7 +109,7 @@ EbWidgetItemInfo::EbWidgetItemInfo(const EB_SubscribeFuncInfo *funcInfo, QListWi
     , m_listItem(hItem)
     , m_nIndex(0)
     , m_sEnterpriseCode(0),m_sGroupCode(0),m_sMemberCode(0)
-    , m_sGroupName(funcInfo->m_sResFile)
+    , m_sGroupName(funcInfo->m_sResFile.toStdString())
     , m_sName(funcInfo->m_sFunctionName)
     , m_sAccount(funcInfo->m_sFunctionName)
     , m_nUserId(0),m_nBigId(0)
@@ -336,7 +336,7 @@ int EbWidgetItemInfo::memberSubType(EB_GROUP_TYPE groupType, eb::bigint groupId,
 void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
 {
     const int nSubType = memberSubType(memberInfo);
-    const QString sImagePath = QString::fromStdString(memberInfo->m_sHeadResourceFile.string());
+    const QString sImagePath = memberInfo->m_sHeadResourceFile;
     const EB_USER_LINE_STATE pOutLineState = memberInfo->m_nLineState;
     const QString sHeadMd5 = QString::fromStdString(memberInfo->m_sHeadMd5.string());
     /// 在线状态图标
@@ -361,20 +361,21 @@ void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
     }
 
     /// 禁言图标
-    bool oldForbidSpeech = false;
+    bool updateForbidSpeech = false;
     QImage imageForbid;
     if ((memberInfo->m_nManagerLevel&EB_LEVEL_FORBID_SPEECH)==0) {
-        oldForbidSpeech = (this->m_nExtData&EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH)==0?false:true;
+        updateForbidSpeech = (this->m_nExtData&EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH)==0?false:true;
         this->m_nExtData &= ~EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
     }
     else {
+        updateForbidSpeech = (this->m_nExtData&EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH)==0?true:false;
         this->m_nExtData |= EbWidgetItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
         imageForbid = QImage(":/img/imgstateforbid.png");
     }
 
 //    const QVariant variantFileMd5 = this->m_hItem->data( 0,EB_WIDGET_ITEM_USER_ROLE_FILE_MD5 );
     if (!sImagePath.isEmpty() && QFile::exists(sImagePath)) {
-        if (oldForbidSpeech || memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
+        if (updateForbidSpeech || memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
                 !m_headMd5.isValid() || m_headMd5.toString()!= sHeadMd5) {
             m_headMd5 = QVariant(sHeadMd5);
 //            this->m_hItem->setData( 0,EB_WIDGET_ITEM_USER_ROLE_FILE_MD5,QVariant(sHeadMd5) );
@@ -401,7 +402,7 @@ void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
         }
     }
     else {
-        if (oldForbidSpeech || memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
+        if (updateForbidSpeech || memberInfo->m_nLineState!=(EB_USER_LINE_STATE)this->m_dwItemData ||
                 !m_headMd5.isValid() || !m_headMd5.toString().isEmpty()) {
             m_headMd5 = QVariant("");
 //            this->m_hItem->setData( 0,EB_WIDGET_ITEM_USER_ROLE_FILE_MD5,QVariant(QString()) );
@@ -456,7 +457,7 @@ void EbWidgetItemInfo::updateMemberInfo(const EB_MemberInfo *memberInfo)
 
 void EbWidgetItemInfo::updateContactInfo(const EB_ContactInfo *contactInfo)
 {
-    const QString sImagePath = QString::fromStdString(contactInfo->m_sHeadResourceFile.string());
+    const QString sImagePath = contactInfo->m_sHeadResourceFile;
     const EB_USER_LINE_STATE pOutLineState = contactInfo->m_nLineState;
     const QString sHeadMd5 = QString::fromStdString(contactInfo->m_sHeadMd5.string());
     /// 在线状态图标

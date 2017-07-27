@@ -156,7 +156,7 @@ void EbDialogRegister::onRegisterResponse(QEvent *e)
     case EB_STATE_NOT_AUTH_ERROR: {
         const std::string sAccount = m_sAccount.toStdString();
         if (libEbc::IsFullNumber(sAccount.c_str(),sAccount.size()) )
-            // 不支持全数字帐号注册：<br>请更换帐号后重试！
+            /// 不支持全数字帐号注册：<br>请更换帐号后重试！
             sMessageText = theLocales.getLocalText( "on-register-response.number-not-auth.text","EB_STATE_NOT_AUTH_ERROR" );
         else
             sMessageText = theLocales.getLocalText( "on-register-response.not-auth-error.text","EB_STATE_NOT_AUTH_ERROR" );
@@ -188,7 +188,7 @@ void EbDialogRegister::onRegisterResponse(QEvent *e)
         sprintf(lpszUserId,"%lld",m_nRegisterUserId);
         sMessageText.replace( "[USERID]", lpszUserId );
         EbMessageBox::doExec( NULL, this->windowTitle(), QChar::Null, sMessageText, EbMessageBox::IMAGE_INFORMATION,0,QMessageBox::Ok );
-        this->accept();
+        EbDialogBase::accept();
         return;
     }
     case EB_STATE_ACCOUNT_ALREADY_EXIST:

@@ -9,6 +9,9 @@
 #include "ebmessagebox.h"
 
 //const int const_listwidget_item_height = 24;
+#ifdef WIN32
+#define REG_RUN "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+#endif
 
 CLoginInfo::CLoginInfo()
     : m_bSafePwd(false)
@@ -170,24 +173,36 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         ui->checkBoxSavePwd->setGeometry( const_left_interval, y,const_checkbox_width, const_checkbox_height );
         ui->checkBoxAutoRun->setGeometry( const_dialog_login_size.width()-const_checkbox_width-const_left_interval, y,
                                           const_checkbox_width, const_checkbox_height);
+#ifdef WIN32
+        const QString application_name = QApplication::applicationName();
+        QSettings *settings = new QSettings(REG_RUN, QSettings::NativeFormat);
+        QString application_path = QApplication::applicationFilePath();
+        if (settings->value(application_name).toString()==application_path.replace("/", "\\")) {
+            ui->checkBoxAutoRun->setChecked(true);
+        }
+        delete settings;
+        connect( ui->checkBoxAutoRun,SIGNAL(clicked()),this,SLOT(onClickedCheckBoxAutoRun()) );
+#else
+        ui->checkBoxAutoRun->hide();
+#endif
 
-        // 错误文本
+        /// 错误文本
         const int const_error_text_height = 36;
         y += (const_checkbox_height+4);
         ui->labelErrorText->setWordWrap(true);
-        ui->labelErrorText->setGeometry( const_left_interval, y,const_dialog_login_size.width()-const_left_interval,const_error_text_height );
+        ui->labelErrorText->setGeometry( const_left_interval, y,const_dialog_login_size.width()-const_left_interval-2,const_error_text_height );
         ui->labelErrorText->setAlignment( Qt::AlignLeft|Qt::AlignTop);
         ui->labelErrorText->setStyleSheet("QLabel{background-color:rgb(0,0,0,0); color: rgb(255,0,64);}");
         setErrorText( "",false );
 //        setErrorText("错误日志测试<br>错误日志测试第二行");
 
-        // 登录按钮
+        /// 登录按钮
         y += (const_error_text_height+4);
         ui->pushButtonLogon->setObjectName( "OkButton" );
         ui->pushButtonLogon->setDefault(true);
         ui->pushButtonLogon->setGeometry( const_left_interval, y,const_edit_width, 32 );
 
-        // 下面四按钮
+        /// 下面四按钮
         ui->pushButtonVisitorLogon->setObjectName("BorderButton");
         ui->pushButtonRegister->setObjectName("BorderButton");
         ui->pushButtonForgetPwd->setObjectName("BorderButton");
@@ -229,7 +244,7 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
 
 //    }
 
-    connect( ui->pushButtonSetting,SIGNAL(clicked()),this,SLOT(onClickPushButtonSetting()) );
+    connect( ui->pushButtonSetting,SIGNAL(clicked()),this,SLOT(onClickedPushButtonSetting()) );
     connect( ui->pushButtonLogon,SIGNAL(clicked()),this,SLOT(onClickPushButtonLogon()) );
 
     ui->lineEditAccount->installEventFilter(this);
@@ -659,13 +674,19 @@ void EbDialogLogin::onAppIdError(QEvent * e)
     const QString sStateCode = QString::number( (int)stateCode );
     switch (stateCode) {
     case EB_STATE_NOT_SUPPORT_VERSION_ERROR:
-        // 系统不支持当前版本，请更新客户端后重试！
+        /// 系统不支持当前版本，请更新客户端后重试！
         setErrorText( theLocales.getLocalText("on-appid-response.not-support-version.text","EB_STATE_NOT_SUPPORT_VERSION_ERROR"),true );
         break;
+    case EB_STATE_TIMEOUT_ERROR: {
+        QString text = theLocales.getLocalText("on-appid-response.timeout-error.text","Timeout error");
+        text.replace( "[STATE_CODE]", sStateCode );
+        setErrorText( text,false );
+        break;
+    }
 //    case EB_STATE_APPID_KEY_ERROR:
 //        break;
     default:
-        // 系统APPID验证失败，请退出程序后重新进入！<br>错误代码:[STATE_CODE]
+        /// 系统APPID验证失败，请退出程序后重新进入！<br>错误代码:[STATE_CODE]
         QString text = theLocales.getLocalText("on-appid-response.other-error.text","APPID Error");
         text.replace( "[STATE_CODE]", sStateCode );
         setErrorText( text,false );
@@ -674,7 +695,7 @@ void EbDialogLogin::onAppIdError(QEvent * e)
         }
         const QString title = theLocales.getLocalText("on-appid-response.other-error.title","");
         m_inMessageBox = true;
-        EbMessageBox::doExec( 0,title, QChar::Null, text, EbMessageBox::IMAGE_WARNING,0,true );
+        EbMessageBox::doExec(0,title, QChar::Null, text, EbMessageBox::IMAGE_WARNING, 0, QMessageBox::Ok );
         m_inMessageBox = false;
         break;
     }   // switch
@@ -702,7 +723,8 @@ void EbDialogLogin::onLogonSuccess(QEvent *e)
                 mycp::tstring sLocalHostOAuthKey;
                 entboost::GetLocalHostOAuthKey(sLocalHostOAuthKey);
                 sprintf(sSql, "insert into user_login_record_t(account,account_r,password,safepwd,linestate,user_id,phone) VALUES('%s','%s','%s',1,%d,%lld,%lld)",
-                        sAccount.c_str(),pAccountInfo->GetAccount().c_str(),sLocalHostOAuthKey.c_str(),m_nOutLineState,pAccountInfo->GetUserId(),pAccountInfo->GetPhone());
+                        sAccount.c_str(),pAccountInfo->GetAccount().c_str(),sLocalHostOAuthKey.c_str(),m_nOutLineState,
+                        pAccountInfo->GetUserId(),pAccountInfo->GetPhone());
             }
         }
         else {
@@ -796,14 +818,8 @@ void EbDialogLogin::onOnlineAnother(QEvent *e)
 
 }
 
-//#include "dialogframelist.h"
-void EbDialogLogin::onClickPushButtonSetting(void)
+void EbDialogLogin::onClickedPushButtonSetting(void)
 {
-    /// for test
-//    DialogFrameList dlg;
-//    dlg.exec();
-//    return;
-
     createMenuData();
     // ** set menu checked and uncheck
     int nFindColorIndex = 0;
@@ -938,6 +954,22 @@ void EbDialogLogin::onClickPushButtonLogon(void)
         setErrorText( theLocales.getLocalText("message-show.account-format-error","Account Format Error"),true );
     }
 }
+#ifdef WIN32
+void EbDialogLogin::onClickedCheckBoxAutoRun()
+{
+#define REG_RUN "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+    const QString application_name = QApplication::applicationName();
+    QSettings *settings = new QSettings(REG_RUN, QSettings::NativeFormat);
+    if(ui->checkBoxAutoRun->isChecked()) {
+        QString application_path = QApplication::applicationFilePath();
+        settings->setValue(application_name, application_path.replace("/", "\\"));
+    }
+    else {
+        settings->remove(application_name);
+    }
+    delete settings;
+}
+#endif
 
 void EbDialogLogin::onTextChangedEditAccount(const QString& sEditAccountText)
 {
@@ -1178,11 +1210,12 @@ void EbDialogLogin::onClickPushButtonRegister(void)
         EbMessageBox::doShow( NULL, title, QChar::Null, text, EbMessageBox::IMAGE_WARNING,default_warning_auto_close );
         return;
     }
-    EbDialogRegister pDialogRegister;
-    if (pDialogRegister.exec()==QDialog::Accepted && pDialogRegister.registerUserId()>0) {
-        char lpszUserId[24];
-        sprintf( lpszUserId, "%lld", pDialogRegister.registerUserId() );
-        ui->lineEditAccount->setText(lpszUserId);
+    EbDialogRegister dlg;
+    if (dlg.exec()==QDialog::Accepted && dlg.registerUserId()>0) {
+        ui->lineEditAccount->setText(dlg.account());
+//        char lpszUserId[24];
+//        sprintf( lpszUserId, "%lld", dlg.registerUserId() );
+//        ui->lineEditAccount->setText(lpszUserId);
         ui->lineEditPassword->setFocus();
     }
 }
@@ -1195,25 +1228,13 @@ void EbDialogLogin::onClickPushButtonForgetPwd(void)
     }
 }
 
-//#include "dialogmessagetip.h"
-//#include "dialogframelist.h"
-//#include "dialogmemberinfo.h"
-//#include "dialogchangehead.h"
-//#include "dialogemotionselect.h"
-//#include "dialogmycenter.h"
-//#include "dialoggroupinfo.h"  /// 编译有问题
-
+//#include "ebdialogpoptip.h"
 void EbDialogLogin::onClickPushButtonConnectSetting(void)
 {
     /// for test
-//    DialogGroupInfo dlg;
-//    DialogMyCenter dlg;
-//    DialogEmotionSelect dlg;
-//    DialogChangeHead dlg;
-//    DialogMemberInfo dlg;
-//    DialogMessageTip dlg;
-//    DialogFrameList dlg;
-//    dlg.exec();
+//    EbDialogPopTip * dlg = EbDialogPopTip::create(EbDialogPopTip::AuthMessage);
+//    dlg->setPopTipMessage(theLocales.getLocalText("pop-tip-dialog.request-add-to-group","Request add to group"));
+//    dlg->show();
 //    return;
 
     EbDialogConnectSetting pDialogConnectSetting;
@@ -1223,6 +1244,7 @@ void EbDialogLogin::onClickPushButtonConnectSetting(void)
         const QString text = theLocales.getLocalText("message-box.change-server.text","需要重新加载验证流程才能生效：<br>确定立即加载吗？");
         const int ret = EbMessageBox::doExec( 0,title, QChar(0xf0ec), text, EbMessageBox::IMAGE_QUESTION );
         if (ret==QDialog::Accepted) {
+            setErrorText("",false);
             theApp->exitApp(true);
             theApp->initApp();
             theApp->setDevAppId(this);

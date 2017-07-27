@@ -107,8 +107,8 @@ bool EbWidgetAppBar::loadFuncInfo()
         const EB_SubscribeFuncInfo & pSubscribeFuncInfo = m_pSubscribeFuncList[i];
         EbAppButtonItem::pointer existAppButtonItem = subscribeButtonItem( pSubscribeFuncInfo.m_nSubscribeId );
         if ( existAppButtonItem.get()!=0 ) {
-            if ( QFile::exists(pSubscribeFuncInfo.m_sResFile.c_str()) ) {
-                existAppButtonItem->updateIcon( pSubscribeFuncInfo.m_sResFile.c_str() );
+            if ( QFile::exists(pSubscribeFuncInfo.m_sResFile) ) {
+                existAppButtonItem->updateIcon(pSubscribeFuncInfo.m_sResFile);
             }
             continue;
         }

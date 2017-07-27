@@ -14,6 +14,7 @@ public:
 
     void exitChat(bool bHangup);
     void onUserExit(eb::bigint userId, bool exitDep);
+//    void lineStateChange(eb::bigint userId, EB_USER_LINE_STATE lineState);
     void setCallInfo(const EbcCallInfo::pointer &callInfo);
     void onMsgReceipt(const CCrRichInfo *crMsgInfo,int ackType);
     void onSendingFile(const CCrFileInfo *fileInfo);

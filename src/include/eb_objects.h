@@ -33,6 +33,10 @@ using namespace mycp;
 #include "ebmm.h"
 #endif
 
+#ifdef _QT_MAKE_
+#include <QFile>
+#endif
+
 #define USES_DELETE_FILE_LIST_T
 
 namespace entboost {
@@ -63,7 +67,7 @@ public:
 	int m_nFileOffset;
 	int m_nFileSize;
 	int m_nUnZipSize;
-	tstring m_sFileName;
+        EBFileString m_sFileName;
 	tstring m_sFileExt;
 #ifdef USES_DELETE_FILE_LIST_T
 	EB_RESOURCE_TYPE m_nResourceType;
@@ -2575,8 +2579,15 @@ public:
 		m_pChatInfo.reset();
 		m_pFromAccount.reset();
 		//printf("*** ~CChatMsgInfo() m_sRemoveFileName=%s\n",m_sRemoveFileName.c_str());
-		if (!m_sRemoveFileName.empty())
-			remove(m_sRemoveFileName.c_str());
+#ifdef _QT_MAKE_
+                if (!m_sRemoveFileName.isEmpty()) {
+                    QFile::remove(m_sRemoveFileName);
+                }
+#else
+                if (!m_sRemoveFileName.empty()) {
+                    remove(m_sRemoveFileName.c_str());
+                }
+#endif
 	}
 	const CChatMsgInfo& operator = (const CChatMsgInfo& p) {return this->operator = (&p);}
 	const CChatMsgInfo& operator = (const CChatMsgInfo::pointer& p) {return this->operator = (p.get());}
@@ -2635,16 +2646,28 @@ public:
 			m_nrichmsgsize = p->m_nrichmsgsize;
 			m_nprovsize = p->m_nprovsize;
 			m_bSave2File = p->m_bSave2File;
-			if (!m_sFileName.empty() && p->m_pFileHandle!=NULL)
-			{
-				m_pFileHandle = fopen(m_sFileName.c_str(), "rb");	// ? "w+b"
-			}
+#ifdef _QT_MAKE_
+                        if (!m_sFileName.isEmpty() && p->m_pFileHandle!=0) {
+                            m_pFileHandle = fopen(m_sFileName.toLocal8Bit().constData(), "rb");	// ? "w+b"
+                        }
+#else
+                        if (!m_sFileName.empty() && p->m_pFileHandle!=0) {
+                            m_pFileHandle = fopen(m_sFileName.c_str(), "rb");	// ? "w+b"
+                        }
+#endif
 			m_FileUnZipSize = p->m_FileUnZipSize;
+#ifdef _QT_MAKE_
+                        if (!p->m_sRemoveFileName.isEmpty()) {
+                            m_sRemoveFileName = p->m_sRemoveFileName;
+                            const_cast<CChatMsgInfo*>(p)->m_sRemoveFileName.clear();
+                        }
+#else
 			if (!p->m_sRemoveFileName.empty())
 			{
 				m_sRemoveFileName = p->m_sRemoveFileName;
 				const_cast<CChatMsgInfo*>(p)->m_sRemoveFileName.clear();
 			}
+#endif
 			if (p->m_nFileDataSize>0 && p->m_pFileData!=NULL)
 			{
 				m_nFileDataSize = p->m_nFileDataSize;
@@ -2717,7 +2740,7 @@ public:
 
 	boost::mutex	m_mutexMsg;
 	boost::mutex	m_mutexFile;
-	tstring			m_sFileName;
+        EBFileString		m_sFileName;
 	tstring			m_sExt;
 	tstring			m_sPushStringTitle;
 	tstring			m_sPushStringDesc;
@@ -2727,7 +2750,7 @@ public:
 	bool			m_bSave2File;
 	FILE *			m_pFileHandle;			// for bitmap/file
 	mycp::bigint		m_FileUnZipSize;
-	tstring					m_sRemoveFileName;
+        EBFileString		m_sRemoveFileName;
 	int				m_nFileDataSize;
 	unsigned char* m_pFileData;
 	int				m_nFileOffset;		// for USES_NEW_RESOURCE_INFO
@@ -4102,6 +4125,7 @@ public:
 	int m_nMaxBCMsgSaveDays;					// 默认30天
 	int m_nEBServerVersion;					// 服务端版本号 如 544=1.25.0.544
 	tstring m_sDefaultUrl;				// 默认打开网址URL 
+	int m_systemBandwidth;				// 系统带宽，默认10MB
 
 	// *** 以下属于业务配置数据
 	tstring m_sAttendStartDate;			// 考勤开始时期，格式:YYYY-mm-dd 默认空未开始
@@ -4154,6 +4178,7 @@ public:
 		, m_nECardInfoFlag(ECARD_INFO_FLAG_DEFAULT_OPEN)
 		, m_nMaxBCMsgSaveDays(30)
 		, m_nEBServerVersion(544), m_sDefaultUrl("http://www.entboost.com")
+		, m_systemBandwidth(10)
 
 	{
 		// ** default

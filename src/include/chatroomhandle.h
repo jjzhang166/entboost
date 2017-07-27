@@ -329,7 +329,7 @@ public:
 	CEBString m_sResCmServer;
 	CEBString m_sResCmAppName;
 	cr::bigint m_nMsgId;
-	CEBString m_sFileName;
+    EBFileString m_sFileName;
 	cr::bigint m_nFileSize;
 	//bool m_bIsMsgSender;
 	CEBString m_sFileTime;	// null is current time

@@ -19,14 +19,14 @@ namespace libEbc
 {
 long GetFileSize(const char* lpszFile)
 {
-#ifdef _QT_MAKE_
-    QFile file(lpszFile);
-    if ( !file.open(QFile::ReadOnly) ) {
-        return -1;
-    }
-    const long result = (long)file.size();
-    file.close();
-#else
+//#ifdef _QT_MAKE_
+//    QFile file(lpszFile);
+//    if ( !file.open(QFile::ReadOnly) ) {
+//        return -1;
+//    }
+//    const long result = (long)file.size();
+//    file.close();
+//#else
     long result = 0;
 	FILE * f = fopen(lpszFile, "rb");
 	if (f != NULL)
@@ -40,9 +40,22 @@ long GetFileSize(const char* lpszFile)
 #endif
 		fclose(f);
 	}
-#endif
+//#endif
     return result;
 }
+#ifdef _QT_MAKE_
+
+qint64 GetFileSize(const QString &lpszFile)
+{
+    QFile file(lpszFile);
+    if ( !file.open(QFile::ReadOnly) ) {
+        return -1;
+    }
+    const qint64 result = file.size();
+    file.close();
+    return result;
+}
+#endif
 
 tstring GetFileName(const tstring & sPathName)
 {
@@ -57,28 +70,28 @@ tstring GetFileName(const tstring & sPathName)
 const unsigned int theOneMB = 1024*1024;
 bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFileMd5)
 {
-#ifdef _QT_MAKE_
-    QFile file(sFilePath);
-    if ( !file.open(QFile::ReadOnly) ) {
-        return false;
-    }
-    pOutFileSize = file.size();
-    file.seek(0);
-    entboost::MD5 md5;
-    const unsigned int nPackSize = (unsigned int)(pOutFileSize>theOneMB?theOneMB:pOutFileSize);
-    char * lpszBuffer = new char[nPackSize+1];
-    while (true) {
-        const size_t nReadSize = file.read(lpszBuffer,nPackSize);
-        if (nReadSize==0) {
-            break;
-        }
-        md5.update((const unsigned char*)lpszBuffer, nReadSize);
-    }
-    file.close();
-    md5.finalize();
-    pOutFileMd5 = md5.hex_digest();
-    delete[] lpszBuffer;
-#else
+//#ifdef _QT_MAKE_
+//    QFile file(sFilePath);
+//    if ( !file.open(QFile::ReadOnly) ) {
+//        return false;
+//    }
+//    pOutFileSize = file.size();
+//    file.seek(0);
+//    entboost::MD5 md5;
+//    const unsigned int nPackSize = (unsigned int)(pOutFileSize>theOneMB?theOneMB:pOutFileSize);
+//    char * lpszBuffer = new char[nPackSize+1];
+//    while (true) {
+//        const size_t nReadSize = file.read(lpszBuffer,nPackSize);
+//        if (nReadSize==0) {
+//            break;
+//        }
+//        md5.update((const unsigned char*)lpszBuffer, nReadSize);
+//    }
+//    file.close();
+//    md5.finalize();
+//    pOutFileMd5 = md5.hex_digest();
+//    delete[] lpszBuffer;
+//#else
 	FILE * f = fopen(sFilePath, "rb");
 	if (f == NULL)
 	{
@@ -108,9 +121,36 @@ bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFi
 	md5.finalize();
 	pOutFileMd5 = md5.hex_digest();
 	delete[] lpszBuffer;
-#endif
+//#endif
 	return true;
 }
+#ifdef _QT_MAKE_
+bool GetFileMd5(const QString &sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFileMd5)
+{
+    QFile file(sFilePath);
+    if ( !file.open(QFile::ReadOnly) ) {
+        return false;
+    }
+    pOutFileSize = file.size();
+    file.seek(0);
+    entboost::MD5 md5;
+    const unsigned int nPackSize = (unsigned int)(pOutFileSize>theOneMB?theOneMB:pOutFileSize);
+    char * lpszBuffer = new char[nPackSize+1];
+    while (true) {
+        const size_t nReadSize = file.read(lpszBuffer,nPackSize);
+        if (nReadSize==0) {
+            break;
+        }
+        md5.update((const unsigned char*)lpszBuffer, nReadSize);
+    }
+    file.close();
+    md5.finalize();
+    pOutFileMd5 = md5.hex_digest();
+    delete[] lpszBuffer;
+    return true;
+}
+#endif
+
 void GetFileExt(const tstring & sFileName, tstring & sOutName, tstring & sOutExt)
 {
     const int find = sFileName.rfind(".");
@@ -686,19 +726,26 @@ typedef struct eb_pcmwaveformat_tag {
     unsigned short	wBitsPerSample;
 } EB_PCMWAVEFORMAT;
 
+#ifdef _QT_MAKE_
+int GetWaveTimeLength(const QString &lpszWavFilePath)
+{
+    return GetWaveTimeLength(lpszWavFilePath.toLocal8Bit().constData());
+}
+#endif
 int GetWaveTimeLength(const char* lpszWavFilePath)
 {
-#ifdef _QT_MAKE_
-    const QString fileTemp(lpszWavFilePath);
-    const QByteArray byteArray = fileTemp.toLocal8Bit();
-    FILE * f = fopen(byteArray.constData(),"rb");
-#else
+//#ifdef _QT_MAKE_
+//    const QString fileTemp(lpszWavFilePath);
+//    const QByteArray byteArray = fileTemp.toLocal8Bit();
+//    FILE * f = fopen(byteArray.constData(),"rb");
+//#else
 	FILE * f = fopen(lpszWavFilePath,"rb");
-#endif
-	if (f==NULL)
+//#endif
+    if (f==0) {
 		return -1;
+    }
 
-	char style[4];//定义一个四字节的数据，用来存放文件的类型；
+    char style[4]; ///定义一个四字节的数据，用来存放文件的类型；
 	fseek(f,8,SEEK_SET);
 	fread(style,1,4,f);
 	if(style[0]!='W'||style[1]!='A'||style[2]!='V'||style[3]!='E')//判断该文件是否为"WAVE"文件格式
@@ -707,28 +754,31 @@ int GetWaveTimeLength(const char* lpszWavFilePath)
 		return -2;
 	}
 
-	// WAV格式文件所占容量（KB) = （取样频率 X 量化位数 X 声道） X 时间 / 8 (字节= 8bit) ，每一分钟WAV格式的音频文件的大小为10MB，其大小不随音量大小及清晰度的变化而变化。
+    /// WAV格式文件所占容量（KB) = （取样频率 X 量化位数 X 声道） X 时间 / 8 (字节= 8bit) ，
+    /// 每一分钟WAV格式的音频文件的大小为10MB，其大小不随音量大小及清晰度的变化而变化。
 
-	EB_PCMWAVEFORMAT format; //定义PCMWAVEFORMAT结构对象，用来判断WAVE文件格式；
+    EB_PCMWAVEFORMAT format; /// 定义PCMWAVEFORMAT结构对象，用来判断WAVE文件格式；
 	fseek(f,20,SEEK_SET);
-	fread((char*)&format,1,sizeof(EB_PCMWAVEFORMAT),f);//获取该结构的数据；
+    fread((char*)&format,1,sizeof(EB_PCMWAVEFORMAT),f); ///获取该结构的数据；
 	if (format.wf.nAvgBytesPerSec==0)
 	{
 		fclose(f);
 		return -3;
 	}
 
-	// 获取WAVE文件 data 数据标识
+    /// 获取WAVE文件 data 数据标识
 	fseek(f,36,SEEK_SET);
 	fread(style,1,4,f);
-	if(style[0]!='d'||style[1]!='a'||style[2]!='t'||style[3]!='a')	//判断是否标准data文件，如果是使用44字节文件头，否则使用46字节文件头
+    ///判断是否标准data文件，如果是使用44字节文件头，否则使用46字节文件头
+    if(style[0]!='d'||style[1]!='a'||style[2]!='t'||style[3]!='a') {
 		fseek(f,42,SEEK_SET);
+    }
 	//fseek(f,40,SEEK_SET);
 	////获取WAVE文件的声音数据的大小；
 	unsigned long size = 0;
 	fread((char*)&size,1,4,f);
 
-	//计算文件时长
+    /// 计算文件时长
 	const int timeLength = size/format.wf.nAvgBytesPerSec;
 	fclose(f);
 	return timeLength;
@@ -819,5 +869,7 @@ tstring GetHostIp(const char * lpszHostName,const char* lpszDefault)
 #endif
     return lpszDefault;
 }
+
+
 
 };

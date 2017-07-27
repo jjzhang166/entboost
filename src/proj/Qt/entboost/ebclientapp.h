@@ -125,8 +125,8 @@ public:
     eb::bigint deployId(void) const {return m_nDeployId;}
     int licenseType(void) const {return m_nLicenstType;}
     int ebServerVersion(void) const {return m_nEBServerVersion;}
-    eb::bigint groupMsgSugId(void);
-    eb::bigint findAppSugId(void);
+    eb::bigint groupMsgSubId(void);
+    eb::bigint findAppSubId(void);
     eb::bigint autoOpenSubId(void) const {return m_nAutoOpenSubId;}
     eb::bigint myCollectionSugId(void);
     bool isAutoHideMainFrame(void) const {return m_bAutoHideMainFrame;}
@@ -155,7 +155,7 @@ public:
     const QRect& screenRect(void) const {return m_screenRect;}
 
     EbDialogEmotionSelect* showDialogEmotionSelect(const QPoint& pt,QObject* receiver=0);
-    EbDialogViewECard * dialgoViewECard(const QRect & rectValid,bool showImmediate=false);
+    EbDialogViewECard * dialgoViewECard(const QWidget * wdigetValid, const QRect & rectValid,bool showImmediate=false);
 
     bool isLogoned(void) const {return m_ebum.EB_IsLogoned();}
     bool isLogonVisitor(void) const {return m_ebum.EB_IsLogonVisitor();}
@@ -170,13 +170,13 @@ public:
     void deleteDbRecord(eb::bigint sMsgId);
     void updateMsgReceiptData(eb::bigint nMsgId, eb::bigint nFromUserId, int nAckType);
     QImage userHeadImage(eb::bigint userId,eb::bigint memberId,const tstring& account) const;
-    tstring userHeadFilePath(eb::bigint userId,eb::bigint memberId,const tstring& account) const;
+    QString userHeadFilePath(eb::bigint userId,eb::bigint memberId,const tstring& account) const;
     QImage funcImage(const EB_SubscribeFuncInfo * funcInfo) const;
     QImage memberHeadImage(const EB_MemberInfo * memberInfo) const;
     QImage contactHeadImage(const EB_ContactInfo * contactInfo) const;
-    tstring contactHeadFilePath(const EB_ContactInfo * contactInfo) const;
-    QImage fromHeadImage(const tstring &imagePath, EB_USER_LINE_STATE lineState) const;
-    tstring memberHeadFilePath(const EB_MemberInfo * memberInfo) const;
+    QString contactHeadFilePath(const EB_ContactInfo * contactInfo) const;
+    QImage fromHeadImage(const QString &imagePath, EB_USER_LINE_STATE lineState) const;
+    QString memberHeadFilePath(const EB_MemberInfo * memberInfo) const;
 //    tstring groupTypeHeadFilePath(EB_GROUP_TYPE groupType) const;
     QImage groupHeadImage(eb::bigint groupId, EB_GROUP_TYPE groupType) const;
 protected:

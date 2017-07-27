@@ -172,11 +172,16 @@ void EbWebEngineView::onDownloadRequested(QWebEngineDownloadItem * download)
     /// memeType	"application/x-mimearchive"	QString
 //    const QString memeType = download->mimeType();
 //    const QWebEngineDownloadItem::DownloadType downloadType = download->type();
+//    if (m_downloads.exist(download->id())) {
+//        download->accept();
+//        return;
+//    }
     const QString path = download->path();
     const QString fileExt = libEbc::fileExt(path);
 //    const QString caption = theLocales.getLocalText("change-head-dialog.saveas-file-dialog.caption","Save As");
 //    const QString filterImageFile = theLocales.getLocalText("change-head-dialog.open-file-dialog.filter","Image Files");
-    const QString newPath = QFileDialog::getSaveFileName(this, "", path);
+    /// Optios=0 会提示文件存在 ConfirmOverwrite
+    const QString newPath = QFileDialog::getSaveFileName(this, QString(), path, QString(), 0, 0);
     if (newPath.isEmpty()) {
         download->cancel();
     }
@@ -199,6 +204,7 @@ void EbWebEngineView::onDownloadRequested(QWebEngineDownloadItem * download)
         connect( download,SIGNAL(downloadProgress(qint64,qint64)),pDownloadItem.get(),SLOT(onDownloadProgress(qint64,qint64)) );
         /// 下载完成通知
         connect( pDownloadItem.get(),SIGNAL(downloadFinished(const EbWebEngineDownloadItem*)),this,SLOT(onDownloadFinished(const EbWebEngineDownloadItem*)) );
+//        QFile::remove(newPath);
         download->accept();
     }
 }

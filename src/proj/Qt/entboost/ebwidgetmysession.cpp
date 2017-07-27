@@ -125,31 +125,52 @@ void EbWidgetMySession::insertCallRecord(const EbCallRecordInfo::pointer &pCallR
     if (pCallRecordInfo->m_sMemberCode==-1 && pCallRecordInfo->m_nFromType>0) {
         /// 验证消息
         itemInfo = EbWidgetItemInfo::create(EbWidgetItemInfo::ITEM_TYPE_SUBMSG,-1);;
-        fromImage = QImage("/img/defaultcontact.png");
-//        switch (pCallRecordInfo->m_nFromType)
-//        {
-//        case EBC_MSG_TYPE_BC_MSG:				// 广播消息
-//            sItemText.Format(_T("广播消息\n%s"),pCallRecordInfo->m_sGroupName.c_str());
-//            break;
-//        case EBC_MSG_TYPE_REQUEST_JOIN_2_GROUP:		// 请求加入群组
-//            sItemText.Format(_T("验证消息\n%s申请加入群组%lld"),pCallRecordInfo->m_sFromAccount.c_str(),pCallRecordInfo->m_sGroupCode);
-//            break;
-//        case EBC_MSG_TYPE_INVITE_JOIN_2_GROUP:	// 邀请加入群组
-//            sItemText.Format(_T("验证消息\n%s邀请加入群组%lld"),pCallRecordInfo->m_sFromAccount.c_str(),pCallRecordInfo->m_sGroupCode);
-//            break;
-//        case EBC_MSG_TYPE_REQUEST_ADD_CONTACT:
-//            sItemText.Format(_T("验证消息\n%s邀请加为好友"),pCallRecordInfo->m_sFromAccount.c_str());
-//            break;
-//        //case EBC_MSG_TYPE_ACCERPT_ADD_CONTACT:
-//        //	sItemText.Format(_T("通知消息\n%s成功加为好友"),pCallRecordInfo->m_sFromAccount.c_str());
-//        //	break;
-//        case EBC_MSG_TYPE_REJECT_ADD_CONTACT:
-//            sItemText.Format(_T("通知消息\n%s拒绝加为好友"),pCallRecordInfo->m_sFromAccount.c_str());
-//            break;
-//        default:
-//            sItemText.Format(_T("验证消息\n帐号：%s 群组：%lld"),pCallRecordInfo->m_sFromAccount.c_str(),pCallRecordInfo->m_sGroupCode);
-//            break;
-//        }
+        itemInfo->m_nSubType = pCallRecordInfo->m_nFromType;
+        fromImage = QImage(":/img/defaultcontact.png");
+        switch (pCallRecordInfo->m_nFromType) {
+        case EBC_MSG_TYPE_BC_MSG: {
+            /// 广播消息\n%s
+            sItemText = theLocales.getLocalText("pop-tip-dialog.type-bc-message", "Broadcast Message");
+            sItemText.replace("[MESSAGE_TITLE]", pCallRecordInfo->m_sGroupName.c_str());
+            break;
+        }
+        case EBC_MSG_TYPE_REQUEST_JOIN_2_GROUP: {
+            /// 验证消息\n%s申请加入群组%lld
+            sItemText = theLocales.getLocalText("pop-tip-dialog.type-request-join-to-group", "Request join to group");
+            sItemText.replace("[USER_ACCOUNT]", pCallRecordInfo->m_sFromAccount.c_str());
+            sItemText.replace("[GROUP_ID]", QString::number(pCallRecordInfo->m_sGroupCode));
+            break;
+        }
+        case EBC_MSG_TYPE_INVITE_JOIN_2_GROUP: {
+            /// 验证消息\n%s邀请加入群组%lld
+            sItemText = theLocales.getLocalText("pop-tip-dialog.type-invite-join-to-group", "Invite join to group");
+            sItemText.replace("[USER_ACCOUNT]", pCallRecordInfo->m_sFromAccount.c_str());
+            sItemText.replace("[GROUP_ID]", QString::number(pCallRecordInfo->m_sGroupCode));
+            break;
+        }
+        case EBC_MSG_TYPE_REQUEST_ADD_CONTACT: {
+            /// 验证消息\n%s申请加为好友
+            sItemText = theLocales.getLocalText("pop-tip-dialog.type-request-add-contact", "Request add contact");
+            sItemText.replace("[USER_ACCOUNT]", pCallRecordInfo->m_sFromAccount.c_str());
+            break;
+        }
+        //case EBC_MSG_TYPE_ACCERPT_ADD_CONTACT:
+        //	sItemText.Format(_T("通知消息\n%s成功加为好友"),pCallRecordInfo->m_sFromAccount.c_str());
+        //	break;
+        case EBC_MSG_TYPE_REJECT_ADD_CONTACT: {
+            /// 通知消息\n%s拒绝加为好友
+            sItemText = theLocales.getLocalText("pop-tip-dialog.type-reject-add-contact", "Reject add contact");
+            sItemText.replace("[USER_ACCOUNT]", pCallRecordInfo->m_sFromAccount.c_str());
+            break;
+        }
+        default: {
+            /// 验证消息\n帐号：%s 群组：%lld
+            sItemText = theLocales.getLocalText("pop-tip-dialog.type-group-message", "Group message");
+            sItemText.replace("[USER_ACCOUNT]", pCallRecordInfo->m_sFromAccount.c_str());
+            sItemText.replace("[GROUP_ID]", QString::number(pCallRecordInfo->m_sGroupCode));
+            break;
+        }
+        }
     }
     else if (pCallRecordInfo->isGroupCall()) {
         sItemText = QString("%1 [%2]").arg(pCallRecordInfo->m_sGroupName.c_str()).arg(sCallTime);
@@ -174,6 +195,7 @@ void EbWidgetMySession::insertCallRecord(const EbCallRecordInfo::pointer &pCallR
                 break;
             }
         }
+
         /// 默认讨论组
         if (fromImage.isNull()) {
             fromImage = QImage(":/img/imgdefaulttempgroup.png");
@@ -183,6 +205,10 @@ void EbWidgetMySession::insertCallRecord(const EbCallRecordInfo::pointer &pCallR
              const QImage imageForbid = QImage(":/img/imgstateforbid.png");
              fromImage = libEbc::imageAdd(fromImage,imageForbid,fromImage.width()-imageForbid.width(),fromImage.height()-imageForbid.height());
         }
+//        if (!theApp->m_ebum.EB_IsMyGroup(pCallRecordInfo->groupId())) {
+//            /// 不属于本人群组，群组可能已经被删除
+//            fromImage = libEbc::imageToGray(fromImage);
+//        }
     }
     else {
         sItemText = QString("%1 [%2]").arg(pCallRecordInfo->m_sFromName.c_str()).arg(sCallTime);
@@ -306,7 +332,7 @@ void EbWidgetMySession::onItemEntered(QListWidgetItem *item)
     /// 处理显示电子名片 浮动条
     const QPoint pointIconRight = this->mapToGlobal(rectItem.topLeft());
     const QRect rectIconGlobal( pointIconRight.x()-buttonSize,pointIconRight.y(),buttonSize*2,buttonSize );
-    theApp->dialgoViewECard(rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
+    theApp->dialgoViewECard(this, rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
 
     if (ebitem->m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_SUBMSG) {
         /// 通知消息
@@ -318,9 +344,15 @@ void EbWidgetMySession::onItemEntered(QListWidgetItem *item)
         /// 群组会话
         m_buttonDelete->setVisible(false);
         m_buttonAddContact->setVisible(false);
-        m_buttonCall->setGeometry( rectItem.right()-buttonSize,y+1,buttonSize,buttonSize );
-        m_buttonCall->setProperty("track-item",QVariant((quint64)item));
-        m_buttonCall->setVisible(true);
+        if (theApp->m_ebum.EB_IsMyGroup(ebitem->m_itemInfo->m_sGroupCode)) {
+            m_buttonCall->setGeometry( rectItem.right()-buttonSize,y+1,buttonSize,buttonSize );
+            m_buttonCall->setProperty("track-item",QVariant((quint64)item));
+            m_buttonCall->setVisible(true);
+        }
+        else {
+            /// 群组可能已经被删除，不存在
+            m_buttonCall->setVisible(false);
+        }
     }
     else {
         /// 用户会话

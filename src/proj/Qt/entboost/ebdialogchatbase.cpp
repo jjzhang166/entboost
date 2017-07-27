@@ -67,18 +67,25 @@ EbDialogChatBase::EbDialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget
     x = 5;
     y += 22;
     const QSize const_chat_base_button_size(36,26);
-    switch (m_nGroupType)
-    {
-    case EB_GROUP_TYPE_GROUP:
-    case EB_GROUP_TYPE_TEMP: {
+    bool showAddUserButton = this->isGroupChat()?false:true;
+    if (this->isGroupChat()) {
+        switch (m_nGroupType)
+        {
+        case EB_GROUP_TYPE_GROUP:
+        case EB_GROUP_TYPE_TEMP:
+            showAddUserButton = true;
+            break;
+        default:
+            break;
+        }
+    }
+    if (showAddUserButton) {
         ui->pushButtonAddUser->setGeometry( x,y,const_chat_base_button_size.width(),const_chat_base_button_size.height() );
         connect( ui->pushButtonAddUser,SIGNAL(clicked()),this,SLOT(onClickedButtonAddUser()) );
         x += const_chat_base_button_size.width();
-        break;
     }
-    default:
+    else {
         ui->pushButtonAddUser->setVisible(false);
-        break;
     }
     ui->pushButtonSendFile->setGeometry( x,y,const_chat_base_button_size.width(),const_chat_base_button_size.height() );
     connect( ui->pushButtonSendFile,SIGNAL(clicked()),this,SLOT(onClickedButtonSendFile()) );
@@ -109,11 +116,7 @@ EbDialogChatBase::EbDialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget
     ui->widgetLine->setObjectName("LineWidget");
 
     /// 聊天记录
-    m_textBrowserMessage = new EbTextBrowser(m_callInfo,this);
-    m_textBrowserMessage->setStyleSheet("border: none;");
-    m_textBrowserMessage->setReadOnly(true);
-    /// ** 屏蔽打开链接（打开会刷新整个界面白屏），由程序内部处理
-    m_textBrowserMessage->setOpenLinks(false);
+    m_textBrowserMessage = EbTextBrowser::create(m_callInfo,this);
     m_textBrowserMessage->loadHistoryMsg(20);
     m_widgetChatInput = new EbWidgetChatInput(m_callInfo,this);
     connect( m_widgetChatInput,SIGNAL(clickedClose()),this,SLOT(onClickedInputClose()) );
@@ -307,13 +310,11 @@ void EbDialogChatBase::onUserLineStateChange(eb::bigint nGroupCode, eb::bigint n
         m_nFromLineState = bLineState;
     }
     else if (nGroupCode>0 && groupId()==nGroupCode) {
-        /// 更新群组成员
-//        if (m_pDlgChatRight.get()!=NULL)
-//        {
-//            m_pDlgChatRight->LineStateChange(nUserId, bLineState);
+        /// 更新群组成员，放在 onMemberInfo 处理
+//        if (m_widgetChatRight!=0) {
+//            m_widgetChatRight->lineStateChange(nUserId, bLineState);
 //        }
     }
-
 }
 
 void EbDialogChatBase::onMemberInfo(const EB_MemberInfo *memberInfo, bool bChangeLineState)
@@ -344,9 +345,9 @@ bool EbDialogChatBase::onMemberHeadChange(const EB_MemberInfo *pMemberInfo)
     if (m_callInfo->m_pFromAccountInfo.GetUserId()!=pMemberInfo->m_nMemberUserId) return false;
     if (m_imageMd5==pMemberInfo->m_sHeadMd5) return false;
 
-    if ( QFileInfo::exists(pMemberInfo->m_sHeadResourceFile.c_str()) ) {
+    if ( QFileInfo::exists(pMemberInfo->m_sHeadResourceFile) ) {
         m_imageMd5 = pMemberInfo->m_sHeadMd5;
-        m_fromImage = QImage( pMemberInfo->m_sHeadResourceFile.c_str() );
+        m_fromImage = QImage( pMemberInfo->m_sHeadResourceFile );
         return true;
     }
     return false;
@@ -358,9 +359,9 @@ bool EbDialogChatBase::onContactHeadChange(const EB_ContactInfo *pContactInfo)
     if (m_callInfo->m_pFromAccountInfo.GetUserId()!=pContactInfo->m_nContactUserId) return false;
     if (m_imageMd5==pContactInfo->m_sHeadMd5) return false;
 
-    if ( QFileInfo::exists(pContactInfo->m_sHeadResourceFile.c_str()) ) {
+    if ( QFileInfo::exists(pContactInfo->m_sHeadResourceFile) ) {
         m_imageMd5 = pContactInfo->m_sHeadMd5;
-        m_fromImage = QImage( pContactInfo->m_sHeadResourceFile.c_str() );
+        m_fromImage = QImage( pContactInfo->m_sHeadResourceFile );
         return true;
     }
     return false;
@@ -508,7 +509,7 @@ void EbDialogChatBase::onSendingFile(const CCrFileInfo *pCrFileInfo)
                 else
                     theApp->m_ebum.EB_GetMemberNameByUserId(m_callInfo->groupId(),theApp->logonUserId(),sInFromName);
                 theApp->m_sqliteUser->escape_string_in(sInFromName);
-                tstring sInFileName(pCrFileInfo->m_sFileName);
+                tstring sInFileName(pCrFileInfo->m_sFileName.toStdString());
                 theApp->m_sqliteUser->escape_string_in(sInFileName);
                 const eb::bigint sSaveDbToAccount = m_callInfo->groupId()==0?m_callInfo->fromUserId():pCrFileInfo->m_sSendTo;
                 char sSql[1024];
@@ -520,7 +521,7 @@ void EbDialogChatBase::onSendingFile(const CCrFileInfo *pCrFileInfo)
             }
         }
 
-        const tstring sFileName = libEbc::GetFileName(pCrFileInfo->m_sFileName);
+        const tstring sFileName = libEbc::GetFileName(pCrFileInfo->m_sFileName.toStdString());
         /// 发送文件：%s
         const QString sWindowText = QString("%1: %2").arg(theLocales.getLocalText("chat-msg-text.send-file","Send File")).arg(sFileName.c_str());
         m_textBrowserMessage->addLineString(pCrFileInfo->m_nMsgId,sWindowText);
@@ -548,7 +549,7 @@ bool EbDialogChatBase::onSentFile(const CCrFileInfo *fileInfo)
                         tstring sInMemberName;
                         theApp->m_ebum.EB_GetMemberNameByUserId(m_callInfo->groupId(),fileInfo->m_sSendFrom,sInMemberName);
                         theApp->m_sqliteUser->escape_string_in(sInMemberName);
-                        const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName);
+                        const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName.toStdString());
                         tstring sInFileName(sFileName);
                         theApp->m_sqliteUser->escape_string_in(sInFileName);
                         sprintf( sSql, "INSERT INTO msg_record_t(msg_id,dep_code,from_uid,from_name,to_uid,private,msg_type,msg_name,msg_text,read_flag) "
@@ -559,7 +560,7 @@ bool EbDialogChatBase::onSentFile(const CCrFileInfo *fileInfo)
                     else {
                         tstring sInFromName(theApp->m_ebum.EB_GetUserName());
                         theApp->m_sqliteUser->escape_string_in(sInFromName);
-                        tstring sInFileName(fileInfo->m_sFileName);
+                        tstring sInFileName(fileInfo->m_sFileName.toStdString());
                         theApp->m_sqliteUser->escape_string_in(sInFileName);
                         const eb::bigint sSaveDbToAccount = m_callInfo->fromUserId();
                         //const eb::bigint sSaveDbToAccount = m_callInfo->m_pCallInfo.m_sGroupCode==0?m_callInfo->m_pFromAccountInfo.GetUserId():pCrFileInfo->m_sSendTo;
@@ -570,7 +571,11 @@ bool EbDialogChatBase::onSentFile(const CCrFileInfo *fileInfo)
                     }
                 }
                 else {
-                    sprintf( sSql, "UPDATE msg_record_t SET read_flag=read_flag|%d WHERE msg_id=%lld AND (read_flag&%d)=0",EBC_READ_FLAG_SENT,fileInfo->m_nMsgId,EBC_READ_FLAG_SENT);
+                    int nReadFlag = EBC_READ_FLAG_SENT;
+                    if (!fileInfo->m_bOffFile) {
+                        nReadFlag |= EBC_READ_FLAG_RECEIPT;
+                    }
+                    sprintf( sSql, "UPDATE msg_record_t SET read_flag=read_flag|%d WHERE msg_id=%lld AND (read_flag&%d)=0",nReadFlag,fileInfo->m_nMsgId,nReadFlag);
                 }
                 theApp->m_sqliteUser->execute(sSql);
             }
@@ -597,7 +602,7 @@ void EbDialogChatBase::onCancelFile(const CCrFileInfo *fileInfo, bool bChangeP2P
             sprintf( sSql, "DELETE FROM msg_record_t WHERE msg_id=%lld",fileInfo->m_nMsgId);
             theApp->m_sqliteUser->execute(sSql);
         }
-        const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName);
+        const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName.toStdString());
         QString sWindowText;
         if (bChangeP2PSending) {
             /// 对方在线，使用P2P点对点发送:
@@ -626,7 +631,7 @@ void EbDialogChatBase::onReceivingFile(const CCrFileInfo *fileInfo, QString *sOu
 {
     const bool bOffLineUser = m_callInfo->m_bOffLineUser;
     const eb::bigint sSendFrom = fileInfo->m_sSendFrom;
-    const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName);
+    const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName.toStdString());
     QString sWindowText;
     if (this->m_callInfo->isGroupCall() && fileInfo->m_sResId>0) {
         m_textBrowserMessage->addFileMsg( true,fileInfo );
@@ -699,7 +704,7 @@ void EbDialogChatBase::onReceivedFile(const CCrFileInfo *fileInfo)
             theApp->m_ebum.EB_GetMemberNameByUserId(m_callInfo->groupId(),fileInfo->m_sSendFrom,fromName);
         }
         theApp->m_sqliteUser->escape_string_in(fromName);
-        tstring sInFileName(fileInfo->m_sFileName);
+        tstring sInFileName(fileInfo->m_sFileName.toStdString());
         theApp->m_sqliteUser->escape_string_in(sInFileName);
         char sSql[1024];
         sprintf( sSql, "INSERT INTO msg_record_t(msg_id,dep_code,from_uid,from_name,to_uid,private,msg_type,msg_text) "
@@ -724,7 +729,7 @@ void EbDialogChatBase::onFilePercent(const CChatRoomFilePercent *pChatRoomFilePe
 void EbDialogChatBase::onSave2Cloud(const CCrFileInfo *fileInfo)
 {
     const EB_STATE_CODE nState = (EB_STATE_CODE)fileInfo->GetStateCode();
-    const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName);
+    const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName.toStdString());
     QString sWindowText;
     if (nState==EB_STATE_OK) {
         /// 成功存入个人云盘！
@@ -829,10 +834,24 @@ void EbDialogChatBase::onClickedButtonAddUser()
 
 void EbDialogChatBase::onClickedButtonSendFile()
 {
+    if (m_callInfo->isGroupCall() && theApp->isDisableGroupShareCloud()) {
+        /// 禁用群共享：\r\n请使用一对一聊天窗口发送文件！
+        const QString text = theLocales.getLocalText("message-show.disable-group-share-tip","Disable group share error");
+        EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_WARNING, default_warning_auto_close );
+        return;
+    }
+    else if (m_widgetChatInput->isForbidSpeech()) {
+        /// 禁言限制中：\r\n不能发送群文件！
+        const QString text = theLocales.getLocalText("message-show.forbid-send-file-tip","Forbid speech error");
+        EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_WARNING, default_warning_auto_close );
+        return;
+    }
+
     const QStringList paths = QFileDialog::getOpenFileNames(this);
+//    const QStringList paths = QFileDialog::getOpenFileNames(this, QString(), QString(), QString(), 0, QFileDialog::DontResolveSymlinks);
     for (int i=0; i<paths.size(); i++) {
-        const QString & filePath = paths.at(i);
-        theApp->m_ebum.EB_SendFile( this->m_callInfo->callId(),filePath.toStdString().c_str() );
+        const QString &filePath = paths.at(i);
+        m_widgetChatInput->sendFile(filePath, false);
     }
 }
 
@@ -1234,9 +1253,9 @@ void EbDialogChatBase::updateFromInfo()
                 m_sFullName = QString("%1(%2)").arg(m_sFromName).arg(pMemberInfo.m_nMemberUserId);
                 m_nFromLineState = pMemberInfo.m_nLineState;
                 m_sFromDescription = pMemberInfo.m_sDescription.c_str();
-                if ( QFileInfo::exists(pMemberInfo.m_sHeadResourceFile.c_str()) ) {
+                if ( QFileInfo::exists(pMemberInfo.m_sHeadResourceFile) ) {
                     m_imageMd5 = pMemberInfo.m_sHeadMd5;
-                    m_fromImage = QImage(pMemberInfo.m_sHeadResourceFile.c_str());
+                    m_fromImage = QImage(pMemberInfo.m_sHeadResourceFile);
                  }
             }
             else if (m_callInfo->m_bOffLineUser) {
@@ -1255,9 +1274,9 @@ void EbDialogChatBase::updateFromInfo()
     }
 
     if (m_fromImage.isNull()) {
-        if (QFileInfo::exists(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sHeadResourceFile.c_str())) {
+        if (QFileInfo::exists(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sHeadResourceFile)) {
             m_imageMd5 = m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sHeadMd5;
-            m_fromImage = QImage(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sHeadResourceFile.c_str());
+            m_fromImage = QImage(m_callInfo->m_pFromAccountInfo.m_pFromCardInfo.m_sHeadResourceFile);
         }
         else {
             m_fromImage = QImage(":/img/defaultmember.png");

@@ -100,12 +100,11 @@ bool CEBParseSetting::load(const char* filename)
 //    qDebug() << "CEBParseSetting::load() : " << filename;
 //#endif
 
-	// 用户配置服务器地址
+    /// 用户配置服务器地址
 #ifdef _QT_MAKE_
 	const QString pApplicationDirPath = QCoreApplication::applicationDirPath();
-    std::string sEBCSetting = pApplicationDirPath.toStdString();
-	sEBCSetting.append("\\datas\\ebc.ini");
-	if (QFileInfo::exists(sEBCSetting.c_str()))
+    const QString sEBCSettingTemp = pApplicationDirPath+"/datas/ebc.ini";
+    if (QFileInfo::exists(sEBCSettingTemp))
 #else
 	char str[MAX_PATH];
     GetModuleFileNameA( NULL, str, MAX_PATH);
@@ -115,6 +114,9 @@ bool CEBParseSetting::load(const char* filename)
     if (::PathFileExistsA(sEBCSetting.c_str()))
 #endif
 	{
+#ifdef _QT_MAKE_
+        const std::string sEBCSetting = sEBCSettingTemp.toLocal8Bit().toStdString();
+#endif
         char lpszBuffer[1024];
 		memset(lpszBuffer,0,sizeof(lpszBuffer));
 #ifdef WIN32

@@ -50,7 +50,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm148"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib\libCoder;.\"
+				AdditionalIncludeDirectories="..\lib\libCoder;.\;../libpopusermanager"
 				PreprocessorDefinitions="CGC_SMART_STRING_USES_BSTR;WIN32;_WINDOWS;_DEBUG;_CRTDBG_MAP_ALLOC;USES_LIBCEF"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -227,7 +227,7 @@
 				AdditionalOptions="-Zm148"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\lib\libCoder;.\"
+				AdditionalIncludeDirectories="..\lib\libCoder;.\;../libpopusermanager"
 				PreprocessorDefinitions="CGC_SMART_STRING_USES_BSTR;WIN32;_WINDOWS;NDEBUG;USES_LIBCEF"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -409,7 +409,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm140"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib\libCoder;.\"
+				AdditionalIncludeDirectories="..\lib\libCoder;.\;../libpopusermanager"
 				PreprocessorDefinitions="EBSTRING_USES_BSTR;USES_EBCOM_TEST;WIN32;_WINDOWS;_DEBUG;_CRTDBG_MAP_ALLOC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -583,7 +583,7 @@
 				AdditionalOptions="-Zm131"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\lib\libCoder;.\"
+				AdditionalIncludeDirectories="..\lib\libCoder;.\;../libpopusermanager"
 				PreprocessorDefinitions="EBSTRING_USES_BSTR;USES_EBCOM_TEST;WIN32;_WINDOWS;NDEBUG"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
@@ -765,7 +765,7 @@
 				AdditionalOptions="-Zm127"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\lib\libCoder;.\"
+				AdditionalIncludeDirectories="..\lib\libCoder;.\;../libpopusermanager"
 				PreprocessorDefinitions="EBSTRING_USES_BSTR;WIN32;_WINDOWS;NDEBUG"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -947,7 +947,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm133"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\lib\libCoder;.\"
+				AdditionalIncludeDirectories="..\lib\libCoder;.\;../libpopusermanager"
 				PreprocessorDefinitions="EBSTRING_USES_BSTR;WIN32;_WINDOWS;_DEBUG;_CRTDBG_MAP_ALLOC"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -1123,7 +1123,7 @@
 				AdditionalOptions="-Zm127"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\lib\libCoder;.\"
+				AdditionalIncludeDirectories="..\lib\libCoder;.\;../libpopusermanager"
 				PreprocessorDefinitions="EBSTRING_USES_BSTR;WIN32;_WINDOWS;NDEBUG"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -1470,6 +1470,62 @@
 			<File
 				RelativePath="..\include\ebc_public.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="EBCOM_Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="EBCOM_Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseX64|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DEBUG_S|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="RELEASE_s|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\EbDialogBase.cpp"
@@ -2117,6 +2173,10 @@
 			</File>
 			<File
 				RelativePath=".\res\skin\btnmainfunc.png"
+				>
+			</File>
+			<File
+				RelativePath=".\res\skin\btnmainfunc_uistyle1.png"
 				>
 			</File>
 			<File

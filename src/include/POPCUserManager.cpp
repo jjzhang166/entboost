@@ -96,7 +96,11 @@ int CPOPCUserManager::Start(const CCgcAddress & address, const tstring & sAppNam
 
 	m_bKilled = false;
 	boost::thread_attributes attrs;
-	attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#ifdef _QT_MAKE_
+    attrs.set_stack_size(CGC_THREAD_STACK_MAX);
+#else
+    attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#endif
 	if (bBuildResponseThread)
 	{
 		if (m_pResponseThread.get() == NULL)

@@ -8,7 +8,9 @@ const QSize const_button_size(55,19);
 EbDialogViewECard::EbDialogViewECard(QWidget *parent) :
     EbDialogBase(parent),
     ui(new Ui::EbDialogViewECard)
+  , m_widgetValid(0)
   , m_timerIdCheck2Show(0)
+//  , m_checkShowCount(0)
   , m_timerIdCheck2Hide(0)
   , m_viewType(VIEW_UNKNOWE)
 {
@@ -164,8 +166,9 @@ void EbDialogViewECard::setContactInfo2(eb::bigint userId)
     }
 }
 
-void EbDialogViewECard::setMouseEnter(const QRect &rectValid, bool showImmediate)
+void EbDialogViewECard::setMouseEnter(const QWidget * widgetValid, const QRect &rectValid, bool showImmediate)
 {
+    m_widgetValid = widgetValid;
     m_rectValid = rectValid;
     if (m_timerIdCheck2Hide!=0) {
         this->killTimer(m_timerIdCheck2Hide);
@@ -174,6 +177,7 @@ void EbDialogViewECard::setMouseEnter(const QRect &rectValid, bool showImmediate
     if (m_timerIdCheck2Show!=0) {
         this->killTimer(m_timerIdCheck2Show);
     }
+//    m_checkShowCount = 0;
     if (showImmediate)
         m_timerIdCheck2Show = this->startTimer(1);
     else
@@ -186,6 +190,7 @@ void EbDialogViewECard::hideReset()
         this->killTimer(m_timerIdCheck2Hide);
         m_timerIdCheck2Hide = 0;
     }
+//    m_checkShowCount = 0;
     if (m_timerIdCheck2Show!=0) {
         this->killTimer(m_timerIdCheck2Show);
         m_timerIdCheck2Show = 0;
@@ -286,7 +291,19 @@ void EbDialogViewECard::timerEvent(QTimerEvent *event)
     if ( m_timerIdCheck2Show!=0 && m_timerIdCheck2Show==event->timerId() ) {
         const QPoint pos = cursor().pos();
         const QRect & rectClient = this->geometry();
-        if ( rectClient.contains(pos) || this->m_rectValid.contains(pos) ) {
+        if (m_widgetValid!=0) {
+            const QPoint posWidgetValid = m_widgetValid->mapToGlobal(QPoint(0,0));
+            const QRect rectWidgetValid(posWidgetValid, m_widgetValid->size());
+            if (!rectWidgetValid.contains(pos)) {
+                /// 鼠标不在当前有效窗口，不需要继续显示
+                this->killTimer(m_timerIdCheck2Show);
+                m_timerIdCheck2Show = 0;
+                this->hide();
+                return;
+            }
+        }
+
+        if (this->isVisible() || rectClient.contains(pos) || this->m_rectValid.contains(pos) ) {
             this->killTimer(m_timerIdCheck2Show);
             m_timerIdCheck2Show = 0;
             this->show();
@@ -296,6 +313,17 @@ void EbDialogViewECard::timerEvent(QTimerEvent *event)
             }
             m_timerIdCheck2Hide = this->startTimer(2000);
         }
+        else if (m_widgetValid!=0 && !m_widgetValid->isVisible()) {
+            /// 窗口已经隐藏，不需要继续显示
+            this->killTimer(m_timerIdCheck2Show);
+            m_timerIdCheck2Show = 0;
+            return;
+        }
+//        else if ((++m_checkShowCount)>=3) {
+//            /// 3*1.5=4.5秒左右
+//            this->killTimer(m_timerIdCheck2Show);
+//            m_timerIdCheck2Show = 0;
+//        }
     }
     else if ( m_timerIdCheck2Hide!=0 && m_timerIdCheck2Hide==event->timerId() ) {
         const QRect& rect = this->geometry();
@@ -393,7 +421,7 @@ void EbDialogViewECard::updateMemberInfo()
     else {
         ui->labelType->setVisible(false);
     }
-    const QString imageFilePath = theApp->memberHeadFilePath(&m_memberInfo).c_str();
+    const QString imageFilePath = theApp->memberHeadFilePath(&m_memberInfo);
     ui->labelImage->setPixmap( QPixmap(imageFilePath).scaled(const_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     QString text = QString("<font color=#ffffff ><b>%1<b> (%2)</font>")
             .arg(m_memberInfo.m_sUserName.c_str())
@@ -456,7 +484,7 @@ void EbDialogViewECard::updateContactInfo()
     else {
         ui->labelType->setVisible(false);
     }
-    const QString imageFilePath = theApp->contactHeadFilePath(&m_contactInfo).c_str();
+    const QString imageFilePath = theApp->contactHeadFilePath(&m_contactInfo);
     ui->labelImage->setPixmap( QPixmap(imageFilePath).scaled(const_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     QString text;
     if (m_contactInfo.m_nContactUserId>0) {

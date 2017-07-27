@@ -18,6 +18,7 @@ public:
     void onEnterUser(eb::bigint userId, bool sort);
     void onExitUser(eb::bigint userId, bool exitDep);
     int onMemberInfo(const EB_MemberInfo *memberInfo, bool changeLineState);
+//    void lineStateChange(eb::bigint userId, EB_USER_LINE_STATE lineState);
 signals:
     void memberOnlineSizeChange(int memberSize, int onlineSize);
 public slots:

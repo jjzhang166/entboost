@@ -81,6 +81,7 @@
   	
   	"add-contact": { "text": "添加联系人", "tooltip": "" },
   	"edit-contact": { "text": "查看资料", "tooltip": "" },
+  	"move-contact-to": { "text": "移动至", "tooltip": "" },
   	"delete-contact": { "text": "删除联系人", "tooltip": "" },
   	"add-contact-group": { "text": "添加分组", "tooltip": "" },
   	"rename-contact-group": { "text": "修改分组", "tooltip": "" },
@@ -266,7 +267,8 @@
   },
   "on-appid-response": {
   	"not-support-version" : {"title": "", "text": "系统不支持当前版本：<br>请更新客户端后重试！"},
-  	"other-error": { "title": "验证APPID", "text": "系统APPID验证失败，请退出程序后重新进入！<br>错误代码: [STATE_CODE]" }
+  	"timeout-error": { "title": "验证APPID", "text": "服务器连接超时，请退出程序后重新进入，或检查修改连接服务器地址后重试！<br>错误代码: [STATE_CODE]" },
+  	"other-error": { "title": "验证APPID", "text": "系统APPID验证失败，请退出程序后重新进入，或检查修改连接服务器地址后重试！<br>错误代码: [STATE_CODE]" }
 
   },
   "on-group-edit-response": {
@@ -286,7 +288,7 @@
   },
   "on-register-response": {
   	"ok-send-mail" : {"title": "", "text": "注册成功：<br>请及时查阅邮件，完成帐号验证！"},
-  	"ok-login" : {"title": "", "text": "注册成功：\r\n请使用 [USERID] 或 [ACCOUNT] 登录！"},
+  	"ok-login" : {"title": "", "text": "注册成功：\r\n请使用 \"[ACCOUNT]\" 或 \"[USERID]\" 登录！"},
   	"not-auth-error": {"title": "", "text": "没有权限：<br>请重试或联系公司客服！"},
   	"number-not-auth" : {"title": "", "text": "不支持全数字帐号注册：<br>请更换帐号后重试！"},
   	"content-big-length" : {"title": "", "text": "字段内容超过最大长度：<br>请重新输入！"},
@@ -366,7 +368,8 @@
     	"label-current-password": { "text": "当前密码：" },
     	"label-new-password": { "text": "新密码：" },
     	"label-confirm-password": { "text": "确认密码：" }
-    }
+    },
+    "button-default-member": { "text": "默认名片", "tooltip": "显示默认名片信息" }
   },
   "select-user-dialog": {
     "title": "选择用户",
@@ -395,6 +398,22 @@
       "tooltip": "格式：IP:PORT（域名:PORT）；例如：192.168.10.100:18012",
       "bg-text": "留空默认连接公有云环境！"
     }
+  },
+  "pop-tip-dialog": {
+  	"0": { "title": "验证消息", "button": {"text": "我的消息", "tooltip": "点击进入我的消息" } },
+  	"1": { "title": "通知消息", "button": {"text": "我的消息", "tooltip": "点击进入我的消息" } },
+  	"2": { "title": "广播消息", "button": {"text": "我的消息", "tooltip": "点击进入我的消息" } },
+  	"type-bc-message": "广播消息\n[MESSAGE_TITLE]",
+  	"type-request-join-to-group": "验证消息：\n[USER_ACCOUNT]申请加入群组[GROUP_ID]",
+  	"type-invite-join-to-group": "验证消息：\n[USER_ACCOUNT]邀请加入群组[GROUP_ID]",
+  	"type-group-message": "验证消息：\n帐号\"[USER_ACCOUNT]\" 群组\"[GROUP_ID]\"",
+  	"type-request-add-contact": "验证消息：\n[USER_ACCOUNT]申请加为好友",
+  	"type-rejest-add-contact": "通知消息：\n[USER_ACCOUNT]拒绝加为好友",
+  	"request-add-to-group": "<font color=\"#6c6c6c\">用户：[USER_ACCOUNT]<br>申请加入群组：[GROUP_ID]<br>附加消息：[DESCRIPTION]</font>",
+  	"invite-add-to-group": "<font color=\"#6c6c6c\">用户：[USER_ACCOUNT]<br>邀请你加入群组：[GROUP_NAME]<br>附加消息：[DESCRIPTION]</font>",
+  	"request-add-contact": "<font color=\"#6c6c6c\">用户：[USER_ACCOUNT]<br>申请加为好友<br>附加消息：[DESCRIPTION]</font>",
+  	"reject-add-contact": "<font color=\"#6c6c6c\">用户：[USER_ACCOUNT]<br>拒绝加为好友<br>附加消息：[DESCRIPTION]</font>",
+  	"accept-add-contact": "<font color=\"#6c6c6c\">用户：[CONTACT_NAME]<br>添加好友成功</font>"
   },
   "chat-msg-text": {
   	"visitor": "游客",
@@ -454,7 +473,9 @@
   	"msg-receipt-group": "[USER_NAME] 撤回了一条消息！"
   },
   "message-show": {
+  	"disable-group-share-tip": "禁用群共享：<br>请使用一对一聊天窗口发送文件！",
   	"forbid-send-ecard-tip": "禁言限制中：<br>不能发送名片！",
+  	"forbid-send-file-tip": "禁言限制中：<br>不能发送文件！",
   	"add-user-not-auth": "没有管理员权限：<br>不能邀请好友！",
   	"file-exclusive-error": "文件被占用：<br>请关闭文件后重试！",
   	"collect-msg-ok": "消息收藏成功！",
@@ -471,7 +492,7 @@
   	"delete-group": "[GROUP_NAME] ([GROUP_ID])<br>已经被解散！",
   	"delete-has-sub-group": "存在下级子部门：<br>不能删除[GROUP_TYPE_NAME]资料！",
   	"delete-group-has-member": "[GROUP_TYPE_MEMBER]不为空：<br>不能删除！",
-  	"member-exit-group": "[USER_NAME](USER_ACCOUNT)<br>已经退出：[GROUP_NAME]([GROUP_ID])",
+  	"member-exit-group": "[USER_NAME]([USER_ACCOUNT])<br>已经退出：[GROUP_NAME]([GROUP_ID])",
   	"delete-logon-account-error": "删除用户数据失败：<br>请重试！",
   	"account-empty-error": "帐号不能为空：<br>请输入帐号！",
   	"user-name-empty-error": "用户名称不能为空：<br>请重新输入！",

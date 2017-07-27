@@ -116,7 +116,7 @@ void EbDialogChangeHead::setHeadResorceFile(const QString &headResourceFile)
     m_sHeadResourceFile = headResourceFile;
     tstring headResourceMd5;
     mycp::bigint nFileSize = 0;
-    libEbc::GetFileMd5(m_sHeadResourceFile.toStdString().c_str(),nFileSize,headResourceMd5);
+    libEbc::GetFileMd5(m_sHeadResourceFile,nFileSize,headResourceMd5);
     m_sHeadResourceMd5 = headResourceMd5.c_str();
 
     if ( !m_sHeadResourceFile.isEmpty() && QFileInfo::exists(m_sHeadResourceFile) ) {
@@ -158,10 +158,8 @@ void EbDialogChangeHead::onClickedPushButtonOpenFile()
     const QString selectedFilter = filterImageFile + " (*.png *.jpg *.jpeg *.bmp *.ico)";
     const QString path = QFileDialog::getOpenFileName(this, caption, ".", selectedFilter);
     if ( !path.isEmpty() ) {
-        const tstring sAppDataTempPath = theApp->m_ebum.EB_GetAppDataTempPath();
-        char lpszBuffer[260];
-        sprintf(lpszBuffer,"%s/%08d%06d.jpg",sAppDataTempPath.c_str(),(int)time(0)%100000000,rand()%1000000);
-        const QString jpgPhotoFile(lpszBuffer);
+        const QString jpgPhotoFile = QString("%1/%2%3.jpg").arg(theApp->m_ebum.EB_GetAppDataTempPath())
+                .arg(time(0)%100000000).arg(rand()%1000000);
 
         QImage image1(path);
         if (image1.isNull()) {
@@ -243,7 +241,7 @@ void EbDialogChangeHead::accept()
     if ( m_sNewHeadFile.isEmpty() ) return;
     tstring sNewFileMd5;
     mycp::bigint nNewFileSize = 0;
-    if (!libEbc::GetFileMd5(m_sNewHeadFile.toStdString().c_str(),nNewFileSize,sNewFileMd5)) return;
+    if (!libEbc::GetFileMd5(m_sNewHeadFile,nNewFileSize,sNewFileMd5)) return;
     if (m_sNewHeadFile==m_sHeadResourceFile && m_sHeadResourceMd5==sNewFileMd5.c_str()) {
         return;
     }
@@ -279,15 +277,15 @@ void EbDialogChangeHead::loadDefaultHeadImage()
     theApp->m_ebum.EB_GetDefaultHeadList(pEnterpriseImageList);
     for (size_t i=0; i<pEnterpriseImageList.size(); i++) {
         const EB_EmotionInfo& pEmotionInfo = pEnterpriseImageList[i];
-        if ( pEmotionInfo.m_sResFile.empty() || !QFileInfo::exists(pEmotionInfo.m_sResFile.c_str()) ) {
+        if ( pEmotionInfo.m_sResFile.isEmpty() || !QFileInfo::exists(pEmotionInfo.m_sResFile) ) {
             continue;
         }
 
-        const QIcon icon(QPixmap::fromImage(QImage(pEmotionInfo.m_sResFile.c_str())).scaled(const_emotion_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+        const QIcon icon(QPixmap::fromImage(QImage(pEmotionInfo.m_sResFile)).scaled(const_emotion_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
         QListWidgetItem * pItem0 = new QListWidgetItem(icon,"", ui->listWidgetDefaultHeads);
         pItem0->setToolTip(pEmotionInfo.m_sDescription.c_str());
         pItem0->setData( Qt::UserRole, QVariant(pEmotionInfo.m_sResId) );
-        pItem0->setData( Qt::UserRole+1, QVariant(pEmotionInfo.m_sResFile.c_str()) );
+        pItem0->setData( Qt::UserRole+1, QVariant(pEmotionInfo.m_sResFile) );
         pItem0->setSizeHint(const_hint_size);
         ui->listWidgetDefaultHeads->addItem(pItem0 );
     }

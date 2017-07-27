@@ -45,7 +45,7 @@ EbWidgetFileTranItem::EbWidgetFileTranItem(bool isSending, const CCrFileInfo *fi
         m_buttonSave2Cloud->setVisible(false);
     }
 
-    const tstring sFileName = libEbc::GetFileName(m_fileInfo.m_sFileName);
+    const tstring sFileName = libEbc::GetFileName(m_fileInfo.m_sFileName.toStdString());
     char fileText[260];
     if (m_fileInfo.m_nFileSize >= const_gb_size)
         sprintf( fileText, "%s(%.02fGB)",sFileName.c_str(),(double)m_fileInfo.m_nFileSize/const_gb_size);
@@ -204,9 +204,9 @@ void EbWidgetFileTranItem::onButtonSaveas()
 //    tstring sFileExt;
 //    libEbc::GetFileExt(m_fileInfo.m_sFileName,sFileName,sFileExt);
 
-    const QString selectedFilter = theLocales.getLocalText("tran-file.button-save-as.file-dialog.filter","All Files") + " (*.*)";
+    const QString selectedFilter = theLocales.getLocalText("tran-file.button-save-as.file-dialog.filter","All Files") + " (*)";
     const QString newPath = QFileDialog::getSaveFileName(this, theLocales.getLocalText("tran-file.button-save-as.file-dialog.caption","Save As"),
-                                                         m_fileInfo.m_sFileName.c_str(), selectedFilter );
+                                                         m_fileInfo.m_sFileName, selectedFilter );
     if (newPath.isEmpty()) {
         return;
     }
@@ -233,7 +233,7 @@ void EbWidgetFileTranItem::onButtonSaveas()
 
 void EbWidgetFileTranItem::onButtonSave()
 {
-    const tstring sFileName = m_fileInfo.m_sFileName;
+    const tstring sFileName = m_fileInfo.m_sFileName.toStdString();
     tstring sFileSimpleName;
     tstring sFileExt;
     libEbc::GetFileExt(sFileName, sFileSimpleName, sFileExt);
@@ -266,7 +266,7 @@ void EbWidgetFileTranItem::onButtonReject()
 void EbWidgetFileTranItem::onButtonOffSend()
 {
     const eb::bigint callId(m_fileInfo.GetCallId());
-    theApp->m_ebum.EB_SendFile(callId,m_fileInfo.m_sFileName.c_str(),0,false,true);	/// 必须先发送，后面取消
+    theApp->m_ebum.EB_SendFile(callId,m_fileInfo.m_sFileName,0,false,true);	/// 必须先发送，后面取消
     theApp->m_ebum.EB_CancelFile(m_fileInfo.GetCallId(),m_fileInfo.m_nMsgId);
 }
 

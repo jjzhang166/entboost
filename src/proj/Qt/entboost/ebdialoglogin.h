@@ -45,10 +45,13 @@ public:
     void setErrorText(const QString &errorText, bool messageShowError);
     bool isDefaultEntLogo(void) const {return m_isDefaultEntLogo;}
 public slots:
-    void onClickPushButtonSetting(void);
+    void onClickedPushButtonSetting(void);
     void onClickedEntLogo(void);
     void setLogonCtrlEnabled(bool);
     void onClickPushButtonLogon(void);
+#ifdef WIN32
+    void onClickedCheckBoxAutoRun(void);
+#endif
 
     void onClickSelectColor(void);
 

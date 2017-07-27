@@ -45,11 +45,11 @@ protected:
     void hideAllAciton(void);
 private:
     inline void checkShowHide(void);
-    void searchApp(const char * key, int limit);
-    void searchUrlRecord(const char * key, int limit);
-    void searchUserInfo(const char * key);
+    void searchApp(const char *key, int limit);
+    void searchUrlRecord(const char *key, int limit);
+    void searchUserInfo(const char *key);
     /// CEBSearchCallback
-    virtual void onGroupInfo(const EB_GroupInfo *groupInfo, const EB_EnterpriseInfo * enterpriseInfo, unsigned long dwParam) {}
+    virtual void onGroupInfo(const EB_GroupInfo */*groupInfo*/, const EB_EnterpriseInfo * /*enterpriseInfo*/, unsigned long /*dwParam*/) {}
     virtual void onMemberInfo(const EB_GroupInfo *groupInfo, const EB_MemberInfo *memberInfo, unsigned long dwParam);
     virtual void onContactInfo(const EB_ContactInfo *contactInfo, unsigned long dwParam);
 private:

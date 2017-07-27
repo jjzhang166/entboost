@@ -335,7 +335,7 @@ void EbDialogMemberInfo::onSelectedHeadImage(qint64 resourceId, const QString &r
     int ret = 0;
     if (resourceId==0) {
         /// 自定义头像
-        ret = theApp->m_ebum.EB_SetMyGroupHeadFile(m_memberInfo.m_sGroupCode,resourceFile.toStdString().c_str());
+        ret = theApp->m_ebum.EB_SetMyGroupHeadFile(m_memberInfo.m_sGroupCode,resourceFile);
     }
     else {
         /// 默认头像
@@ -345,24 +345,24 @@ void EbDialogMemberInfo::onSelectedHeadImage(qint64 resourceId, const QString &r
         m_dialogChangeHead->setHeadResorceFile(resourceFile);
         m_dialogChangeHead->hide();
         //m_pMemberInfo.m_sHeadResourceId = pSelectedImageInfo.m_sResId;
-        m_memberInfo.m_sHeadResourceFile = resourceFile.toStdString();
+        m_memberInfo.m_sHeadResourceFile = resourceFile;
         mycp::bigint m_nOldFileSize = 0;
         m_oldFileMd5.clear();
-        libEbc::GetFileMd5(resourceFile.toStdString().c_str(),m_nOldFileSize,m_oldFileMd5);
+        libEbc::GetFileMd5(resourceFile,m_nOldFileSize,m_oldFileMd5);
         updateUserHeadImage();
     }
 }
 
 void EbDialogMemberInfo::updateUserHeadImage()
 {
-    const tstring sHeadResourceFile = m_memberInfo.m_sHeadResourceFile;
+    const QString sHeadResourceFile = m_memberInfo.m_sHeadResourceFile;
     QImage userHead;
-    if (!sHeadResourceFile.empty() && QFileInfo::exists(sHeadResourceFile.c_str())) {
+    if (!sHeadResourceFile.isEmpty() && QFileInfo::exists(sHeadResourceFile)) {
         if (m_oldFileMd5.empty()) {
             mycp::bigint m_nOldFileSize = 0;
-            libEbc::GetFileMd5(sHeadResourceFile.c_str(),m_nOldFileSize,m_oldFileMd5);
+            libEbc::GetFileMd5(sHeadResourceFile,m_nOldFileSize,m_oldFileMd5);
         }
-        userHead = QImage(sHeadResourceFile.c_str());
+        userHead = QImage(sHeadResourceFile);
     }
     if (userHead.isNull()) {
         userHead = QImage(":/img/defaultmember.png");
@@ -376,7 +376,7 @@ void EbDialogMemberInfo::onClickedLabelUserHead()
     if (m_dialogChangeHead==0) {
         m_dialogChangeHead = new EbDialogChangeHead;
 //        m_dialogChangeHead->m_sGroupCode = m_memberInfo.m_sGroupCode;
-        m_dialogChangeHead->setHeadResorceFile(m_memberInfo.m_sHeadResourceFile.c_str());
+        m_dialogChangeHead->setHeadResorceFile(m_memberInfo.m_sHeadResourceFile);
         connect( m_dialogChangeHead,SIGNAL(onSelectedImage(qint64,QString)),this,SLOT(onSelectedHeadImage(qint64,QString)) );
     }
     m_dialogChangeHead->exec();

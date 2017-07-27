@@ -23,11 +23,16 @@ public:
         , LOAD_FINISHED
     };
     explicit EbWidgetWorkView(bool saveUrl, const QUrl &url, const QString &postData, QWidget *parent = 0);
+    explicit EbWidgetWorkView(const QString &html, QWidget *parent = 0);
     virtual ~EbWidgetWorkView(void);
     static EbWidgetWorkView::pointer create(bool saveUrl, const QUrl &url, const QString &postData, QWidget *parent = 0);
+    static EbWidgetWorkView::pointer create(const QString &html, QWidget *parent = 0);
 
     EB_SubscribeFuncInfo m_funcInfo;
+    void setHtml(const QString &html);
     void load(const QUrl &url, const QString &postData);
+    void setOpenLinkInNewTabAddUrlEnable(bool enable) {m_openLinkInNewTabAddUrlEnable=enable;}
+    bool openLinkInNewTabAddUrlEnable(void) const {return m_openLinkInNewTabAddUrlEnable;}
     void back(void);
     void forward(void);
     bool canGoBack(void) const;
@@ -78,12 +83,15 @@ protected:
     virtual void wheelEvent(QWheelEvent *e);
 #endif
     void showZoomFactor(void);
+    void init(void);
 private:
     bool m_saveUrl;
     bool m_savedUrl;
     QUrl m_url;
+    QString m_html;
     QString m_postData;
     EbWebEngineView * m_webEngineView;
+    bool m_openLinkInNewTabAddUrlEnable;
     qreal m_zoomFactor;
     int m_timerIdCheckZoom;
     LOAD_STATE m_loadState;

@@ -31,20 +31,6 @@ const unsigned int theOneMB = 1024*1024;
 
 bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFileMd5)
 {
-    //#include <sys/stat.h>  
-    //  
-    //unsigned long get_file_size(const char *path)  
-    //{  
-    //    unsigned long filesize = -1;      
-    //    struct stat statbuff;  
-    //    if(stat(path, &statbuff) < 0){  
-    //        return filesize;  
-    //    }else{  
-    //        filesize = statbuff.st_size;  
-    //    }  
-    //    return filesize;  
-    //}  
-
 #ifdef _QT_MAKE_
     QFile file(sFilePath);
     if ( !file.open(QFile::ReadOnly) ) {
@@ -66,7 +52,7 @@ bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFi
     file.close();
     delete[] lpszBuffer;
 #else
-	FILE * f = fopen(sFilePath, "rb");
+    FILE * f = fopen(sFilePath, "rb");
 	if (f == NULL)
 	{
 		return false;
@@ -234,7 +220,7 @@ public:
 	tstring m_sResCmServer;
 	tstring m_sResCmAppName;
 	mycp::bigint m_nMsgId;
-	tstring m_sFileName;
+    EBFileString m_sFileName;
 	mycp::bigint m_nFileSize;
 	tstring m_sFileTime;
 	tstring m_sMD5;
@@ -283,7 +269,11 @@ public:
 		if (m_pProcessThread.get() == NULL)
 		{
 			boost::thread_attributes attrs;
-			attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#ifdef _QT_MAKE_
+            attrs.set_stack_size(CGC_THREAD_STACK_MAX);
+#else
+            attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#endif
 			m_pProcessThread = boost::shared_ptr<boost::thread>(new boost::thread(attrs,boost::bind(&CThreadRequestReceiveFileInfo::SendThreadCallBack, this)));
 		}
 	}
@@ -338,7 +328,7 @@ public:
             if (!pDir1.exists()) {
                 pDir1.mkdir(m_sAppDataPath.c_str());
             }
-            theAppDataTempPath = m_sAppDataPath+_T("\\temp");
+            theAppDataTempPath = m_sAppDataPath+_T("/temp");
             QDir pDir2(theAppDataTempPath.c_str());
             if (!pDir2.exists()) {
                 pDir2.mkdir(theAppDataTempPath.c_str());
@@ -650,7 +640,7 @@ private:
 		const mycp::bigint nMsgId = pChatMsgInfo->GetMsgId();
 		const bool bIsMsgSender = m_chatManager->IsMsgSender(pChatMsgInfo);
 		const mycp::bigint sMsgSender = m_chatManager->GetMsgSender(pChatMsgInfo);
-		const tstring sFileName(bIsMsgSender?pChatMsgInfo->GetContent():pChatMsgInfo->m_sFileName);
+        const EBFileString sFileName(bIsMsgSender?pChatMsgInfo->GetContent().c_str():pChatMsgInfo->m_sFileName);
 		//mycp::bigint nFileSize = pChatMsgInfo->GetSize();
 
         CCrFileInfo * pCrFileInfo = new CCrFileInfo(m_nParam,m_chatManager->GetChatInfo()->GetCallId(),m_chatManager->GetChatInfo()->GetChatId(),nResultValue);
@@ -684,21 +674,23 @@ private:
             delete pCrFileInfo;
         }
 
+#ifdef _QT_MAKE_
+        if (!bIsMsgSender) {
+            //if (sCancelAccount>0 && !bIsMsgSender && !sFileName.empty()) {	// * 避免删除本端文件风险；
+            QFile::remove(sFileName);
+        }
+        else if (pChatMsgInfo->m_sResourceId>0 && pChatMsgInfo->m_sFileName.lastIndexOf(".ebtemp")>0) {
+            QFile::remove(pChatMsgInfo->m_sFileName);
+        }
+#else
         if (!bIsMsgSender) {
         //if (sCancelAccount>0 && !bIsMsgSender && !sFileName.empty()) {	// * 避免删除本端文件风险；
-#ifdef _QT_MAKE_
-            QFile::remove(sFileName.c_str());
-#else
             DeleteFileA(sFileName.c_str());
-#endif
-        }else if (pChatMsgInfo->m_sResourceId>0 && pChatMsgInfo->m_sFileName.find(".ebtemp")!=std::string::npos)
-		{
-#ifdef _QT_MAKE_
-            QFile::remove(pChatMsgInfo->m_sFileName.c_str());
-#else
+        }
+        else if (pChatMsgInfo->m_sResourceId>0 && pChatMsgInfo->m_sFileName.find(".ebtemp")!=std::string::npos) {
             DeleteFileA(pChatMsgInfo->m_sFileName.c_str());
+        }
 #endif
-		}
 	}
 	//virtual void OnReceivedFile(const CPOPSotpRequestInfo::pointer & pReqeustInfo,const tstring & sAccount, const CChatMsgInfo::pointer& pChatMsgInfo,const CPOPCChatManager* pCMOwner)
 	//{
@@ -878,9 +870,12 @@ private:
 				return ret;
 			}else if (pChatMsgInfo->GetMsgType() == EB_MSG_FILE)
 			{
-				if (pChatMsgInfo->m_sFileName.empty())
-				{
-					// 开始接收文件
+#ifdef _QT_MAKE_
+                if (pChatMsgInfo->m_sFileName.isEmpty()) {
+#else
+                if (pChatMsgInfo->m_sFileName.empty()) {
+#endif
+                    /// 开始接收文件
 					const tstring & sFileName = pChatMsgInfo->GetContent();
 					mycp::bigint nFileSize = pChatMsgInfo->GetSize();
 					CThreadRequestReceiveFileInfo * pThreadInfo = new CThreadRequestReceiveFileInfo(m_callback, m_pHwnd,m_nParam);
@@ -1580,6 +1575,14 @@ int Cchatroom::SendRich(const EB_ChatRoomRichMsg* pRichMsg,cr::bigint sTo,bool b
 	}
 	return -1;
 }
+int Cchatroom::SendFile(const EBFileString &sFilePath,cr::bigint sTo,bool bPrivate,bool bSendOffFile)
+{
+#ifdef _QT_MAKE_
+    return SendFile(sFilePath.toStdString().c_str(), sTo, bPrivate, bSendOffFile);
+#else
+    return SendFile(sFilePath.c_str(), sTo, bPrivate, bSendOffFile);
+#endif
+}
 int Cchatroom::SendFile(const char * sFilePath,cr::bigint sTo, bool bPrivate,bool bSendOffFile)
 {
 	CChatManager * pChatManager = (CChatManager*)m_handle;
@@ -1615,7 +1618,7 @@ int Cchatroom::SendFile(const char * sFilePath,cr::bigint sTo, bool bPrivate,boo
 			nFileSize = ftello(f);
 #endif
 			fclose(f);
-#endif
+#endif    // _QT_MAKE_
 		}
 
 		int nPrivate = bPrivate?1:0;
@@ -1624,6 +1627,14 @@ int Cchatroom::SendFile(const char * sFilePath,cr::bigint sTo, bool bPrivate,boo
 	}
 	return -1;
 }
+int Cchatroom::SendResource(cr::bigint sResourceId,const EBFileString &sFilePath,bool bNewUpload)
+{
+#ifdef _QT_MAKE_
+    return SendResource(sResourceId, sFilePath.toStdString().c_str(), bNewUpload);
+#else
+    return SendResource(sResourceId, sFilePath.c_str(), bNewUpload);
+#endif
+}
 int Cchatroom::SendResource(cr::bigint sResourceId,const char * sFilePath,bool bNewUpload)
 {
 	CChatManager * pChatManager = (CChatManager*)m_handle;
@@ -1631,8 +1642,8 @@ int Cchatroom::SendResource(cr::bigint sResourceId,const char * sFilePath,bool b
 	{
 		mycp::bigint nFileSize = 0;
 		tstring sFileMd5String;
-		// sFilePath为空，表示通知上传文件而已
-		if (bNewUpload && sFilePath!=NULL && strlen(sFilePath)>0 && !GetFileMd5(sFilePath,nFileSize,sFileMd5String))
+        /// sFilePath为空，表示通知上传文件而已
+        if (bNewUpload && sFilePath!=0 && strlen(sFilePath)>0 && !GetFileMd5(sFilePath,nFileSize,sFileMd5String))
 		{
 			return -1;
 		}
@@ -1702,6 +1713,14 @@ int Cchatroom::MsgAck(cr::bigint nMsgId,int nAckType)
 		return pChatManager->m_chatManager->SendCMAck(nMsgId,0,(EB_MSG_ACK_TYPE)nAckType);
 	}
 	return -1;
+}
+int Cchatroom::RecviveResource(cr::bigint sResourceId,const EBFileString &sSaveTo)
+{
+#ifdef _QT_MAKE_
+    return ReceiveFile(sResourceId, sSaveTo.toStdString().c_str());
+#else
+    return ReceiveFile(sResourceId, sSaveTo.c_str());
+#endif
 }
 int Cchatroom::RecviveResource(mycp::bigint sResourceId,const char* sSaveTo)
 {

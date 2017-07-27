@@ -40,9 +40,7 @@ EbWidgetChatRecord::EbWidgetChatRecord(const EbcCallInfo::pointer &callInfo,QWid
     m_buttonClearAll->setObjectName("BlackMainColorButton");
     connect( m_buttonClearAll,SIGNAL(clicked()),this,SLOT(onClickedButtonClearAll()) );
 
-    m_textBrowser = new EbTextBrowser(m_callInfo,this);
-    m_textBrowser->setStyleSheet("border: none;");
-    m_textBrowser->setReadOnly(true);
+    m_textBrowser = EbTextBrowser::create(m_callInfo,this);
     m_checkBoxOnlineMsg = new QCheckBox(this);
     connect( m_checkBoxOnlineMsg,SIGNAL(clicked()),this,SLOT(onClickedCheckBoxOnlineMsg()) );
     m_dateEdit = new QDateEdit(this);

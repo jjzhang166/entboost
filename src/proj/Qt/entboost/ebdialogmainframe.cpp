@@ -12,6 +12,7 @@
 #include "ebwidgetappbar.h"
 #include "eblineedit.h"
 #include "ebwidgetsearchresult.h"
+#include "ebdialogpoptip.h"
 #include <QSound>
 
 EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
@@ -27,6 +28,7 @@ EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
   , m_pDlgFrameList(0)
   , m_pDlgMsgTip(0)
   , m_dialogFileManager(0)
+  , m_dialogBroadcaseMsg(0)
   , m_widgetMyGroup(0)
   , m_widgetMyContact(0)
   , m_widgetMySession(0)
@@ -93,7 +95,6 @@ EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
     if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_OFFICE) {
     }
     else {
-        const tstring sHeadFile = theApp->m_ebum.EB_GetMyDefaultMemberHeadFile();
         const tstring sUserName = theApp->m_ebum.EB_GetUserName();
         const tstring sOutDesc = theApp->m_ebum.EB_GetDescription();
         /// 显示用户头像
@@ -102,7 +103,7 @@ EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
             m_labelUserImage->setPixmap( QPixmap(":/img/defaultvisitor.png").scaled(m_rectHead.width(),m_rectHead.height(),Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
         }
         else {
-            const QString userHeadFile = QString::fromStdString(sHeadFile.string());
+            const QString userHeadFile = theApp->m_ebum.EB_GetMyDefaultMemberHeadFile();
             if ( !userHeadFile.isEmpty() && QFile::exists(userHeadFile)) {
                 m_labelUserImage->setPixmap( QPixmap(userHeadFile).scaled(m_rectHead.width(),m_rectHead.height(),Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
             }
@@ -227,6 +228,9 @@ EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
     m_pDlgMsgTip->setVisible(false);
     m_pDlgMsgTip->setModal(false);
     m_pDlgMsgTip->setWindowModality(Qt::WindowModal);
+    /// 广播消息提醒界面
+    m_dialogBroadcaseMsg = EbDialogPopTip::create(EbDialogPopTip::BroadcastMessage,false);
+    m_dialogBroadcaseMsg->setVisible(false);
 
     /// 主界面搜索结果列表
     m_widgetSearchResult = new EbWidgetSearchResult(EB_SEARCH_FROM_MAIN_FRAME,this);
@@ -294,6 +298,10 @@ EbDialogMainFrame::~EbDialogMainFrame()
     if (m_pDlgMsgTip!=0) {
         delete m_pDlgMsgTip;
         m_pDlgMsgTip = 0;
+    }
+    if (m_dialogBroadcaseMsg!=0) {
+        delete m_dialogBroadcaseMsg;
+        m_dialogBroadcaseMsg = 0;
     }
     /// 删除会有异常
 //    if (m_dialogFileManager!=0) {
@@ -460,17 +468,116 @@ void EbDialogMainFrame::onContactStateChanged(QEvent *e)
 }
 void EbDialogMainFrame::onAcceptAddContact(QEvent *e)
 {
-
+    const EB_ContactInfo* contactInfo = (const EB_ContactInfo*)e;
+    if (m_widgetMyContact!=0) {
+        m_widgetMyContact->onContactInfo(contactInfo);
+    }
+    if (theApp->groupMsgSubId()>0) {
+        /// <font color=\"#6c6c6c\">用户：%s<br/>添加好友成功</font>
+        QString text = theLocales.getLocalText("pop-tip-dialog.accept-add-contact","User accept add contact");
+        text.replace("[CONTACT_NAME]", contactInfo->m_sName.c_str());
+        EbDialogPopTip * dlg = EbDialogPopTip::create(EbDialogPopTip::NoticeMessage);
+        dlg->setPopTipMessage(text, 0, QVariant("tab_type=sys_msg"));
+        dlg->show();
+    }
 }
 
 void EbDialogMainFrame::onRejectAddContact(QEvent *e)
 {
+    const EB_AccountInfo* pRequestAccountInfo = (const EB_AccountInfo*)e;
+    const EB_APMsgInfo* pApMsgInfo = (const EB_APMsgInfo*)pRequestAccountInfo->GetEventData();
+    const CEBString sRequestAccount(pRequestAccountInfo->GetAccount());
+    const CEBString sDescription(pApMsgInfo->m_sMsgContent);
+    const eb::bigint nGroupId = pApMsgInfo->m_nGroupId;
 
+    char sSql[1024];
+    if (this->m_widgetMySession!=0) {
+        /// 删除旧会话
+        EbCallRecordInfo::pointer pOldCallInfo = m_widgetMySession->callRecordInfo(nGroupId, pRequestAccountInfo->GetUserId(), true);
+        if (pOldCallInfo.get()!=0) {
+            sprintf(sSql, "DELETE FROM call_record_t WHERE dep_code=%lld AND from_uid=%lld AND emp_code=-1 AND from_type>0",
+                    nGroupId,pRequestAccountInfo->GetUserId());
+            theApp->m_sqliteUser->execute(sSql);
+        }
+    }
+
+    /// emp_code=-1,from_type=msg-type
+    const int nMsgType = EBC_MSG_TYPE_REJECT_ADD_CONTACT;
+    sprintf(sSql, "INSERT INTO call_record_t(call_id,dep_code,emp_code,from_uid,from_account,from_type) "
+                  "VALUES(%lld,%lld,-1,%lld,'%s',%d)",
+            pApMsgInfo->m_nMsgId,nGroupId,pRequestAccountInfo->GetUserId(),sRequestAccount.c_str(),nMsgType);
+    theApp->m_sqliteUser->execute(sSql);
+    if (this->m_widgetMySession!=0) {
+        EbCallRecordInfo::pointer pCallRecordInfo = EbCallRecordInfo::create();
+        pCallRecordInfo->m_sCallId = pApMsgInfo->m_nMsgId;
+//        pCallRecordInfo->m_sGroupCode = nGroupId;
+        pCallRecordInfo->m_sMemberCode = -1;
+        pCallRecordInfo->m_nFromUserId = pRequestAccountInfo->GetUserId();
+        pCallRecordInfo->m_sFromAccount = sRequestAccount;
+        pCallRecordInfo->m_nFromType = nMsgType;
+        pCallRecordInfo->m_tTime = time(0);
+        pCallRecordInfo->m_bRead = false;
+        m_widgetMySession->insertCallRecord(pCallRecordInfo, true);
+    }
+
+    if (theApp->groupMsgSubId()>0) {
+        /// <font color=\"#6c6c6c\">用户：%s<br/>拒绝加为好友<br/>附加消息：%s</font>
+        QString text = theLocales.getLocalText("pop-tip-dialog.reject-add-contact","User Reject add contact");
+        text.replace("[USER_ACCOUNT]", sRequestAccount.c_str());
+        text.replace("[DESCRIPTION]", sDescription.c_str());
+        EbDialogPopTip * dlg = EbDialogPopTip::create(EbDialogPopTip::NoticeMessage);
+        dlg->setPopTipMessage(text, 0, QVariant("tab_type=sys_msg"));
+        dlg->show();
+    }
 }
 
 void EbDialogMainFrame::onRequestAddContact(QEvent *e)
 {
+    const EB_AccountInfo* pRequestAccountInfo = (const EB_AccountInfo*)e;
+    const EB_APMsgInfo* pApMsgInfo = (const EB_APMsgInfo*)pRequestAccountInfo->GetEventData();
+    const CEBString sRequestAccount(pRequestAccountInfo->GetAccount());
+    const CEBString sDescription(pApMsgInfo->m_sMsgContent);
+    const eb::bigint nGroupId = pApMsgInfo->m_nGroupId;
 
+    char sSql[1024];
+    if (this->m_widgetMySession!=0) {
+        /// 删除旧会话
+        EbCallRecordInfo::pointer pOldCallInfo = m_widgetMySession->callRecordInfo(nGroupId, pRequestAccountInfo->GetUserId(), true);
+        if (pOldCallInfo.get()!=0) {
+            sprintf(sSql, "DELETE FROM call_record_t WHERE dep_code=%lld AND from_uid=%lld AND emp_code=-1 AND from_type>0",
+                    nGroupId,pRequestAccountInfo->GetUserId());
+            theApp->m_sqliteUser->execute(sSql);
+        }
+    }
+
+    /// emp_code=-1,from_type=msg-type
+    const int nMsgType = EBC_MSG_TYPE_REQUEST_ADD_CONTACT;
+    sprintf(sSql, "INSERT INTO call_record_t(call_id,dep_code,emp_code,from_uid,from_account,from_type) "
+                  "VALUES(%lld,%lld,-1,%lld,'%s',%d)",
+            pApMsgInfo->m_nMsgId,nGroupId,pRequestAccountInfo->GetUserId(),sRequestAccount.c_str(),nMsgType);
+    theApp->m_sqliteUser->execute(sSql);
+    if (this->m_widgetMySession!=0) {
+        EbCallRecordInfo::pointer pCallRecordInfo = EbCallRecordInfo::create();
+        pCallRecordInfo->m_sCallId = pApMsgInfo->m_nMsgId;
+//        pCallRecordInfo->m_sGroupCode = nGroupId;
+        pCallRecordInfo->m_sMemberCode = -1;
+        pCallRecordInfo->m_nFromUserId = pRequestAccountInfo->GetUserId();
+        pCallRecordInfo->m_sFromAccount = sRequestAccount;
+        pCallRecordInfo->m_nFromType = nMsgType;
+        pCallRecordInfo->m_tTime = time(0);
+        pCallRecordInfo->m_bRead = false;
+        m_widgetMySession->insertCallRecord(pCallRecordInfo, true);
+    }
+
+    if (theApp->groupMsgSubId()>0) {
+        /// <font color=\"#6c6c6c\">用户：%s<br/>申请加为好友<br/>附加消息：%s</font>
+        QString text = theLocales.getLocalText("pop-tip-dialog.request-add-contact","User Reqeust add contact");
+        text.replace("[USER_ACCOUNT]", sRequestAccount.c_str());
+        text.replace("[DESCRIPTION]", sDescription.c_str());
+        EbDialogPopTip * dlg = EbDialogPopTip::create(EbDialogPopTip::AuthMessage);
+        dlg->setPopTipMessage(text, 0, QVariant("tab_type=sys_msg"));
+        dlg->show();
+    }
 }
 
 void EbDialogMainFrame::onEditInfoResponse(QEvent *e)
@@ -501,8 +608,7 @@ void EbDialogMainFrame::onEditInfoResponse(QEvent *e)
             if (title.isEmpty())
                 title = theApp->productName();
             EbMessageBox::doExec( NULL, title, QChar::Null, text, EbMessageBox::IMAGE_INFORMATION,0,QMessageBox::Ok );
-            this->accept();
-//            OnLogout();
+            onTriggeredActionLogout();
             return;
         }
         else {
@@ -587,6 +693,22 @@ void EbDialogMainFrame::onMemberDelete(QEvent *e)
     /// ***统一在 EB_WM_REMOVE_GROUP 消息处理
 }
 
+void EbDialogMainFrame::setWindowTitleAndTrayInfo(void)
+{
+//    EB_USER_LINE_STATE nOutLineState = theApp->m_ebum.EB_GetLineState();
+    const CEBString sUserName = theApp->m_ebum.EB_GetUserName();
+    const CEBString sSettingEnterprise = theApp->m_setting.GetEnterprise();
+    QString sWindowText;
+    if (theApp->isLogonVisitor())
+        sWindowText = QString("%1-%2").arg(theLocales.getLocalText("name-text.visitor","Visitor")).arg(sUserName.c_str());
+    else if (!theApp->productName().isEmpty())
+        sWindowText = QString("%1-%2(%3)").arg(theApp->productName()).arg(sUserName.c_str()).arg(theApp->logonUserAccount().c_str());
+    else
+        sWindowText = QString("%1-%2(%3)").arg(sSettingEnterprise.c_str()).arg(sUserName.c_str()).arg(theApp->logonUserAccount().c_str());
+    this->setWindowTitle(sWindowText);
+    changeTrayTooltip();
+}
+
 void EbDialogMainFrame::onMemberInfo(QEvent *e)
 {
     const EB_MemberInfo * memberInfo = (EB_MemberInfo*)e;
@@ -631,17 +753,116 @@ void EbDialogMainFrame::onMemberInfo(QEvent *e)
 }
 void EbDialogMainFrame::onRejectAdd2Group(QEvent *e)
 {
-
+    /// 默认未实现
 }
 
 void EbDialogMainFrame::onInviteAdd2Group(QEvent *e)
 {
+    const EB_AccountInfo* pRequestAccountInfo = (const EB_AccountInfo*)e;
+    const EB_APMsgInfo* pApMsgInfo = (const EB_APMsgInfo*)pRequestAccountInfo->GetEventData();
+    const CEBString sRequestAccount(pRequestAccountInfo->GetAccount());
+    const eb::bigint nGroupId = pApMsgInfo->m_nGroupId;
+    const CEBString sDescription(pApMsgInfo->m_sMsgContent);
 
+    char sSql[1024];
+    if (this->m_widgetMySession!=0) {
+        /// 删除旧会话
+        EbCallRecordInfo::pointer pOldCallInfo = m_widgetMySession->callRecordInfo(nGroupId, pRequestAccountInfo->GetUserId(), true);
+        if (pOldCallInfo.get()!=0) {
+            sprintf(sSql, "DELETE FROM call_record_t WHERE dep_code=%lld AND from_uid=%lld AND emp_code=-1 AND from_type>0",
+                    nGroupId,pRequestAccountInfo->GetUserId());
+            theApp->m_sqliteUser->execute(sSql);
+        }
+    }
+
+    /// emp_code=-1,from_type=msg-type
+    const int nMsgType = EBC_MSG_TYPE_INVITE_JOIN_2_GROUP;
+    sprintf(sSql, "INSERT INTO call_record_t(call_id,dep_code,emp_code,from_uid,from_account,from_type) "
+                  "VALUES(%lld,%lld,-1,%lld,'%s',%d)",
+            pApMsgInfo->m_nMsgId,nGroupId,pRequestAccountInfo->GetUserId(),sRequestAccount.c_str(),nMsgType);
+    theApp->m_sqliteUser->execute(sSql);
+    if (this->m_widgetMySession!=0) {
+        EbCallRecordInfo::pointer pCallRecordInfo = EbCallRecordInfo::create();
+        pCallRecordInfo->m_sCallId = pApMsgInfo->m_nMsgId;
+        pCallRecordInfo->m_sGroupCode = nGroupId;
+        pCallRecordInfo->m_sMemberCode = -1;
+        pCallRecordInfo->m_nFromUserId = pRequestAccountInfo->GetUserId();
+        pCallRecordInfo->m_sFromAccount = sRequestAccount;
+        pCallRecordInfo->m_nFromType = nMsgType;
+        pCallRecordInfo->m_tTime = time(0);
+        pCallRecordInfo->m_bRead = false;
+        m_widgetMySession->insertCallRecord(pCallRecordInfo, true);
+    }
+
+    if (theApp->groupMsgSubId()>0) {
+        QString sGroupName;
+        tstring sMsgContent(sDescription.c_str());
+        const std::string::size_type nFind = sMsgContent.find(";");
+        if (nFind!=std::string::npos) {
+            sGroupName = QString::fromStdString(sMsgContent.substr(0,nFind));
+            sMsgContent = sMsgContent.substr(nFind+1);
+        }
+        if (sGroupName.isEmpty()) {
+            sGroupName = QString("%1").arg(nGroupId);
+        }
+        /// <font color=\"#6c6c6c\">用户：%s<br/>邀请你加入群组：%s<br/>附加消息：%s</font>
+        QString text = theLocales.getLocalText("pop-tip-dialog.request-add-to-group","User Reqeust add to group");
+        text.replace("[USER_ACCOUNT]", sRequestAccount.c_str());
+        text.replace("[GROUP_NAME]", sGroupName);
+        text.replace("[DESCRIPTION]", sDescription.c_str());
+        EbDialogPopTip * dlg = EbDialogPopTip::create(EbDialogPopTip::AuthMessage);
+        dlg->setPopTipMessage(text, 0, QVariant("tab_type=sys_msg"));
+        dlg->show();
+    }
 }
 
 void EbDialogMainFrame::onRequestAdd2Group(QEvent *e)
 {
+    const EB_AccountInfo* pRequestAccountInfo = (const EB_AccountInfo*)e;
+    const EB_APMsgInfo* pApMsgInfo = (const EB_APMsgInfo*)pRequestAccountInfo->GetEventData();
+    const CEBString sRequestAccount(pRequestAccountInfo->GetAccount());
+    const CEBString sDescription(pApMsgInfo->m_sMsgContent);
+    const eb::bigint nGroupId = pApMsgInfo->m_nGroupId;
 
+    char sSql[1024];
+    if (this->m_widgetMySession!=0) {
+        /// 删除旧会话
+        EbCallRecordInfo::pointer pOldCallInfo = m_widgetMySession->callRecordInfo(nGroupId, pRequestAccountInfo->GetUserId(), true);
+        if (pOldCallInfo.get()!=0) {
+            sprintf(sSql, "DELETE FROM call_record_t WHERE dep_code=%lld AND from_uid=%lld AND emp_code=-1 AND from_type>0",
+                    nGroupId,pRequestAccountInfo->GetUserId());
+            theApp->m_sqliteUser->execute(sSql);
+        }
+    }
+    /// emp_code=-1,from_type=msg-type
+    const int nMsgType = EBC_MSG_TYPE_REQUEST_JOIN_2_GROUP;
+    sprintf(sSql, "INSERT INTO call_record_t(call_id,dep_code,emp_code,from_uid,from_account,from_type) "
+                  "VALUES(%lld,%lld,-1,%lld,'%s',%d)",
+            pApMsgInfo->m_nMsgId,nGroupId,pRequestAccountInfo->GetUserId(),sRequestAccount.c_str(),nMsgType);
+    theApp->m_sqliteUser->execute(sSql);
+    if (this->m_widgetMySession!=0) {
+        EbCallRecordInfo::pointer pCallRecordInfo = EbCallRecordInfo::create();
+        pCallRecordInfo->m_sCallId = pApMsgInfo->m_nMsgId;
+        pCallRecordInfo->m_sGroupCode = nGroupId;
+        pCallRecordInfo->m_sMemberCode = -1;
+        pCallRecordInfo->m_nFromUserId = pRequestAccountInfo->GetUserId();
+        pCallRecordInfo->m_sFromAccount = sRequestAccount;
+        pCallRecordInfo->m_nFromType = nMsgType;
+        pCallRecordInfo->m_tTime = time(0);
+        pCallRecordInfo->m_bRead = false;
+        m_widgetMySession->insertCallRecord(pCallRecordInfo, true);
+    }
+
+    if (theApp->groupMsgSubId()>0) {
+        /// <font color=\"#6c6c6c\">用户：%s<br/>申请加入群组：%lld<br/>附加消息：%s</font>
+        QString text = theLocales.getLocalText("pop-tip-dialog.request-add-to-group","User Reqeust add to group");
+        text.replace("[USER_ACCOUNT]", sRequestAccount.c_str());
+        text.replace("[GROUP_ID]", QString::number(nGroupId));
+        text.replace("[DESCRIPTION]", sDescription.c_str());
+        EbDialogPopTip * dlg = EbDialogPopTip::create(EbDialogPopTip::AuthMessage);
+        dlg->setPopTipMessage(text, 0, QVariant("tab_type=sys_msg"));
+        dlg->show();
+    }
 }
 
 void EbDialogMainFrame::onExitGroup(QEvent *e)
@@ -914,8 +1135,7 @@ void EbDialogMainFrame::onLogonSuccess(QEvent * e)
     else {
         theApp->m_ebum.EB_LoadContact();
     }
-    const tstring sHeadFile = theApp->m_ebum.EB_GetMyDefaultMemberHeadFile();
-    const QString userHeadFile = QString::fromStdString(sHeadFile.string());
+    const QString userHeadFile = theApp->m_ebum.EB_GetMyDefaultMemberHeadFile();
     if ( !userHeadFile.isEmpty() && QFile::exists(userHeadFile)) {
         m_labelUserImage->setPixmap( QPixmap(userHeadFile).scaled(m_rectHead.width(),m_rectHead.height(),Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     }
@@ -992,12 +1212,11 @@ void EbDialogMainFrame::onLogonError(QEvent *e)
 
 void EbDialogMainFrame::onOnlineAnother(QEvent *e)
 {
-    const EB_Event * pEvent = (EB_Event*)e;
+//    const EB_Event * pEvent = (EB_Event*)e;
 //    const int nOnlineAnotherType = (int)pEvent->GetEventParameter();
     /// 0=已经在其他地方登录，退出当前连接；
     /// 1=修改密码，退出当前连接；
-    m_requestLogout = true;
-    this->reject();
+    onTriggeredActionLogout();
 }
 
 #ifdef USES_EVENT_DATE_TIMER
@@ -1652,7 +1871,7 @@ void EbDialogMainFrame::onTriggeredActionApps()
 {
     bool ok = false;
     const int index = ((QAction*)sender())->data().toInt(&ok)-1;
-    if (index>=0 && index<theApp->m_pSubscribeFuncList.size()) {
+    if (index>=0 && index<(int)theApp->m_pSubscribeFuncList.size()) {
         this->openSubscribeFuncWindow(theApp->m_pSubscribeFuncList[index]);
     }
 
@@ -2030,11 +2249,11 @@ void EbDialogMainFrame::createMenuData(void)
 //   }
 }
 
-void EbDialogMainFrame::creatTrayIcon()
+bool EbDialogMainFrame::creatTrayIcon()
 {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         /// 判断系统是否支持系统托盘图标
-        return;
+        return false;
     }
     createMenuData();
     if (m_trayIcon==0 ){
@@ -2045,12 +2264,12 @@ void EbDialogMainFrame::creatTrayIcon()
         m_trayIcon->show();
         connect(m_trayIcon,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
     }
+    return true;
 }
 
 void EbDialogMainFrame::changeTrayTooltip()
 {
-    creatTrayIcon();
-    if (m_trayIcon==0) {
+    if (!creatTrayIcon()) {
         /// 可能系统不支持托盘图标
         return;
     }
@@ -2079,6 +2298,7 @@ void EbDialogMainFrame::processDatas(void)
 {
     createMenuData();
     creatTrayIcon();
+    setWindowTitleAndTrayInfo();
 }
 
 void EbDialogMainFrame::accept()
@@ -2165,11 +2385,11 @@ void EbDialogMainFrame::onBroadcastMsg(QEvent *e)
             if (libEbc::ParseString(sMsgContent.c_str(),theEBSParseString0_from.c_str(),pList)<10) {
                 return;
             }
-            const eb::bigint nUserId = eb_atoi64(pList[0].c_str());
-            const eb::bigint nMailAddressId = eb_atoi64(pList[1].c_str());
+//            const eb::bigint nUserId = eb_atoi64(pList[0].c_str());
+//            const eb::bigint nMailAddressId = eb_atoi64(pList[1].c_str());
             const eb::bigint nMailContentId = eb_atoi64(pList[2].c_str());
-            const int nMailSize = atoi(pList[3].c_str());
-            const int nAttachCount = atoi(pList[4].c_str());
+//            const int nMailSize = atoi(pList[3].c_str());
+//            const int nAttachCount = atoi(pList[4].c_str());
             tstring sMailDate(pList[5]);
             libEbc::replace(sMailDate,theEBSParseString0_to,theEBSParseString0_from);
             tstring sFromName(pList[6]);
@@ -2259,6 +2479,8 @@ void EbDialogMainFrame::onBroadcastMsg(QEvent *e)
         pCallRecordInfo->m_bRead = false;
         m_widgetMySession->insertCallRecord(pCallRecordInfo,true);
     }
+    m_dialogBroadcaseMsg->setPopTipMessage(sMsgContent.c_str(), nMsgId, QVariant("tab_type=bc_msg"), QVariant(sMsgName.c_str()));
+    m_dialogBroadcaseMsg->show();
 
 //    //CString sContent;
 //    //if (theApp.GetGroupMsgSugId()>0)
@@ -2316,7 +2538,8 @@ void EbDialogMainFrame::onUserStateChange(QEvent *e)
 //        return 0;
     }
     if (m_pDlgFrameList!=0) {
-        m_pDlgFrameList->onUserLineStateChange(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId, memberInfo->m_nLineState);
+        m_pDlgFrameList->onMemberInfo(memberInfo, true);
+//        m_pDlgFrameList->onUserLineStateChange(memberInfo->m_sGroupCode, memberInfo->m_nMemberUserId, memberInfo->m_nLineState);
     }
 }
 
@@ -2347,7 +2570,7 @@ void EbDialogMainFrame::onMemberHeadChange(QEvent *e)
         if (theApp->m_ebum.EB_GetMyDefaultMemberCode(nDefaultMemberCode)
                 && nDefaultMemberCode==memberInfo->m_sMemberCode) {
             /// 更新头像
-            const QString userHeadFile = QString::fromStdString(memberInfo->m_sHeadResourceFile.string());
+            const QString userHeadFile = memberInfo->m_sHeadResourceFile;
             if ( !userHeadFile.isEmpty() && QFile::exists(userHeadFile)) {
                 m_labelUserImage->setPixmap( QPixmap(userHeadFile).scaled(m_rectHead.width(),m_rectHead.height(),Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
             }
@@ -2471,6 +2694,12 @@ bool EbDialogMainFrame::onReceiveRich(QEvent *e)
         //m_btnMySession.SetWindowText(_T("！"));
         if (m_pDlgMsgTip!=0) {
             m_pDlgMsgTip->addMsgTip(chatBase->fromImage(), pEbCallInfo->groupId(),nFromUserid,sFirstMsg2);
+        }
+    }
+    else {
+        if (m_pDlgFrameList!=0) {
+            /// 会弹到最前面
+            m_pDlgFrameList->setFocus();
         }
     }
     return true;
@@ -2761,7 +2990,7 @@ void EbDialogMainFrame::onReceivedFile(QEvent *e)
             }
         }
         if (bIsHttpDownloadFile) {
-            tstring sInFileName(fileInfo->m_sFileName);
+            tstring sInFileName(fileInfo->m_sFileName.toStdString());
             theApp->m_sqliteUser->escape_string_in(sInFileName);
             char sql[1024];
             sprintf( sql, "INSERT INTO msg_record_t(msg_id,from_uid,from_name,to_uid,msg_type,msg_text) "

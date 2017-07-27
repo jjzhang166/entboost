@@ -84,22 +84,22 @@ public:
 	/****
 	功能：返回应用程序APP路径
 	====================================================================*/
-	mycp::tstring EB_GetAppPath(void) const;
+    EBFileString EB_GetAppPath(void) const;
 
 	/****
 	功能：返回资源文件存放路径
 	====================================================================*/
-	mycp::tstring EB_GetResourcePath(void) const;
+    EBFileString EB_GetResourcePath(void) const;
 
 	/****
 	功能：返回应用程序APP数据路径
 	====================================================================*/
-	mycp::tstring EB_GetAppDataPath(void) const;
+    EBFileString EB_GetAppDataPath(void) const;
 
 	/****
 	功能：返回应用程序APP临时数据路径
 	====================================================================*/
-	mycp::tstring EB_GetAppDataTempPath(void) const;
+    EBFileString EB_GetAppDataTempPath(void) const;
 
 	/****
 	功能：检查最新版本
@@ -244,7 +244,7 @@ public:
 	/******
 	功能：获取默认群组（部门）成员头像文件
 	====================================================================*/
-	mycp::tstring EB_GetMyDefaultMemberHeadFile(void) const;
+    EBFileString EB_GetMyDefaultMemberHeadFile(void) const;
 
 	/******
 	功能：返回个人设置
@@ -630,7 +630,8 @@ public:
 	参数：bPrivate 悄悄话功能 true:以私聊方式发给指定用户，会话其他人看不到 false:会话其他成员也可以看到
 	参数：bOffFile 保存离线文件 false/true
 	====================================================================*/
-	int EB_SendFile(eb::bigint nCallId,const char* sFilePath,eb::bigint nToUserId=0,bool bPrivate=false,bool bOffFile=false);
+    int EB_SendFile(eb::bigint nCallId,const EBFileString &sFilePath,eb::bigint nToUserId=0,bool bPrivate=false,bool bOffFile=false);
+    int EB_SendFile(eb::bigint nCallId,const char* sFilePath,eb::bigint nToUserId=0,bool bPrivate=false,bool bOffFile=false);
 
 	/****
 	功能：接收文件
@@ -714,6 +715,12 @@ public:
 	====================================================================*/
 	int EB_EditContact(const EB_ContactInfo* pContactInfo);
 
+    /****
+    功能：移动分组
+    ====================================================================*/
+    int EB_MoveContactTo1(eb::bigint contactId, eb::bigint ugId);
+    int EB_MoveContactTo2(eb::bigint userId, eb::bigint ugId);
+
 	/****
 	功能：删除一条联系人资料
 	====================================================================*/
@@ -735,8 +742,8 @@ public:
 	/****
 	功能：获取联系人头像信息
 	====================================================================*/
-	bool EB_GetContactHeadInfoByContactId(eb::bigint nContactId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
-	bool EB_GetContactHeadInfoByUserId(eb::bigint nUserId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
+    bool EB_GetContactHeadInfoByContactId(eb::bigint nContactId,EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
+    bool EB_GetContactHeadInfoByUserId(eb::bigint nUserId,EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
 
 	/****
 	功能：判断是否我的联系人帐号
@@ -811,7 +818,8 @@ public:
 	功能：设置个人群组（部门）头像
 	描述：<= 1Mb
 	====================================================================*/
-	int EB_SetMyGroupHeadFile(eb::bigint nGroupId,const char* sImagePath);
+    int EB_SetMyGroupHeadFile(eb::bigint nGroupId, const EBFileString &sImagePath);
+    int EB_SetMyGroupHeadFile(eb::bigint nGroupId, const char* sImagePath);
 
 	/****
 	功能：设置个人群组（部门）头像
@@ -866,8 +874,8 @@ public:
 	/****
 	功能：判断是否是我的群组（部门）
 	参数：sGroupCode 群组（部门）代码
-	====================================================================*/
-	bool EB_IsMyGroup(eb::bigint nGroupId) const;
+    ====================================================================*/
+    bool EB_IsMyGroup(eb::bigint nGroupId) const;
 
     /****
     功能：判断是否有子部门
@@ -923,11 +931,10 @@ public:
 	/****
 	功能：获取群组（部门）成员头像信息
 	====================================================================*/
-	bool EB_GetMemberHeadInfoByMemberCode(eb::bigint nMemberId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
-	bool EB_GetMemberHeadInfoByUserId(eb::bigint nGroupId,eb::bigint nMemberUserId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
-	bool EB_GetMemberHeadInfoByUserId(eb::bigint nMemberUserId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
-	bool EB_GetMemberHeadInfoByAccount(const char* sMemberAccount,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
-
+    bool EB_GetMemberHeadInfoByMemberCode(eb::bigint nMemberId, EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
+    bool EB_GetMemberHeadInfoByUserId(eb::bigint nGroupId,eb::bigint nMemberUserId,EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
+    bool EB_GetMemberHeadInfoByUserId(eb::bigint nMemberUserId,EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
+    bool EB_GetMemberHeadInfoByAccount(const char* sMemberAccount,EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const;
 	/****
 	功能：获取群组（部门）成员名称
 	====================================================================*/
@@ -947,8 +954,8 @@ public:
 	/****
 	功能：获取群组（部门）头像文件
 	====================================================================*/
-	bool EB_GetMemberHeadFile(eb::bigint nMemberId,eb::bigint& pOutResourceId,mycp::tstring& pOutHeadPath,mycp::tstring& pOutFileMd5);
-	bool EB_GetMemberHeadFile(eb::bigint nGroupId,eb::bigint nUserId,eb::bigint& pOutResourceId,mycp::tstring& pOutHeadPath,mycp::tstring& pOutFileMd5);
+    bool EB_GetMemberHeadFile(eb::bigint nMemberId,eb::bigint& pOutResourceId, EBFileString &pOutHeadPath,mycp::tstring& pOutFileMd5);
+    bool EB_GetMemberHeadFile(eb::bigint nGroupId,eb::bigint nUserId,eb::bigint& pOutResourceId, EBFileString &pOutHeadPath,mycp::tstring& pOutFileMd5);
 
 	/****
 	功能：获取我的群组（部门）成员信息

@@ -34,7 +34,7 @@ public:
     void setContactInfo1(eb::bigint contactId);
     void setContactInfo2(eb::bigint userId);
 
-    void setMouseEnter(const QRect &rectValid, bool showImmediate=false);
+    void setMouseEnter(const QWidget * widgetValid, const QRect &rectValid, bool showImmediate=false);
     void hideReset(void);
 public slots:
     void onClieckedButtonAddContact(void);
@@ -48,8 +48,10 @@ protected:
     void updateContactInfo(void);
 private:
     Ui::EbDialogViewECard *ui;
+    const QWidget * m_widgetValid;
     QRect m_rectValid;
     int m_timerIdCheck2Show;
+//    int m_checkShowCount;
     int m_timerIdCheck2Hide;
     VIEW_TYPE m_viewType;
     EB_EnterpriseInfo m_enterpriseInfo;

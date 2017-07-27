@@ -40,7 +40,7 @@ EbDialogConnectSetting::EbDialogConnectSetting(QWidget *parent) :
     if (QFile::exists(sEbcIniFileSetting)) {
         char lpszBuffer[1024];
         memset(lpszBuffer,0,sizeof(lpszBuffer));
-        GetPrivateProfileStringABoost("system","server","",lpszBuffer,sizeof(lpszBuffer),sEbcIniFileSetting.toStdString().c_str());
+        GetPrivateProfileStringABoost("system","server","",lpszBuffer,sizeof(lpszBuffer),sEbcIniFileSetting.toLocal8Bit().constData());
         m_oldServer = QString::fromUtf8(lpszBuffer);
         ui->lineEditServerAddress->setText(m_oldServer);
     }
@@ -59,6 +59,6 @@ void EbDialogConnectSetting::accept(void)
         return;
     }
     const QString& sEbcIniFileSetting = theApp->getEbcIniFile();
-    WritePrivateProfileStringABoost("system","server",m_newServer.toStdString().c_str(),sEbcIniFileSetting.toStdString().c_str());
+    WritePrivateProfileStringABoost("system", "server", m_newServer.toStdString().c_str(), sEbcIniFileSetting.toLocal8Bit().constData());
     EbDialogBase::accept();
 }

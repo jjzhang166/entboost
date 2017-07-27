@@ -120,8 +120,44 @@ void EbWidgetChatInput::onReceiveRich()
     }
 }
 
+void EbWidgetChatInput::sendFile(const QString &filePath, bool checkImage)
+{
+    if (isForbidSpeech()) {
+        /// ** 禁言限制中
+        return;
+    }
+
+    if (checkImage) {
+        const QImage image(filePath);
+        if (image.width()>0 && image.height()>0) {
+            m_textEditInput->document()->addResource(QTextDocument::ImageResource, QUrl(filePath), image);
+            m_textEditInput->textCursor().insertImage(filePath);
+            return;
+        }
+    }
+
+    if (m_callInfo->isGroupCall()) {
+        theApp->m_ebum.EB_AddTempGroupFileRes(filePath.toStdString().c_str(), "", m_callInfo->groupId());
+    }
+    else {
+        eb::bigint nToUserId = 0;
+//        //CString sToAccount;
+//        const int nCurSel = m_comboSendTo.GetCurSel();
+//        if (nCurSel > 0)	// >=
+//        {
+//            const CTreeItemInfo * pTreeItemInfo = (CTreeItemInfo*)m_comboSendTo.GetItemData(nCurSel);
+//            if (pTreeItemInfo==NULL) return;
+//            //sToAccount = pTreeItemInfo->m_sAccount.c_str();
+//            nToUserId = pTreeItemInfo->m_nUserId;
+//            UpdateData();	// update m_bPrivate
+//        }
+        theApp->m_ebum.EB_SendFile(m_callInfo->callId(), filePath, nToUserId, false);
+    }
+}
+
 void EbWidgetChatInput::onDropSendFileTextEdit(const QString &filePath)
 {
+    sendFile(filePath, true);
     /// 支持中文路径，文件名
 //    const QByteArray filePathByteArray = filePath.toLocal8Bit();
 //    theApp->m_ebum.EB_SendFile( m_callInfo->callId(), filePathByteArray.constData() );
@@ -132,7 +168,7 @@ void EbWidgetChatInput::onDropSendFileTextEdit(const QString &filePath)
 //    if (file!=0) {
 //        fclose(file);
 //    }
-    theApp->m_ebum.EB_SendFile( m_callInfo->callId(), filePath.toStdString().c_str() );
+//    theApp->m_ebum.EB_SendFile( m_callInfo->callId(), filePath );
 }
 
 void EbWidgetChatInput::onClickedPushButtonEmotion()
@@ -408,4 +444,5 @@ bool EbWidgetChatInput::isForbidSpeech() const
 {
     return (m_callInfo->isGroupCall() && m_labelInputForbidState!=0 && m_labelInputForbidState->isVisible())?true:false;
 }
+
 

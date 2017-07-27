@@ -10,7 +10,7 @@ EbWidgetUserInfo::EbWidgetUserInfo(const EbcCallInfo::pointer &callInfo, QWidget
     m_labelImage->resize(const_user_image_size);
     const QString imageFile = theApp->userHeadFilePath(
                 m_callInfo->fromUserId(), m_callInfo->fromMemberId(),
-                m_callInfo->fromUserAccount() ).c_str();
+                m_callInfo->fromUserAccount() );
     m_labelImage->setPixmap( QPixmap(imageFile).scaled(const_user_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     m_labelUserName = new QLabel(this);
     m_lineEditUserName = new QLineEdit(this);

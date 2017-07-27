@@ -281,7 +281,7 @@ EB_STATE_CODE CEBAppClient::EB_GetLastStateCode(void) const
 	}
 	return EB_STATE_ERROR;
 }
-mycp::tstring CEBAppClient::EB_GetAppPath(void) const
+EBFileString CEBAppClient::EB_GetAppPath(void) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -290,7 +290,7 @@ mycp::tstring CEBAppClient::EB_GetAppPath(void) const
 	}
 	return "";
 }
-mycp::tstring CEBAppClient::EB_GetResourcePath(void) const
+EBFileString CEBAppClient::EB_GetResourcePath(void) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -300,7 +300,7 @@ mycp::tstring CEBAppClient::EB_GetResourcePath(void) const
 	return "";
 }
 
-mycp::tstring CEBAppClient::EB_GetAppDataPath(void) const
+EBFileString CEBAppClient::EB_GetAppDataPath(void) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -309,7 +309,7 @@ mycp::tstring CEBAppClient::EB_GetAppDataPath(void) const
 	}
 	return "";
 }
-mycp::tstring CEBAppClient::EB_GetAppDataTempPath(void) const
+EBFileString CEBAppClient::EB_GetAppDataTempPath(void) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -839,8 +839,7 @@ mycp::bigint EBGetFileSize(const char* sFilePath)
 #else
 	mycp::bigint nFileSize = 0;
 	FILE * f = fopen(sFilePath, "rb");
-	if (f == NULL)
-	{
+    if (f==0) {
 		return -1;
 	}
 #ifdef WIN32
@@ -853,6 +852,15 @@ mycp::bigint EBGetFileSize(const char* sFilePath)
 	fclose(f);
 #endif
 	return nFileSize;
+}
+
+int CEBAppClient::EB_SetMyGroupHeadFile(eb::bigint nGroupId, const EBFileString &sImagePath)
+{
+#ifdef _QT_MAKE_
+    return EB_SetMyGroupHeadFile(nGroupId, sImagePath.toStdString().c_str());
+#else
+    return EB_SetMyGroupHeadFile(nGroupId, sImagePath.c_str());
+#endif
 }
 
 int CEBAppClient::EB_SetMyGroupHeadFile(eb::bigint nGroupId,const char* sFilePath)
@@ -1367,7 +1375,7 @@ bool CEBAppClient::EB_GetMyDefaultMemberInfo(EB_MemberInfo* pOutmemberInfo) cons
 	}
 	return false;
 }
-mycp::tstring CEBAppClient::EB_GetMyDefaultMemberHeadFile(void) const
+EBFileString CEBAppClient::EB_GetMyDefaultMemberHeadFile(void) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -2116,7 +2124,16 @@ int CEBAppClient::EB_RequestCollectMsg(eb::bigint nCallId,eb::bigint nMsgId, boo
 	{
 		return pManager->RequestCollectMsg(nCallId,nMsgId,bGroupCollection);
 	}
-	return -1;
+    return -1;
+}
+
+int CEBAppClient::EB_SendFile(eb::bigint nCallId, const EBFileString &sFilePath, eb::bigint nToUserId, bool bPrivate, bool bOffFile)
+{
+#ifdef _QT_MAKE_
+    return EB_SendFile(nCallId, sFilePath.toStdString().c_str(), nToUserId, bPrivate, bOffFile);
+#else
+    return EB_SendFile(nCallId, sFilePath.c_str(), nToUserId, bPrivate, bOffFile);
+#endif
 }
 
 int CEBAppClient::EB_SendFile(eb::bigint nCallId,const char* sFilePath,eb::bigint nToUserId,bool bPrivate,bool bOffFile)
@@ -2125,7 +2142,7 @@ int CEBAppClient::EB_SendFile(eb::bigint nCallId,const char* sFilePath,eb::bigin
 	if (pManager != NULL)
 	{
 #ifdef _QT_MAKE_
-		QFileInfo pFileInfo(sFilePath);
+        QFileInfo pFileInfo(sFilePath);
 		if (!pFileInfo.exists()) return -1;
 		if (pFileInfo.isDir()) return -2;
 #else
@@ -2355,7 +2372,27 @@ int CEBAppClient::EB_EditContact(const EB_ContactInfo* pPopContactInfo)
 	{
 		return pManager->ContactEdit(pPopContactInfo);
 	}
-	return -1;
+    return -1;
+}
+
+int CEBAppClient::EB_MoveContactTo1(eb::bigint contactId, eb::bigint ugId)
+{
+    EB_ContactInfo contactInfo;
+    if (!EB_GetContactInfo1(contactId, &contactInfo)) {
+        return -1;
+    }
+    contactInfo.m_nUGId = ugId;
+    return EB_EditContact(&contactInfo);
+}
+
+int CEBAppClient::EB_MoveContactTo2(eb::bigint userId, eb::bigint ugId)
+{
+    EB_ContactInfo contactInfo;
+    if (!EB_GetContactInfo2(userId, &contactInfo)) {
+        return -1;
+    }
+    contactInfo.m_nUGId = ugId;
+    return EB_EditContact(&contactInfo);
 }
 int CEBAppClient::EB_DeleteContact(eb::bigint nContactId,bool bDeleteDest)
 {
@@ -2394,7 +2431,7 @@ bool CEBAppClient::EB_GetContactInfo2(eb::bigint nContactUserId,EB_ContactInfo* 
 	return false;
 }
 
-bool CEBAppClient::EB_GetContactHeadInfoByContactId(eb::bigint nContactId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
+bool CEBAppClient::EB_GetContactHeadInfoByContactId(eb::bigint nContactId, EBFileString &pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -2413,7 +2450,7 @@ bool CEBAppClient::EB_GetContactHeadInfoByContactId(eb::bigint nContactId,tstrin
 	}
 	return false;
 }
-bool CEBAppClient::EB_GetContactHeadInfoByUserId(eb::bigint nUserId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
+bool CEBAppClient::EB_GetContactHeadInfoByUserId(eb::bigint nUserId, EBFileString &pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -2595,8 +2632,9 @@ int CEBAppClient::EB_ExitGroup(eb::bigint nGroupId)
 	{
 		return pManager->DepExit(nGroupId);
 	}
-	return -1;
+    return -1;
 }
+
 bool CEBAppClient::EB_GetGroupInfo(eb::bigint nGroupId,EB_GroupInfo* pOutGroupInfo) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
@@ -3217,7 +3255,7 @@ bool CEBAppClient::EB_GetMemberInfoByMemberCode(EB_MemberInfo* pOutMemberInfo,EB
 	}
 	return false;
 }
-bool CEBAppClient::EB_GetMemberHeadInfoByMemberCode(eb::bigint nMemberCode,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
+bool CEBAppClient::EB_GetMemberHeadInfoByMemberCode(eb::bigint nMemberCode, EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -3237,7 +3275,7 @@ bool CEBAppClient::EB_GetMemberHeadInfoByMemberCode(eb::bigint nMemberCode,tstri
 	}
 	return false;
 }
-bool CEBAppClient::EB_GetMemberHeadInfoByUserId(eb::bigint nGroupId,eb::bigint nMemberUserId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
+bool CEBAppClient::EB_GetMemberHeadInfoByUserId(eb::bigint nGroupId,eb::bigint nMemberUserId, EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -3261,7 +3299,7 @@ bool CEBAppClient::EB_GetMemberHeadInfoByUserId(eb::bigint nGroupId,eb::bigint n
 	}
 	return false;
 }
-bool CEBAppClient::EB_GetMemberHeadInfoByAccount(const char* sMemberAccount,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
+bool CEBAppClient::EB_GetMemberHeadInfoByAccount(const char* sMemberAccount, EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -3297,8 +3335,7 @@ bool CEBAppClient::EB_GetMemberHeadInfoByAccount(const char* sMemberAccount,tstr
 	}
 	return false;
 }
-
-bool CEBAppClient::EB_GetMemberHeadInfoByUserId(eb::bigint nMemberUserId,tstring& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
+bool CEBAppClient::EB_GetMemberHeadInfoByUserId(eb::bigint nMemberUserId, EBFileString& pOutHeadFile,tstring& pOutHeadMd5,EB_USER_LINE_STATE& pOutLineState) const
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -3398,7 +3435,7 @@ bool CEBAppClient::EB_GetMemberLineState(eb::bigint nMemberId,EB_USER_LINE_STATE
 	return false;
 }
 
-bool CEBAppClient::EB_GetMemberHeadFile(eb::bigint nMemberId,eb::bigint& pOutResourceId,mycp::tstring& pOutHeadPath,mycp::tstring& pOutFileMd5)
+bool CEBAppClient::EB_GetMemberHeadFile(eb::bigint nMemberId,eb::bigint& pOutResourceId, EBFileString& pOutHeadPath,mycp::tstring& pOutFileMd5)
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -3419,7 +3456,7 @@ bool CEBAppClient::EB_GetMemberHeadFile(eb::bigint nMemberId,eb::bigint& pOutRes
 	}
 	return false;
 }
-bool CEBAppClient::EB_GetMemberHeadFile(eb::bigint nGroupId,eb::bigint nUserId,eb::bigint& pOutResourceId,mycp::tstring& pOutHeadPath,mycp::tstring& pOutFileMd5)
+bool CEBAppClient::EB_GetMemberHeadFile(eb::bigint nGroupId,eb::bigint nUserId,eb::bigint& pOutResourceId, EBFileString& pOutHeadPath,mycp::tstring& pOutFileMd5)
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)

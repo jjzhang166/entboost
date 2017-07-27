@@ -6,6 +6,15 @@
 //#include "ebstring.h"
 #include <vector>
 
+#ifndef EBFileString
+#ifdef _QT_MAKE_
+#include <QString>
+#define EBFileString QString
+#else
+#define EBFileString tstring
+#endif  // _QT_MAKE_
+#endif  // EBFileString
+
 namespace entboost {
 namespace cr {
 

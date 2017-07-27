@@ -94,8 +94,8 @@ private:
 	boost::mutex m_mutex;
 	FILE * m_file;
 	FILE * m_fEbConfig;
-	tstring m_sFileName;
-	tstring m_sRemoveFileName;
+    EBFileString m_sFileName;
+    tstring m_sRemoveFileName;
 	int m_nSendSize;
 	CPOPSotpRequestInfo::pointer m_pRequestInfo;	// for rich
 	int m_nAcceptEncoding;

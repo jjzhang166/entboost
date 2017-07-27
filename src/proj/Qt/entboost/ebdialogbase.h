@@ -30,6 +30,10 @@ public:
     EbDialogBase(QWidget *parent = 0);
     virtual ~EbDialogBase(void);
 
+    void setOkCancelButtonSize(const QSize &size);
+    void setRightInterval(int v) {m_rightInterval=v;}
+    void setBottomInterval(int v) {m_bottomInterval=v;}
+
     void showTitleLogoText(const QString &textString, int textSize=12, QChar logoChar=QChar::Null, int logoSize=12, const QString& titleTextObjectName="DialogTitleText");
     void showTitleBackground(int height,const QString &objectName="TitleBackgroundWidget");
     int titleBackgroundHeight(void) const;
@@ -71,7 +75,7 @@ protected:
 
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void resizeEvent(QResizeEvent *e);
-private:
+protected:
     QPoint move_point;      /// 移动的距离
     bool m_bMousePress;     /// 按下鼠标左键
     int m_dialogFlags;
@@ -85,6 +89,9 @@ private:
     QRect m_windowRect;             /// for maximize
     QPushButton* m_pushButtonSysClose;
 
+    QSize m_sizeButton;     /// 按钮大小，默认 const_okcancel_button_size
+    int m_rightInterval;    /// 按钮最右边间隔，默认 18
+    int m_bottomInterval;    /// 按钮最下边间隔，默认 10
     QPushButton* m_pushButtonOk;
     QPushButton* m_pushButtonCancel;
 };

@@ -580,9 +580,15 @@ const CTreeItemInfo::pointer NullTreeItemInfo;
 
 namespace libEbc
 {
-	long GetFileSize(const char* lpszFile);
+    long GetFileSize(const char* lpszFile);
+#ifdef _QT_MAKE_
+    qint64 GetFileSize(const QString &lpszFile);
+#endif
 	tstring GetFileName(const tstring & sPathName);
 	bool GetFileMd5(const char* sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFileMd5);
+#ifdef _QT_MAKE_
+    bool GetFileMd5(const QString &sFilePath,mycp::bigint& pOutFileSize,tstring& pOutFileMd5);
+#endif
 	void GetFileExt(const tstring & sFileName, tstring & sOutName, tstring & sOutExt);
 #ifdef _QT_MAKE_
     QString fileExt(const QString & filePath);
@@ -611,7 +617,10 @@ namespace libEbc
 	const tstring & replace(tstring & strSource, const tstring & strFind, const tstring &strReplace);
 	int ParseString(const char * lpszString, const char * lpszInterval, std::vector<tstring> & pOut);
 	bool IsFullNumber(const char* pString, size_t nLen);
-	int GetWaveTimeLength(const char* lpszWavFilePath);
+#ifdef _QT_MAKE_
+    int GetWaveTimeLength(const QString &lpszWavFilePath);
+#endif
+    int GetWaveTimeLength(const char* lpszWavFilePath);
 	tstring URLEncode(const char *sIn);
 	tstring URLDecode(const char *sIn, bool bTranPlusSign);	// '+'->' '
 	tstring GetHostIp(const char* lpszHostName,const char* lpszDefaultName="");

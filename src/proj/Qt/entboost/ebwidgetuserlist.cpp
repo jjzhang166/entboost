@@ -112,6 +112,19 @@ int EbWidgetUserList::onMemberInfo(const EB_MemberInfo *memberInfo, bool bChange
     return nResult;
 }
 
+//void EbWidgetUserList::lineStateChange(eb::bigint userId, EB_USER_LINE_STATE lineState)
+//{
+//    CTreeItemInfo::pointer pTreeItemInfo;
+//    if (m_pUserItem.find(nUserId,pTreeItemInfo))
+//    {
+//        if (pTreeItemInfo->m_dwItemData != bLineState)
+//        {
+//            pTreeItemInfo->m_dwItemData = bLineState;
+//            m_treeUsers.Sort(TVI_ROOT, CPOPApp::TreeCmpFunc);
+//        }
+//    }
+//}
+
 void EbWidgetUserList::onItemDoubleClicked(QListWidgetItem *item)
 {
     const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;
@@ -136,7 +149,7 @@ void EbWidgetUserList::onItemEntered(QListWidgetItem *item)
     /// 处理显示电子名片 浮动条
     const QPoint pointIconRight = this->mapToGlobal(rectItem.topLeft());
     const QRect rectIconGlobal( pointIconRight.x()-buttonSize,pointIconRight.y(),buttonSize*2,buttonSize );
-    theApp->dialgoViewECard(rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
+    theApp->dialgoViewECard(this, rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
 
     if ( ebitem->m_itemInfo->m_nUserId==theApp->m_ebum.EB_GetLogonUserId() ) {
         m_pushButtonEdit->setGeometry( pointItem.x()-buttonSize,y,buttonSize,buttonSize );
@@ -237,15 +250,6 @@ void EbWidgetUserList::onCallItem(QListWidgetItem *item)
     const EbListWidgetItem *ebitem = (EbListWidgetItem*)item;
     createMenuData();
     m_contextMenu->onCallItem(ebitem->m_itemInfo);
-
-//    if (ebitem->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_MEMBER) {
-////        theApp->m_pAutoCallFromUserIdList.remove(item->m_itemInfo->m_nUserId);
-//        theApp->m_ebum.EB_CallMember(ebitem->m_itemInfo->m_sMemberCode,0);
-//    }
-////    else if (item->m_itemInfo->m_nItemType == EbWidgetItemInfo::ITEM_TYPE_GROUP) {
-////        theApp->m_pAutoCallGroupIdList.remove(item->m_itemInfo->m_sGroupCode);
-////        theApp->m_ebum.EB_CallGroup(item->m_itemInfo->m_sGroupCode);
-//    //    }
 }
 
 void EbWidgetUserList::onEditItem(QListWidgetItem *item)
@@ -254,10 +258,6 @@ void EbWidgetUserList::onEditItem(QListWidgetItem *item)
     const EbListWidgetItem* ebitem = (EbListWidgetItem*)item;
     createMenuData();
     m_contextMenu->onEditItem(ebitem->m_itemInfo);
-//    EB_MemberInfo pMemberInfo;
-//    if (theApp->m_ebum.EB_GetMemberInfoByUserId(&pMemberInfo,ebitem->m_itemInfo->m_sGroupCode,ebitem->m_itemInfo->m_nUserId)) {
-//        theApp->editMemberInfo(&pMemberInfo);
-//    }
 }
 
 void EbWidgetUserList::updateGroupMemberSize()

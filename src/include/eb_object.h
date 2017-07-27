@@ -14,6 +14,15 @@
 #include <QEvent>
 #endif
 
+#ifndef EBFileString
+#ifdef _QT_MAKE_
+#include <QString>
+#define EBFileString QString
+#else
+#define EBFileString tstring
+#endif  // _QT_MAKE_
+#endif  // EBFileString
+
 namespace entboost {
 
 class EB_Event
@@ -345,7 +354,7 @@ public:
 	//int m_nSubscribeLevel;
 	int m_nLocation;
 	eb::bigint m_nIconResId;
-	CEBString m_sResFile;
+        EBFileString m_sResFile;
 	CEBString m_sFunctionName;
 	CEBString m_sFunctionUrl;
 	EB_FUNC_MODE m_nFunctionMode;
@@ -479,7 +488,7 @@ class EB_EmotionInfo
 {
 public:
 	eb::bigint m_sResId;
-	CEBString m_sResFile;
+        EBFileString m_sResFile;
 	int m_nIndex;
 	int m_nType;
 	eb::bigint m_nUserId;
@@ -584,7 +593,7 @@ public:
 	CEBString m_sDownloadUrl;		// 下载链接地址
 	CEBString m_sUpdateTime;		// 更新时间
 	int m_nUpdateType;				// 更新类型 0：普通更新；1：强制更新（更新才能继续使用）
-	CEBString m_sVersionFile;		// 打包文件
+        EBFileString m_sVersionFile;		/// 打包文件
 	eb::bigint m_sResId;
 	CEBString m_sMD5;
 
@@ -643,7 +652,7 @@ public:
 	CEBString	m_sHeadCmServer;
 	CEBString	m_sHeadHttpServer;
 	CEBString	m_sHeadMd5;
-	CEBString	m_sHeadResourceFile;
+        EBFileString	m_sHeadResourceFile;
 
 	EB_ECardInfo(void)
 		: EB_Event()
@@ -914,7 +923,7 @@ public:
 	EB_USER_LINE_STATE m_nLineState;
 	// 
 	eb::bigint m_sHeadResourceId;
-	CEBString m_sHeadResourceFile;
+        EBFileString m_sHeadResourceFile;
 	CEBString m_sHeadMd5;
 	eb::bigint m_nCSId;
 	int m_nCSExt;
@@ -1309,7 +1318,7 @@ public:
 	EB_USER_LINE_STATE m_nLineState;
 
 	eb::bigint m_sHeadResourceId;
-	CEBString m_sHeadResourceFile;
+        EBFileString m_sHeadResourceFile;
 	CEBString m_sHeadMd5;
 };
 

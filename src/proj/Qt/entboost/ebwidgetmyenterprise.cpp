@@ -462,7 +462,7 @@ void EbWidgetMyEnterprise::onItemEntered(QTreeWidgetItem *item, int /*column*/)
     /// 处理显示电子名片 浮动条
     const QPoint pointIconRight = this->mapToGlobal(rectItem.topLeft());
     const QRect rectIconGlobal( pointIconRight.x()-buttonSize,pointIconRight.y(),buttonSize*2,buttonSize );
-    theApp->dialgoViewECard(rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
+    theApp->dialgoViewECard(this, rectIconGlobal)->setItemInfo(ebitem->m_itemInfo);
 
     if (m_viewMode==EB_VIEW_SELECT_USER) {
         m_pushButtonCall->hide();

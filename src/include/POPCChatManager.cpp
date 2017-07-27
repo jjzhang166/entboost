@@ -164,13 +164,21 @@ int CPOPCChatManager::Start(const CCgcAddress & address, const tstring & sAppNam
     if (bBuildResponseThread && m_pResponseThread.get() == NULL)
     {
         boost::thread_attributes attrs;
+#ifdef _QT_MAKE_
+        attrs.set_stack_size(CGC_THREAD_STACK_MAX);
+#else
         attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#endif
         m_pResponseThread = boost::shared_ptr<boost::thread>(new boost::thread(attrs,boost::bind(&CPOPCChatManager::cm_response_thread_svr, this)));
     }
     if (bBuildProcessThread && m_pProcessThread.get() == NULL)
     {
         boost::thread_attributes attrs;
+#ifdef _QT_MAKE_
+        attrs.set_stack_size(CGC_THREAD_STACK_MAX);
+#else
         attrs.set_stack_size(CGC_THREAD_STACK_MIN);
+#endif
         m_pProcessThread = boost::shared_ptr<boost::thread>(new boost::thread(attrs,boost::bind(&CPOPCChatManager::cm_process_thread_svr, this)));
     }
     return 0;
@@ -458,15 +466,14 @@ void CPOPCChatManager::ProcFCMAck(const CPOPSotpRequestInfo::pointer & pRequestI
             boost::mutex::scoped_lock lock(pChatMsgInfo->m_mutexMsg);
             if (pChatMsgInfo->m_pFileHandle != NULL)
             {
-                // 已经处理，传输文件，只需要处理一次。
+                /// 已经处理，传输文件，只需要处理一次。
                 break;
             }
             const tstring sFileName(pChatMsgInfo->GetContent());
             const mycp::bigint ntotalsize = pChatMsgInfo->GetSize();
 #ifdef _QT_MAKE_
             const QString filePathTemp(sFileName.c_str());
-            const QByteArray filePathTempByteArray = filePathTemp.toLocal8Bit();
-            FILE * f = fopen(filePathTempByteArray.constData(),"rb");
+            FILE * f = fopen(filePathTemp.toLocal8Bit().constData(),"rb");
 #else
             FILE * f = fopen(sFileName.c_str(), "rb");
 #endif
@@ -565,7 +572,7 @@ inline bool FileIsExist(const char* lpszFile)
     return true;
 #endif
 }
-inline void GetFileExt(const tstring & sFileName, tstring & sOutExt, tstring* sOutName=NULL)
+inline void GetFileExt(const std::string &sFileName, tstring & sOutExt, tstring* sOutName=NULL)
 {
     const std::string::size_type find = sFileName.rfind(".");
     if (find != std::string::npos && find > 0) {
@@ -634,9 +641,12 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
             }
         }else if (pChatMsgInfo->GetMsgType() == EB_MSG_FILE)
         {
-            if (pChatMsgInfo->m_pFileHandle != NULL || pChatMsgInfo->m_sFileName.empty())
-            {
-                // 该数据包已经接收
+#ifdef _QT_MAKE_
+            if (pChatMsgInfo->m_pFileHandle!=0 || pChatMsgInfo->m_sFileName.isEmpty()) {
+#else
+            if (pChatMsgInfo->m_pFileHandle != NULL || pChatMsgInfo->m_sFileName.empty()) {
+#endif
+                /// 该数据包已经接收
                 return;
             }
         }
@@ -681,21 +691,27 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
                 //pChatMsgInfo->m_pFileHandle = fopen(pChatMsgInfo->m_sFileName.c_str(), "wb");	// w+b
                 //if (pChatMsgInfo->m_pFileHandle == NULL)
                 {
-                    tstring sFilePathTemp = pChatMsgInfo->m_sFileName + ".ebtemp";
+                    EBFileString sFilePathTemp = pChatMsgInfo->m_sFileName + ".ebtemp";
                     tstring sFileNameTemp;
                     tstring sFileExtTemp;
                     int nFileIndexTemp = 0;
+#ifdef _QT_MAKE_
+                    while (FileIsExist(sFilePathTemp.toStdString().c_str()) && nFileIndexTemp<100) {
+#else
                     char lpszBuffer[260];
                     while (FileIsExist(sFilePathTemp.c_str()) && nFileIndexTemp<100) {
+#endif
                         if ( sFileNameTemp.empty() ) {
+#ifdef _QT_MAKE_
+                            GetFileExt(pChatMsgInfo->m_sFileName.toStdString(),sFileExtTemp,&sFileNameTemp);
+#else
                             GetFileExt(pChatMsgInfo->m_sFileName,sFileExtTemp,&sFileNameTemp);
+#endif
                         }
                         if (sFileExtTemp.empty()) {
                             /// 没有扩展名，可能是资源文件，尝试直接使用临时文件打开
 #ifdef _QT_MAKE_
-                            const QString filePathTemp(sFilePathTemp.c_str());
-                            const QByteArray filePathByteArray = filePathTemp.toLocal8Bit();
-                            pChatMsgInfo->m_pFileHandle = fopen(filePathByteArray.constData(), "wb");	// w+b
+                            pChatMsgInfo->m_pFileHandle = fopen(sFilePathTemp.toLocal8Bit().constData(), "wb");	// w+b
 #else
                             pChatMsgInfo->m_pFileHandle = fopen(sFilePathTemp.c_str(), "wb");	// w+b
 #endif
@@ -704,14 +720,16 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
                                 break;
                             }
                         }
+#ifdef _QT_MAKE_
+                        sFilePathTemp = QString("%1(%2)%3.ebtemp").arg(sFileNameTemp.c_str()).arg(++nFileIndexTemp).arg(sFileExtTemp.c_str());
+#else
                         sprintf(lpszBuffer,"%s(%d)%s.ebtemp",sFileNameTemp.c_str(),(++nFileIndexTemp),sFileExtTemp.c_str());
                         sFilePathTemp = lpszBuffer;
+#endif
                     }
                     if (pChatMsgInfo->m_pFileHandle==0) {
 #ifdef _QT_MAKE_
-                        const QString filePathTemp(sFilePathTemp.c_str());
-                        const QByteArray filePathByteArray = filePathTemp.toLocal8Bit();
-                        pChatMsgInfo->m_pFileHandle = fopen(filePathByteArray.constData(), "wb");	// w+b
+                        pChatMsgInfo->m_pFileHandle = fopen(sFilePathTemp.toLocal8Bit().constData(), "wb");	// w+b
 #else
                         pChatMsgInfo->m_pFileHandle = fopen(sFilePathTemp.c_str(), "wb");	// w+b
 #endif
@@ -721,7 +739,7 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
                     pChatMsgInfo->m_sFileName = sFilePathTemp;
                 }
 
-                // 启动一个保存线程（放里面安全一次，避免启动多次）
+                /// 启动一个保存线程（放里面安全一次，避免启动多次）
                 CSendFileThread::pointer pThreadSendFile = CSendFileThread::create(this,pChatMsgInfo);
                 if (m_pSendFileThreadList.insert(nMsgId, pThreadSendFile, false)) {
                     pThreadSendFile->SetThread();
@@ -816,22 +834,26 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
             }
             m_pFilePercent.remove(nMsgId);
             const std::string::size_type nFileNameSize = pChatMsgInfo->m_sFileName.size();
+#ifdef _QT_MAKE_
+            if (nFileNameSize>7 && pChatMsgInfo->m_sFileName.right(7)==".ebtemp")
+#else
             if (nFileNameSize>7 && pChatMsgInfo->m_sFileName.substr(nFileNameSize-7)==".ebtemp")
+#endif
             {
+#ifdef _QT_MAKE_
+                const EBFileString sOldTempFile(pChatMsgInfo->m_sFileName);
+                pChatMsgInfo->m_sFileName = pChatMsgInfo->m_sFileName.left(nFileNameSize-7);
+#else
                 const tstring sOldTempFile(pChatMsgInfo->m_sFileName);
                 pChatMsgInfo->m_sFileName = pChatMsgInfo->m_sFileName.substr(0,nFileNameSize-7);
-
+#endif
                 try
                 {
                     if (pChatMsgInfo->m_nAttachEncoding==2) {
                         /// *2=deflate
 #ifdef _QT_MAKE_
-                        const QString filePathSource(sOldTempFile.c_str());
-                        const QString filePathDest(pChatMsgInfo->m_sFileName.c_str());
-                        const QByteArray filePathSourceByteArray = filePathSource.toLocal8Bit();
-                        const QByteArray filePathDestByteArray = filePathDest.toLocal8Bit();
-                        FILE * source = fopen(filePathSourceByteArray.constData(),"rb");
-                        FILE * dest = source==NULL?NULL:fopen(filePathDestByteArray.constData(),"wb");
+                        FILE * source = fopen(sOldTempFile.toLocal8Bit().constData(),"rb");
+                        FILE * dest = source==NULL?NULL:fopen(pChatMsgInfo->m_sFileName.toLocal8Bit().constData(),"wb");
 #else
                         FILE * source = fopen(sOldTempFile.c_str(),"rb");
                         FILE * dest = source==NULL?NULL:fopen(pChatMsgInfo->m_sFileName.c_str(),"wb");
@@ -847,7 +869,7 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
                             fclose(dest);
                         if (bOk) {
 #ifdef _QT_MAKE_
-                            QFile::remove(sOldTempFile.c_str());
+                            QFile::remove(sOldTempFile);
 #else
                             namespace fs = boost::filesystem;
                             fs::path pathOld(sOldTempFile.string());
@@ -857,10 +879,10 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
                     }
                     else {
 #ifdef _QT_MAKE_
-                        const QString oldFile(sOldTempFile.c_str());
-                        const QString newFile(pChatMsgInfo->m_sFileName.c_str());
+                        const QString oldFile(sOldTempFile);
+                        const QString newFile(pChatMsgInfo->m_sFileName);
                         QFile::remove(newFile);
-                        QFile::rename( oldFile,newFile );
+                        QFile::rename(oldFile, newFile);
 #else
                         namespace fs = boost::filesystem;
                         fs::path pathNew( pChatMsgInfo->m_sFileName.string() );
@@ -2098,9 +2120,12 @@ int CPOPCChatManager::SendCMReceiveFile(mycp::bigint nMsgId, const tstring & sSa
     {
         return -1;
     }
-    if (!pChatMsgInfo->m_sFileName.empty())
-    {
-        // 已经接收
+#ifdef _QT_MAKE_
+    if (!pChatMsgInfo->m_sFileName.isEmpty()) {
+#else
+    if (!pChatMsgInfo->m_sFileName.empty()) {
+#endif
+        /// 已经接收
         return 1;
     }
     pChatMsgInfo->m_sFileName = sSaveTo;

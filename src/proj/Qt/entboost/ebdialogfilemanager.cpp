@@ -327,8 +327,8 @@ void EbDialogFileManager::onClickedButtonOpenDir()
     else {
 #ifdef WIN32
         filePath.replace("/","\\");
-        const QString param = "/select, "+filePath;
-        QProcess::startDetached( "explorer "+param );
+        const QString param = "/select, \""+filePath+"\"";
+        QProcess::startDetached("explorer "+param);
 #else
         QDesktopServices::openUrl( QUrl(filePath, QUrl::TolerantMode) );
 #endif

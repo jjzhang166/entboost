@@ -31,11 +31,11 @@ class CToSendInfo
 {
 public:
 	typedef boost::shared_ptr<CToSendInfo> pointer;
-	static CToSendInfo::pointer create(const tstring& sFilePath,mycp::bigint nResourceId)
+    static CToSendInfo::pointer create(const EBFileString& sFilePath,mycp::bigint nResourceId)
 	{
 		return CToSendInfo::pointer(new CToSendInfo(sFilePath,nResourceId));
 	}
-	static CToSendInfo::pointer create(const tstring& sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
+    static CToSendInfo::pointer create(const EBFileString& sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
 	{
 		return CToSendInfo::pointer(new CToSendInfo(sFilePath,sTo,bPrivate,bOffFile));
 	}
@@ -46,19 +46,19 @@ public:
 	bool IsRich(void) const {return m_rich.get()!=NULL?true:false;}
 
 	CEBChatRoomRichMsg::pointer m_rich;
-	tstring m_sFilePath;
+    EBFileString m_sFilePath;
 	mycp::bigint m_sTo;
 	bool m_bPrivate;
 	bool m_bOffFile;
 	mycp::bigint m_nMsgId;	// for send file
 	mycp::bigint m_nResourceId;
 public:
-	CToSendInfo(const tstring& sFilePath,mycp::bigint nResourceId)
+    CToSendInfo(const EBFileString& sFilePath,mycp::bigint nResourceId)
 		: m_sFilePath(sFilePath), m_sTo(0),m_bPrivate(false),m_bOffFile(false)
 		, m_nMsgId(0), m_nResourceId(nResourceId)
 	{
 	}
-	CToSendInfo(const tstring& sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
+    CToSendInfo(const EBFileString& sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
 		: m_sFilePath(sFilePath), m_sTo(sTo),m_bPrivate(bPrivate),m_bOffFile(bOffFile)
 		, m_nMsgId(0), m_nResourceId(0)
 	{
@@ -86,7 +86,7 @@ public:
 	{
 		return CToSendList::pointer(new CToSendList(nCallId,nGroupCode));
 	}
-	void AddFileResource(const tstring& sFilePath,mycp::bigint nResourceId)
+    void AddFileResource(const EBFileString& sFilePath,mycp::bigint nResourceId)
 	{
 		{
 			BoostReadLock rdlock(m_list.mutex());
@@ -102,7 +102,7 @@ public:
 		}
 		m_list.add(CToSendInfo::create(sFilePath,nResourceId));
 	}
-	void AddFilePath(const tstring& sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
+    void AddFilePath(const EBFileString& sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile)
 	{
 		{
 			BoostReadLock rdlock(m_list.mutex());
@@ -160,7 +160,7 @@ public:
 		, FILE_ENT_IMAGE		// resource too
 		, FILE_FUNC_IMAGE		// resource too
 	};
-	static CFilePathInfo::pointer create(FILE_PATH_TYPE nType,const tstring& sFilePath,bool bDownload)
+    static CFilePathInfo::pointer create(FILE_PATH_TYPE nType,const EBFileString &sFilePath,bool bDownload)
 	{
 		return CFilePathInfo::pointer(new CFilePathInfo(nType,sFilePath,bDownload));
 	}
@@ -170,7 +170,7 @@ public:
 		, m_nBigData(0), m_nMsgId(0)
 	{
 	}
-	CFilePathInfo(FILE_PATH_TYPE nType,const tstring& sFilePath,bool bDownload)
+    CFilePathInfo(FILE_PATH_TYPE nType,const EBFileString &sFilePath,bool bDownload)
 		: m_nType(nType)
 		, m_sFilePath(sFilePath)
 		, m_bDownload(bDownload)
@@ -196,7 +196,7 @@ public:
 	}
 public:
 	FILE_PATH_TYPE m_nType;
-	tstring m_sFilePath;
+    EBFileString m_sFilePath;
 	bool m_bDownload;
 	tstring m_sParameter;
 	mycp::bigint m_nBigData;
@@ -251,7 +251,7 @@ public:
 	Cchatroom::pointer m_pChatRoom;
 	mycp::bigint m_nBigInt1;	// resource_id,msgid
 	mycp::bigint m_nBigInt2;	// callid
-	tstring m_sString1;	// resource_file
+    EBFileString m_sString1;	// resource_file
 	time_t m_tProcessTime;
 
 	CProcessMsgInfo(PROCESS_MSG_TYPE nMsg)
@@ -357,7 +357,7 @@ public:
 	int MoveRes2Dir(mycp::bigint sResourceId,mycp::bigint sParentResId);
 	bool HasSubRes(mycp::bigint sParentResId) const;
 	int DeleteRes(mycp::bigint sResourceId);
-	int DownloadFileRes(mycp::bigint sResourceId,const tstring& sSaveTo);
+    int DownloadFileRes(mycp::bigint sResourceId,const EBFileString& sSaveTo);
 	int CancelFileRes(mycp::bigint sResourceId,mycp::bigint nMsgId);
 
 	mycp::bigint GetUserId(void) const;
@@ -446,9 +446,11 @@ public:
 	int RequestCollectMsg(eb::bigint sCallId,mycp::bigint nMsgId, bool bGroupCollection);
 	bool DeleteOnlineFileList(eb::bigint sCallId,eb::bigint nMsgId);
 	bool DeleteP2PFileList(eb::bigint sCallId,eb::bigint nMsgId);
-	CLockMap<tstring,unsigned long> m_pWaitingProcessFileList;
-	bool SendWaitingProcessCallback(eb::bigint sCallId,const char* sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile);
-	int SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::bigint nResourceId);
+    CLockMap<EBFileString,unsigned long> m_pWaitingProcessFileList;
+    bool SendWaitingProcessCallback(eb::bigint sCallId,const EBFileString &sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile);
+    int SendCrFile(eb::bigint sCallId,const EBFileString &sFilePath,mycp::bigint nResourceId);
+    int SendCrFile(eb::bigint sCallId,const EBFileString &sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile, bool bFromToSendList=false,bool* pOutInviteCall=NULL,bool bNeedWaitingCallback=false);
+    int SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::bigint nResourceId);
 	int SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile, bool bFromToSendList=false,bool* pOutInviteCall=NULL,bool bNeedWaitingCallback=false);
 	int AcceptCrFile(eb::bigint sCallId,mycp::bigint nMsgId,const char* sSaveTo);
 	int Save2CloudDrive(eb::bigint sCallId,mycp::bigint nMsgId);
@@ -656,18 +658,18 @@ public:
 
 	CLockList<Cchatroom::pointer> m_pClearChatRoom;
 	CLockList<CPOPCUserManager::pointer> m_pHangupUm;
-	const tstring& GetAppPath(void) const {return m_sAppPath;}
-	const tstring& GetResourcePath(void) const {return m_sEbResourcePath;}
-	const tstring& GetAppDataPath(void) const {return m_sAppDataPath;}
-	const tstring& GetAppDataTempPath(void) const {return m_sAppDataTempPath;}
+    const EBFileString& GetAppPath(void) const {return m_sAppPath;}
+    const EBFileString& GetResourcePath(void) const {return m_sEbResourcePath;}
+    const EBFileString& GetAppDataPath(void) const {return m_sAppDataPath;}
+    const EBFileString& GetAppDataTempPath(void) const {return m_sAppDataTempPath;}
 
 private:
-	tstring m_sAppPath;
-	tstring m_sImgPath;
-	tstring m_sEbResourcePath;
-	tstring m_sEbDataPath;
-	tstring m_sAppDataPath;
-	tstring m_sAppDataTempPath;
+    EBFileString m_sAppPath;
+    EBFileString m_sImgPath;
+    EBFileString m_sEbResourcePath;
+    EBFileString m_sEbDataPath;
+    EBFileString m_sAppDataPath;
+    EBFileString m_sAppDataTempPath;
 	tstring m_sServerAddress;
 	tstring m_sLastErrorServerAddress;
 	tstring m_sOrgServerAddress;
@@ -756,7 +758,7 @@ private:
 	virtual void OnResultValue(int nResultValue,const CPOPCLogonCenter* pLCOwner);
 	virtual void OnResultValue(int nResultValue,const CEBCAppCenter* pAPOwner);
 
-	std::vector<tstring> m_pExit2DeleteFileList;
+    std::vector<EBFileString> m_pExit2DeleteFileList;
 	void DeleteOldHeadFile(const CEBMemberInfo::pointer& pEmployeeInfo);
 	void DeleteOldHeadFile(mycp::bigint nHeadResourceId);
 	CEBEmotionInfo::pointer GetEmotionInfo(mycp::bigint sResourceId) const;

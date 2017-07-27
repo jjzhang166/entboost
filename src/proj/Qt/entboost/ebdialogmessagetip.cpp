@@ -136,7 +136,10 @@ void EbDialogMessageTip::addSubMsgTip(eb::bigint nId, eb::bigint nSubId, const Q
         pItemInfo->m_sName = sParam.toStdString();
         pItemInfo->m_sParentId = nMsgId;
         m_pIdItemInfo.insert(nId, pItemInfo);
+
+        showMsgTip();
     }
+
 }
 
 void EbDialogMessageTip::addEmailMsgTip(eb::bigint nId, eb::bigint nEmailSubId, const QString &sMsgTip, const QString &sParam)
@@ -156,6 +159,8 @@ void EbDialogMessageTip::addEmailMsgTip(eb::bigint nId, eb::bigint nEmailSubId, 
         pItemInfo->m_nBigId = nEmailSubId;
         pItemInfo->m_sName = sParam.toStdString();
         m_pIdItemInfo.insert(nId, pItemInfo);
+
+        showMsgTip();
     }
 }
 

@@ -251,7 +251,7 @@ void EbFrameChatToolBar::onClickedButton1(bool /*checked*/)
         else {
 #ifdef WIN32
             fileName.replace("/","\\");
-            const QString param = "/select, "+fileName;
+            const QString param = "/select, \""+fileName+"\"";
             QProcess::startDetached( "explorer "+param );
 #else
             QDesktopServices::openUrl( QUrl(filePath, QUrl::TolerantMode) );
@@ -485,6 +485,7 @@ void EbFrameChatToolBar::onClickedButton3(bool /*checked*/)
         }
         else {
             /// 复制文件(另存)
+            QFile::remove(newPath);
             if ( QFile::copy( filePath, newPath ) ) {
                 EbMessageBox::doShow( 0,"", QChar::Null, theLocales.getLocalText("chat-msg-text.file-saveas-ok","File Saveas Ok"),
                                       EbMessageBox::IMAGE_INFORMATION,default_warning_auto_close );
