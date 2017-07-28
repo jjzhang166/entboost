@@ -4,21 +4,21 @@
 #include "ebclientapp.h"
 #include <QMouseEvent>
 #include <QMenu>
-#include <ebdialogbase.h>
 #include <QListWidgetItem>
+#include <ebdialogbase.h>
 #include <eblabel.h>
 
 namespace Ui {
 class EbDialogLogin;
 }
 
-class CLoginInfo
+class EbLoginInfo
 {
 public:
-    typedef boost::shared_ptr<CLoginInfo> pointer;
-    CLoginInfo(void);
-    CLoginInfo(const mycp::tstring &account, const mycp::tstring &password, bool bSafePwd);
-    static CLoginInfo::pointer create(const mycp::tstring &account, const mycp::tstring &password, bool safePwd);
+    typedef boost::shared_ptr<EbLoginInfo> pointer;
+    EbLoginInfo(void);
+    EbLoginInfo(const mycp::tstring &account, const mycp::tstring &password, bool safePwd);
+    static EbLoginInfo::pointer create(const mycp::tstring &account, const mycp::tstring &password, bool safePwd);
 
     mycp::tstring m_sAccount;
     mycp::tstring m_sRealAccount;
@@ -27,7 +27,6 @@ public:
     EB_USER_LINE_STATE m_nLineState;
     mycp::bigint m_nUserId;
     mycp::bigint m_nPhone;
-//    HTREEITEM m_hItem;
     QListWidgetItem* m_item;
 };
 
@@ -39,7 +38,6 @@ public:
     ~EbDialogLogin(void);
 
     void updateLocaleInfo(void);
-//    void refreshSkin(void);
     void updateEntLogo(const QString &fileName);
     void updateProductName(void);
     void setErrorText(const QString &errorText, bool messageShowError);
@@ -48,7 +46,7 @@ public slots:
     void onClickedPushButtonSetting(void);
     void onClickedEntLogo(void);
     void setLogonCtrlEnabled(bool);
-    void onClickPushButtonLogon(void);
+    void onClickedPushButtonLogon(void);
 #ifdef WIN32
     void onClickedCheckBoxAutoRun(void);
 #endif
@@ -63,16 +61,16 @@ public slots:
 //    void onCurrentItemChangedLoginRecords(QListWidgetItem *current, QListWidgetItem *previous);
 //    void onCurrentRowChangedLoginRecords(int currentRow);
 
-    void onClickPushButtonDeleteAccount(void);
-    void onClickPushButtonVisitor(void);
-    void onClickPushButtonRegister(void);
-    void onClickPushButtonForgetPwd(void);
-    void onClickPushButtonConnectSetting(void);
+    void onClickedPushButtonDeleteAccount(void);
+    void onClickedPushButtonVisitor(void);
+    void onClickedPushButtonRegister(void);
+    void onClickedPushButtonForgetPwd(void);
+    void onClickedPushButtonConnectSetting(void);
 
     void processDatas(void);
 protected:
-    void setLoginInfo(QListWidgetItem* item, bool bAccountSelect);
-    void setLoginInfo(const CLoginInfo::pointer& pLoginInfo, bool bAccountSelect);
+    void setLoginInfo(QListWidgetItem *item, bool bAccountSelect);
+    void setLoginInfo(const EbLoginInfo::pointer &pLoginInfo, bool bAccountSelect);
     void loadLoginData(void);
     void createMenuData(void);
 //    void timerEvent( QTimerEvent *e);
@@ -85,12 +83,9 @@ protected:
     void keyPressEvent(QKeyEvent *);
     virtual bool eventFilter(QObject *obj, QEvent *e);
 private:
-//    void onUpdateProductName(QEvent* e);
-//    void onUpdateEntLogo(QEvent* e);
     void onAppIdSuccess(QEvent *e); /// from ebclientapp
     void onAppIdError(QEvent *e);   /// from ebclientapp
     void onLogonSuccess(QEvent *e);
-//    void onLogonTimeout(QEvent *e);
     void onLogonError(QEvent *e);
     void onOnlineAnother(QEvent *e);
 private:
@@ -102,7 +97,7 @@ private:
     bool m_inMessageBox;
     bool m_canSearch;
     bool m_searchFirst; /// true=查找开头 false=完全匹配
-    CLockMap<mycp::bigint, CLoginInfo::pointer> m_pLoginInfoList;
+    CLockMap<mycp::bigint, EbLoginInfo::pointer> m_pLoginInfoList;
     mycp::tstring m_sOAuthKey;
 };
 

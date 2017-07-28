@@ -25,7 +25,8 @@ public:
     void onMemberInfo(const EB_MemberInfo* memberInfo, bool changeLineState);
     void getProcessing(bool &outVideoProcessing, bool &outFileProcessing, bool &outDesktopProcessing) const;
     void showMsgRecord(void);
-    void triggeredApps(int index);
+    void triggeredApps(eb::bigint subId);
+//    void triggeredApps(int index);
 signals:
 
 public slots:

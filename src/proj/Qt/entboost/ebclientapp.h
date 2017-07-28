@@ -67,34 +67,34 @@ public:
     CLockMap<eb::bigint,bool> m_pCancelFileList;
     eb::bigint m_nSelectCallId;
     void clearSubscribeSelectInfo(void);
-    void triggeredApps(int index);
-    std::vector<EB_SubscribeFuncInfo> m_pSubscribeFuncList;
+//    void triggeredApps(eb::bigint subId);
+//    std::vector<EB_SubscribeFuncInfo> m_pSubscribeFuncList;
 
-    void setMainWnd(EbDialogMainFrame * mainWnd) {m_mainWnd=mainWnd;}
+    void setMainWnd(EbDialogMainFrame *mainWnd) {m_mainWnd=mainWnd;}
     EbDialogMainFrame *mainWnd(void) const {return m_mainWnd;}
-    bool setDevAppId(QObject* receiver);
+    bool setDevAppId(QObject *receiver);
 
     bool initApp(void);
     void exitApp(bool bResetEbumOnly=false);
 //    bool startEBUMClient(void);
     bool onLogonSuccess(void);
 
-    const QString & appDataLocation(void) const {return m_appDataLocation;}
-    const QString & appDataTempLocation(void) const {return m_appDataTempLocation;}
-    const QString & appDataImageTempLocation(void) const {return m_appDataImageTempLocation;}
-    const QString & appDataCefCacheTemp(void) const {return m_appDataCefCacheTemp;}
+    const QString &appDataLocation(void) const {return m_appDataLocation;}
+    const QString &appDataTempLocation(void) const {return m_appDataTempLocation;}
+    const QString &appDataImageTempLocation(void) const {return m_appDataImageTempLocation;}
+    const QString &appDataCefCacheTemp(void) const {return m_appDataCefCacheTemp;}
 
-    const QString & getAppDataPath(void) const {return m_appDataPath;}
-    const QString & getAppUsersPath(void) const {return m_appUsersPath;}
-    const QString & getAppImgPath(void) const {return m_appImgPath;}
-    const QString & getAppLocalesPath(void) const {return m_appLocalesPath;}
-    const QString & getSettingFile(void) const {return m_settingFile;}
-    const QString & getSettingIntFile(void) const {return m_settingIniFile;}
-    const QString & getEbcIniFile(void) const {return m_ebcIniFile;}
-    const QString & userMainPath(void) const {return m_userMainPath;}
-    const QString & userImagePath(void) const {return m_userImagePath;}
-    const QString & userFilePath(void) const {return m_userFilePath;}
-    const QString & userSettingIniFile(void) const {return m_userSettingIniFile;}
+    const QString &getAppDataPath(void) const {return m_appDataPath;}
+    const QString &getAppUsersPath(void) const {return m_appUsersPath;}
+    const QString &getAppImgPath(void) const {return m_appImgPath;}
+    const QString &getAppLocalesPath(void) const {return m_appLocalesPath;}
+    const QString &getSettingFile(void) const {return m_settingFile;}
+    const QString &getSettingIntFile(void) const {return m_settingIniFile;}
+    const QString &getEbcIniFile(void) const {return m_ebcIniFile;}
+    const QString &userMainPath(void) const {return m_userMainPath;}
+    const QString &userImagePath(void) const {return m_userImagePath;}
+    const QString &userFilePath(void) const {return m_userFilePath;}
+    const QString &userSettingIniFile(void) const {return m_userSettingIniFile;}
 
 //    void setMainColor(QRgb v,bool bUpdateDatabase);
     void setMainColor(unsigned char r, unsigned char g, unsigned char b, bool bUpdateDatabase);
@@ -104,11 +104,11 @@ public:
 //    const QColor& getHotColor(void) const {return this->m_hotColor;}
 //    const QColor& getPreColor(void) const {return this->m_preColor;}
 
-    QString urlIconFilePath( const QUrl &url );
-    QString subscribeFuncUrl( eb::bigint subId, const std::string &sParameters="" );
-    void setEntManagerUrl(const QString& v) {m_sEntManagerUrl = v;}
+    QString urlIconFilePath(const QUrl &url);
+    QString subscribeFuncUrl(eb::bigint subId, const std::string &sParameters="");
+    void setEntManagerUrl(const QString &v) {m_sEntManagerUrl=v;}
     const QString& entManagerUrl(void) const {return m_sEntManagerUrl;}
-    void setEnterpriseCreateUserId(eb::bigint nUserId) {m_nEnterpriseCreateUserId = nUserId;}
+    void setEnterpriseCreateUserId(eb::bigint nUserId) {m_nEnterpriseCreateUserId=nUserId;}
     eb::bigint enterpriseCreateUserId(void) const {return m_nEnterpriseCreateUserId;}
     bool isEnterpriseCreateUserId(eb::bigint nUserId) {return (nUserId>0 && nUserId==m_nEnterpriseCreateUserId)?true:false;}
 
@@ -154,29 +154,29 @@ public:
     const QRect& deskRect(void) const {return m_deskRect;}
     const QRect& screenRect(void) const {return m_screenRect;}
 
-    EbDialogEmotionSelect* showDialogEmotionSelect(const QPoint& pt,QObject* receiver=0);
-    EbDialogViewECard * dialgoViewECard(const QWidget * wdigetValid, const QRect & rectValid,bool showImmediate=false);
+    EbDialogEmotionSelect* showDialogEmotionSelect(const QPoint &pt, QObject *receiver=0);
+    EbDialogViewECard * dialgoViewECard(const QWidget *wdigetValid, const QRect &rectValid, bool showImmediate=false);
 
     bool isLogoned(void) const {return m_ebum.EB_IsLogoned();}
     bool isLogonVisitor(void) const {return m_ebum.EB_IsLogonVisitor();}
     eb::bigint logonUserId(void) const {return m_ebum.EB_GetLogonUserId();}
     tstring logonUserAccount(void) const {return m_ebum.EB_GetLogonAccount();}
-    void editContactInfo(eb::bigint contactId,QWidget* parent=0);
-    void editGroupInfo(eb::bigint groupId,QWidget* parent=0);
-    void newGroupInfo(EB_GROUP_TYPE groupType,eb::bigint enterpriseId, eb::bigint parentGroupId,QWidget* parent=0);
-    void newMemberInfo(EB_GROUP_TYPE groupType,eb::bigint groupId,const QString &groupName,QWidget* parent=0);
-    void editMemberInfo(const EB_MemberInfo* pMemberInfo,QWidget* parent=0);
+    void editContactInfo(eb::bigint contactId, QWidget *parent=0);
+    void editGroupInfo(eb::bigint groupId, QWidget *parent=0);
+    void newGroupInfo(EB_GROUP_TYPE groupType, eb::bigint enterpriseId, eb::bigint parentGroupId, QWidget *parent=0);
+    void newMemberInfo(EB_GROUP_TYPE groupType, eb::bigint groupId, const QString &groupName, QWidget *parent=0);
+    void editMemberInfo(const EB_MemberInfo* pMemberInfo, QWidget *parent=0);
     void deleteDbRecord(eb::bigint sId, bool bIsAccount);
     void deleteDbRecord(eb::bigint sMsgId);
     void updateMsgReceiptData(eb::bigint nMsgId, eb::bigint nFromUserId, int nAckType);
-    QImage userHeadImage(eb::bigint userId,eb::bigint memberId,const tstring& account) const;
-    QString userHeadFilePath(eb::bigint userId,eb::bigint memberId,const tstring& account) const;
-    QImage funcImage(const EB_SubscribeFuncInfo * funcInfo) const;
-    QImage memberHeadImage(const EB_MemberInfo * memberInfo) const;
-    QImage contactHeadImage(const EB_ContactInfo * contactInfo) const;
-    QString contactHeadFilePath(const EB_ContactInfo * contactInfo) const;
+    QImage userHeadImage(eb::bigint userId, eb::bigint memberId, const tstring &account) const;
+    QString userHeadFilePath(eb::bigint userId, eb::bigint memberId, const tstring &account) const;
+    QImage funcImage(const EB_SubscribeFuncInfo *funcInfo) const;
+    QImage memberHeadImage(const EB_MemberInfo *memberInfo) const;
+    QImage contactHeadImage(const EB_ContactInfo *contactInfo) const;
+    QString contactHeadFilePath(const EB_ContactInfo *contactInfo) const;
     QImage fromHeadImage(const QString &imagePath, EB_USER_LINE_STATE lineState) const;
-    QString memberHeadFilePath(const EB_MemberInfo * memberInfo) const;
+    QString memberHeadFilePath(const EB_MemberInfo *memberInfo) const;
 //    tstring groupTypeHeadFilePath(EB_GROUP_TYPE groupType) const;
     QImage groupHeadImage(eb::bigint groupId, EB_GROUP_TYPE groupType) const;
 protected:

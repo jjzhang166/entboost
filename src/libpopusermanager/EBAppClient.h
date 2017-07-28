@@ -179,7 +179,9 @@ public:
 	/****
 	功能：用户登录
 	====================================================================*/
-	int EB_LogonByAccount(const char * sAccount, const char * sPassword, const char* sReqCode="", const char * sOAuthKey="",EB_USER_LINE_STATE nNewLineState=EB_LINE_STATE_ONLINE_NEW);
+    int EB_LogonByAccount(const char * sAccount, const char * sPassword, const char* sReqCode="",
+                          const char * sOAuthKey="", EB_USER_LINE_STATE nNewLineState=EB_LINE_STATE_ONLINE_NEW,
+                          EB_LOGON_TYPE logonType=EB_LOGON_TYPE_PC);
 
 	/****
 	功能：OAUTH验证

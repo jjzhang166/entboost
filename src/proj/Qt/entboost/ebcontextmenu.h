@@ -75,7 +75,6 @@ private:
     QAction *m_memberSeparatorAction;
     QAction *m_memberForbidSpeechAction;
     QMenu *m_menuContext;
-    std::vector<EB_UGInfo> m_UGInfoList;
     QAction *m_actionMoveTo;
     QMenu *m_menuMoveTo;
 };

@@ -102,15 +102,11 @@ void EbClientApp::clearSubscribeSelectInfo()
     m_nSelectCallId = 0;
 }
 
-void EbClientApp::triggeredApps(int index)
-{
-    if ( index>=0 && index<(int)m_pSubscribeFuncList.size() ) {
-        ///
-        const EB_SubscribeFuncInfo funcInfo = m_pSubscribeFuncList[index];
+//void EbClientApp::triggeredApps(eb::bigint subId)
+//{
 
-    }
+//}
 
-}
 
 bool EbClientApp::setDevAppId(QObject* receiver)
 {

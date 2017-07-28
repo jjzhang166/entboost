@@ -723,6 +723,8 @@ private:
 
 #ifdef _QT_MAKE_
 protected:
+    long postWaitEventResult(QObject *receiver, EB_Event *event);
+    long postWaitEventResult(QObject *receiver, CCrInfo *event);
     long waitEventResult(unsigned long resultKey,int waitMaxSecond,long defaultResult=0);
     CLockMap<unsigned long,long> m_eventResult;
     virtual void customEvent(QEvent *e);

@@ -408,7 +408,7 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
 //        }
         this->setMenuActionVisible( EB_COMMAND_EDIT_CONTACT, true );
 
-        m_UGInfoList.clear();
+        std::vector<EB_UGInfo> m_UGInfoList;
         theApp->m_ebum.EB_GetUGInfoList(m_UGInfoList);
         if (!m_UGInfoList.empty()) {
             QList<QAction*> actions = m_menuMoveTo->actions();
@@ -418,7 +418,7 @@ bool EbContextMenu::updateMenuItem(const EbWidgetItemInfo::pointer &itemInfo)
             m_actionMoveTo->setVisible(true);
             for (size_t i=0; i<m_UGInfoList.size(); i++) {
                 QAction * action = m_menuMoveTo->addAction(m_UGInfoList[i].m_sGroupName.c_str());
-                action->setData(QVariant(i));
+                action->setData(QVariant(m_UGInfoList[i].m_nUGId));
                 this->connect( action,SIGNAL(triggered()),this,SLOT(onTriggeredActionContactMoveTo()) );
             }
         }
@@ -966,10 +966,10 @@ void EbContextMenu::onTriggeredActionContactMoveTo()
         return;
     }
     bool ok = false;
-    const int index = ((QAction*)sender())->data().toInt(&ok);
-    if (ok && index>=0 && index<(int)m_UGInfoList.size()) {
+    const eb::bigint ugId = ((QAction*)sender())->data().toLongLong(&ok);
+    if (ok && ugId>0) {
         /// 移动至该组
-        theApp->m_ebum.EB_MoveContactTo1(m_itemInfo->m_sId, m_UGInfoList[index].m_nUGId);
+        theApp->m_ebum.EB_MoveContactTo1(m_itemInfo->m_sId, ugId);
     }
 }
 

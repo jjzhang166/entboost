@@ -1,20 +1,19 @@
-// eb_define1.h file here
+ï»¿// eb_define1.h file here
 #ifndef __eb_define1_h__
 #define __eb_define1_h__
 #include "eb_define.h"
 
 /*==========================================================
-ÏûÏ¢Í¨ÖªÀàÐÍ
+æ¶ˆæ¯é€šçŸ¥ç±»åž‹
 ===========================================================*/
-typedef enum EB_NOTIFY_TYPE
-{
+typedef enum EB_NOTIFY_TYPE {
 	EB_NOTIFY_UNKNOWN
-	, EB_NOTIFY_USER_INPUT						// ÓÃ»§ÕýÔÚÊäÈë
-	, EB_NOTIFY_UPLOAD_GROUP_FILE			// ÓÃ»§ÉÏ´«ÈºÎÄ¼þ notify-data<=1024 size
+        , EB_NOTIFY_USER_INPUT				// ç”¨æˆ·æ­£åœ¨è¾“å…¥
+	, EB_NOTIFY_UPLOAD_GROUP_FILE			// ç”¨æˆ·ä¸Šä¼ ç¾¤æ–‡ä»¶ notify-data<=1024 size
 }EB_NOTIFY_TYPE;
 
 /*==========================================================
-ÏûÏ¢ÀàÐÍ
+æ¶ˆæ¯ç±»åž‹
 ===========================================================*/
 typedef enum EB_MSG_TYPE
 {
@@ -22,48 +21,48 @@ typedef enum EB_MSG_TYPE
 	, EB_MSG_RICH		// text&image
 	, EB_MSG_FILE
 
-	, EB_MSG_DELETE_GROUP			= 0x101		// ½âÉ¢Èº
-	, EB_MSG_EXIT_GROUP							// Ö÷¶¯ÍË³öÈº
-	, EB_MSG_UPDATE_GROUP						// Èº×ÊÁÏÒÑ¾­ÐÞ¸Ä£¬ÐèÒªÖØÐÂ¼ÓÔØÈº×ÊÁÏ
-	, EB_MSG_REMOVE_GROUP						// ±»¶¯¹ÜÀíÔ±ÒÆ³öÈº
-	, EB_MSG_CALL_2_GROUP						// Ò»¶ÔÒ»»á»°×ª»»¶àÈËÌÖÂÛ×é
-	, EB_MSG_ADD_2_GROUP						// Ìí¼Ó½øÈº×é(²¿ÃÅ)
-	, EB_MSG_REQ_ADD_2_GROUP					// ÉêÇë½øÈëÈº×é(²¿ÃÅ)
-	, EB_MSG_REJECT_ADD_2_GROUP					// ¾Ü¾ø½øÈëÈº×é(²¿ÃÅ)
-	, EB_MSG_INVITE_ADD_2_GROUP					// ÑûÇëÌí¼Ó½øÈº×é(²¿ÃÅ)
-	, EB_MSG_USER_LINE_STATE		= 0x111		// ÓÃ»§ÔÚÏß×´Ì¬Í¨Öª
-	, EB_MSG_ONLINE_ANOTHER						// Í¨Öª×Ô¼º£¬ÒÑ¾­ÔÚÆäËûµØ·½µÇÂ¼£¬ÍË³öÇ°Ò»¸öÁ¬½Ó
-	, EB_MSG_USER_ONLINE_INCALL					// ÓÃ»§ÉÏÏß£¬ÑûÇëÓÃ»§½øÏÖÓÐ»á»°
-	, EB_MSG_RESET_ACCOUNT						// ÖØÖÃÕÊºÅ£¬°üÀ¨
-	, EB_MSG_USER_HEAD_CHANGE		= 0x121		// ÓÃ»§ÐÞ¸ÄÍ·Ïñ×ÊÔ´
-	, EB_MSG_BROADCAST_MESSAGE					// ¹ã²¥ÏûÏ¢
-	, EB_MSG_GROUP_MEMBER_CHANGE				// Èº³ÉÔ±×ÊÁÏÒÑ¾­ÐÞ¸Ä£¬ÐèÒªÖØÐÂ¼ÓÔØÈº³ÉÔ±×ÊÁÏ
-	, EB_MSG_ENT_GROUP_INFO_VERSION				// ÆóÒµ²¿ÃÅ×ÊÁÏ°æ±¾
-	, EB_MSG_GROUP_MEMBER_VERSION				// ²¿ÃÅ³ÉÔ±×ÊÁÏ°æ±¾
-	, EB_MSG_USER_INFO_CHANGE						// ÓÃ»§¸öÈË×ÊÁÏÐÞ¸Ä
-	, EB_MSG_DELETE_RESOURCE		= 0x131		// É¾³ýÔÚÏß×ÊÔ´
-	, EB_MSG_EMOTION_INFO						// ±íÇé×ÊÔ´ÐÅÏ¢
-	, EB_MSG_SUBSCRIBE_FUNC_INFO				// ¶©¹º¹¦ÄÜÐÅÏ¢
-	, EB_MSG_ENTGROUP_VER_INFO					// ÆóÒµ²¿ÃÅ°æ±¾ÐÅÏ¢
-	, EB_MSG_MYGROUP_VER_INFO					// ¸öÈËÈº×é°æ±¾ÐÅÏ¢
-	, EB_MSG_GROUP_MEMBER_LINESTATE				// Èº×é£¨²¿ÃÅ£©³ÉÔ±£¨»òÁªÏµÈË£©ÔÚÏß×´Ì¬
-	, EB_MSG_AREA_DICT_INFO						// µØÇø×ÖµäÐÅÏ¢
-	, EB_MSG_GROUP_LINESTATE_COUNT				// Èº×é£¨²¿ÃÅ£©³ÉÔ±ÔÚÏßÈËÊý
-	, EB_MSG_EMOTION_COUNT							// ±íÇé×ÊÔ´»ã×Ü
-	, EB_MSG_CONTACT_HEAD_VER_INFO			// ºÃÓÑ/ÁªÏµÈËÍ·Ïñ°æ±¾ÐÅÏ¢
-	, EB_MSG_REQ_ADD_CONTACT		= 0x141		// ÉêÇëºÃÓÑ
-	, EB_MSG_ACCEPT_ADD_CONTACT					// ½ÓÊÜ¼ÓºÃÓÑ
-	, EB_MSG_REJECT_ADD_CONTACT					// ¾Ü¾ø¼ÓºÃÓÑ
-	, EB_MSG_DELETE_CONTACT							// É¾³ýºÃÓÑ
-	, EB_MSG_UPDATE_CONTACT							// ºÃÓÑ×ÊÁÏ¸üÐÂ
-	, EB_MSG_UPDATE_USER_GROUP					// ¸üÐÂºÃÓÑ·Ö×é
-	, EB_MSG_DELETE_USER_GROUP					// É¾³ýºÃÓÑ·Ö×é
-	, EB_MSG_UPDATE_USER_GROUP2					// ¸üÐÂºÃÓÑ·Ö×é
-	, EB_MSG_DELETE_USER_GROUP2					// É¾³ýºÃÓÑ·Ö×é
+	, EB_MSG_DELETE_GROUP			= 0x101		// è§£æ•£ç¾¤
+	, EB_MSG_EXIT_GROUP							// ä¸»åŠ¨é€€å‡ºç¾¤
+	, EB_MSG_UPDATE_GROUP						// ç¾¤èµ„æ–™å·²ç»ä¿®æ”¹ï¼Œéœ€è¦é‡æ–°åŠ è½½ç¾¤èµ„æ–™
+	, EB_MSG_REMOVE_GROUP						// è¢«åŠ¨ç®¡ç†å‘˜ç§»å‡ºç¾¤
+	, EB_MSG_CALL_2_GROUP						// ä¸€å¯¹ä¸€ä¼šè¯è½¬æ¢å¤šäººè®¨è®ºç»„
+	, EB_MSG_ADD_2_GROUP						// æ·»åŠ è¿›ç¾¤ç»„(éƒ¨é—¨)
+	, EB_MSG_REQ_ADD_2_GROUP					// ç”³è¯·è¿›å…¥ç¾¤ç»„(éƒ¨é—¨)
+	, EB_MSG_REJECT_ADD_2_GROUP					// æ‹’ç»è¿›å…¥ç¾¤ç»„(éƒ¨é—¨)
+	, EB_MSG_INVITE_ADD_2_GROUP					// é‚€è¯·æ·»åŠ è¿›ç¾¤ç»„(éƒ¨é—¨)
+	, EB_MSG_USER_LINE_STATE		= 0x111		// ç”¨æˆ·åœ¨çº¿çŠ¶æ€é€šçŸ¥
+	, EB_MSG_ONLINE_ANOTHER						// é€šçŸ¥è‡ªå·±ï¼Œå·²ç»åœ¨å…¶ä»–åœ°æ–¹ç™»å½•ï¼Œé€€å‡ºå‰ä¸€ä¸ªè¿žæŽ¥
+	, EB_MSG_USER_ONLINE_INCALL					// ç”¨æˆ·ä¸Šçº¿ï¼Œé‚€è¯·ç”¨æˆ·è¿›çŽ°æœ‰ä¼šè¯
+	, EB_MSG_RESET_ACCOUNT						// é‡ç½®å¸å·ï¼ŒåŒ…æ‹¬
+	, EB_MSG_USER_HEAD_CHANGE		= 0x121		// ç”¨æˆ·ä¿®æ”¹å¤´åƒèµ„æº
+	, EB_MSG_BROADCAST_MESSAGE					// å¹¿æ’­æ¶ˆæ¯
+	, EB_MSG_GROUP_MEMBER_CHANGE				// ç¾¤æˆå‘˜èµ„æ–™å·²ç»ä¿®æ”¹ï¼Œéœ€è¦é‡æ–°åŠ è½½ç¾¤æˆå‘˜èµ„æ–™
+	, EB_MSG_ENT_GROUP_INFO_VERSION				// ä¼ä¸šéƒ¨é—¨èµ„æ–™ç‰ˆæœ¬
+	, EB_MSG_GROUP_MEMBER_VERSION				// éƒ¨é—¨æˆå‘˜èµ„æ–™ç‰ˆæœ¬
+	, EB_MSG_USER_INFO_CHANGE						// ç”¨æˆ·ä¸ªäººèµ„æ–™ä¿®æ”¹
+	, EB_MSG_DELETE_RESOURCE		= 0x131		// åˆ é™¤åœ¨çº¿èµ„æº
+	, EB_MSG_EMOTION_INFO						// è¡¨æƒ…èµ„æºä¿¡æ¯
+	, EB_MSG_SUBSCRIBE_FUNC_INFO				// è®¢è´­åŠŸèƒ½ä¿¡æ¯
+	, EB_MSG_ENTGROUP_VER_INFO					// ä¼ä¸šéƒ¨é—¨ç‰ˆæœ¬ä¿¡æ¯
+	, EB_MSG_MYGROUP_VER_INFO					// ä¸ªäººç¾¤ç»„ç‰ˆæœ¬ä¿¡æ¯
+	, EB_MSG_GROUP_MEMBER_LINESTATE				// ç¾¤ç»„ï¼ˆéƒ¨é—¨ï¼‰æˆå‘˜ï¼ˆæˆ–è”ç³»äººï¼‰åœ¨çº¿çŠ¶æ€
+	, EB_MSG_AREA_DICT_INFO						// åœ°åŒºå­—å…¸ä¿¡æ¯
+	, EB_MSG_GROUP_LINESTATE_COUNT				// ç¾¤ç»„ï¼ˆéƒ¨é—¨ï¼‰æˆå‘˜åœ¨çº¿äººæ•°
+	, EB_MSG_EMOTION_COUNT							// è¡¨æƒ…èµ„æºæ±‡æ€»
+	, EB_MSG_CONTACT_HEAD_VER_INFO			// å¥½å‹/è”ç³»äººå¤´åƒç‰ˆæœ¬ä¿¡æ¯
+	, EB_MSG_REQ_ADD_CONTACT		= 0x141		// ç”³è¯·å¥½å‹
+	, EB_MSG_ACCEPT_ADD_CONTACT					// æŽ¥å—åŠ å¥½å‹
+	, EB_MSG_REJECT_ADD_CONTACT					// æ‹’ç»åŠ å¥½å‹
+	, EB_MSG_DELETE_CONTACT							// åˆ é™¤å¥½å‹
+	, EB_MSG_UPDATE_CONTACT							// å¥½å‹èµ„æ–™æ›´æ–°
+	, EB_MSG_UPDATE_USER_GROUP					// æ›´æ–°å¥½å‹åˆ†ç»„
+	, EB_MSG_DELETE_USER_GROUP					// åˆ é™¤å¥½å‹åˆ†ç»„
+	, EB_MSG_UPDATE_USER_GROUP2					// æ›´æ–°å¥½å‹åˆ†ç»„
+	, EB_MSG_DELETE_USER_GROUP2					// åˆ é™¤å¥½å‹åˆ†ç»„
 }EB_MSG_TYPE;
 
 /*==========================================================
-Èº×é£¨²¿ÃÅ£©³ÉÔ±¹ÜÀíÈ¨ÏÞ
+ç¾¤ç»„ï¼ˆéƒ¨é—¨ï¼‰æˆå‘˜ç®¡ç†æƒé™
 ===========================================================*/
 typedef enum EB_MANAGER_LEVEL
 {
@@ -89,7 +88,7 @@ typedef enum EB_MANAGER_LEVEL
 	//, EB_LEVEL_DEP_DELETE		= EB_LEVEL_DEP_MGR|EB_LEVEL_DELETE
 	//, EB_LEVEL_EMP_EDIT			= EB_LEVEL_EMP_MGR|EB_LEVEL_EDIT
 	//, EB_LEVEL_EMP_DELETE		= EB_LEVEL_EMP_MGR|EB_LEVEL_DELETE
-	////, EB_LEVEL_RES_EDIT		= EB_LEVEL_RES_MGR|EB_LEVEL_EDIT	// ¸öÈË×ÊÔ´¹ÜÀí²»ÄÜÍ¨¹ýÕâÀïÊµÏÖ£¬·ñÔò»á¸úÆóÒµ£¬Èº×éÓÐ³åÍ»¡£
+	////, EB_LEVEL_RES_EDIT		= EB_LEVEL_RES_MGR|EB_LEVEL_EDIT	// ä¸ªäººèµ„æºç®¡ç†ä¸èƒ½é€šè¿‡è¿™é‡Œå®žçŽ°ï¼Œå¦åˆ™ä¼šè·Ÿä¼ä¸šï¼Œç¾¤ç»„æœ‰å†²çªã€‚
 	////, EB_LEVEL_ENT_RES_EDIT		= EB_LEVEL_ENT_MGR|EB_LEVEL_RES_MGR|EB_LEVEL_EDIT
 	////, EB_LEVEL_ENT_RES_DELETE	= EB_LEVEL_ENT_MGR|EB_LEVEL_RES_MGR|EB_LEVEL_DELETE
 	////, EB_LEVEL_ENT_RES_VIEW		= EB_LEVEL_ENT_MGR|EB_LEVEL_RES_MGR
@@ -98,88 +97,66 @@ typedef enum EB_MANAGER_LEVEL
 	////, EB_LEVEL_RES_VIEW		= EB_LEVEL_RES_MGR|EB_LEVEL_MGR
 }EB_MANAGER_LEVEL;
 
-/*==========================================================
-µÇÂ¼ÀàÐÍ
-===========================================================*/
-typedef enum EB_LOGON_TYPE
-{
-	EB_LOGON_TYPE_UNKNOWN			= 0
-	, EB_LOGON_TYPE_EMAIL			= 0x0000001
-	, EB_LOGON_TYPE_PHONE			= 0x0000002
-	, EB_LOGON_TYPE_VISITOR			= 0x0000004
-	, EB_LOGON_TYPE_UID				= 0x0000008
-	, EB_LOGON_TYPE_MAIL_TEST		= 0x0000010
-	, EB_LOGON_TYPE_PC				= 0x0000100	// EB_LOGON_TYPE_PC-EB_LOGON_TYPE_APPIDÎª¶àÖÕ¶ËµÇÂ¼
-	, EB_LOGON_TYPE_IOS				= 0x0000200
-	, EB_LOGON_TYPE_ANDROID			= 0x0000400
-	, EB_LOGON_TYPE_WP				= 0x0000800
-	, EB_LOGON_TYPE_WEB				= 0x0001000
-	, EB_LOGON_TYPE_SERVER			= 0x0010000	// ·þÎñ¶ËµÇÂ¼£¬²»´¦ÀíIMÒµÎñ
-	, EB_LOGON_TYPE_PUSHAPP			= 0x0020000	// ÏûÏ¢ÍÆËÍÓ¦ÓÃ
-	, EB_LOGON_TYPE_APPID			= 0x0100000	// APPIDÑéÖ¤£¬²»´¦ÀíIMÒµÎñ
-	, EB_LOGON_TYPE_OAUTH			= 0x0200000	// ¿ª·ÅÑéÖ¤
-}EB_LOGON_TYPE;
-const int EB_SID_LOGON_TYPE	= EB_LOGON_TYPE_PC|EB_LOGON_TYPE_IOS|EB_LOGON_TYPE_ANDROID|EB_LOGON_TYPE_WP|EB_LOGON_TYPE_WEB|EB_LOGON_TYPE_SERVER|EB_LOGON_TYPE_APPID;
 
 ///*==========================================================
-//ANDROIDÍÆËÍÆ½Ì¨
+//ANDROIDæŽ¨é€å¹³å°
 //===========================================================*/
 //typedef enum EB_ANDROID_PUSH_TYPE
 //{
-//	EB_ANDROID_PUSH_TYPE_UNKNOWN			= 0	// Î´ÖªÀàËÆ
-//	, EB_ANDROID_PUSH_TYPE_IOS						// IOSÍÆËÍÆ½Ì¨
-//	, EB_ANDROID_PUSH_TYPE_HUAWEI					// »ªÎªÍÆËÍÆ½Ì¨
-//	, EB_ANDROID_PUSH_TYPE_XIAOMI					// Ð¡Ã×ÍÆËÍÆ½Ì¨
+//	EB_ANDROID_PUSH_TYPE_UNKNOWN			= 0	// æœªçŸ¥ç±»ä¼¼
+//	, EB_ANDROID_PUSH_TYPE_IOS						// IOSæŽ¨é€å¹³å°
+//	, EB_ANDROID_PUSH_TYPE_HUAWEI					// åŽä¸ºæŽ¨é€å¹³å°
+//	, EB_ANDROID_PUSH_TYPE_XIAOMI					// å°ç±³æŽ¨é€å¹³å°
 //
 //};
 
-#define EB_PUSH_SSLID_HUAWEI_MIN 100	// »ªÎªÍÆËÍ 100-199
+#define EB_PUSH_SSLID_HUAWEI_MIN 100	// åŽä¸ºæŽ¨é€ 100-199
 #define EB_PUSH_SSLID_HUAWEI_MAX 199
-#define EB_PUSH_SSLID_XIAOMI_MIN 200	// Ð¡Ã×ÍÆËÍ 200-299
+#define EB_PUSH_SSLID_XIAOMI_MIN 200	// å°ç±³æŽ¨é€ 200-299
 #define EB_PUSH_SSLID_XIAOMI_MAX 299
-#define EB_PUSH_SSLID_IOS_DEV 7606616803963781LL	// IOS ¿ª·¢»·¾³
-#define EB_PUSH_SSLID_IOS_RES 7715636013842198LL	// IOS ÕýÊ½»·¾³
+#define EB_PUSH_SSLID_IOS_DEV 7606616803963781LL	// IOS å¼€å‘çŽ¯å¢ƒ
+#define EB_PUSH_SSLID_IOS_RES 7715636013842198LL	// IOS æ­£å¼çŽ¯å¢ƒ
 
 /*==========================================================
-µÇÂ¼ÀàÐÍ
+ç™»å½•ç±»åž‹
 ===========================================================*/
 typedef enum EB_PUSH_SSLID_TYPE
 {
-	EB_PUSH_SSLID_TYPE_UNKNOWN								= 0x0		// Î´ÖªÀàÐÍ£¨Ë½ÓÐÔÆÄ¬ÈÏÍÆËÍ£©
-	, EB_PUSH_SSLID_TYPE_USES_ENTBOOST_PUSH		= 0x01	// Í¨¹ý¶÷²¼Æ½Ì¨ÍÆËÍ
-	, EB_PUSH_SSLID_TYPE_SUPPORT_OTHER_PHONE	= 0x10	// Ö§³ÖÍÆËÍÆäËûÆ·ÅÆÊÖ»ú
+	EB_PUSH_SSLID_TYPE_UNKNOWN								= 0x0		// æœªçŸ¥ç±»åž‹ï¼ˆç§æœ‰äº‘é»˜è®¤æŽ¨é€ï¼‰
+	, EB_PUSH_SSLID_TYPE_USES_ENTBOOST_PUSH		= 0x01	// é€šè¿‡æ©å¸ƒå¹³å°æŽ¨é€
+	, EB_PUSH_SSLID_TYPE_SUPPORT_OTHER_PHONE	= 0x10	// æ”¯æŒæŽ¨é€å…¶ä»–å“ç‰Œæ‰‹æœº
 }EB_PUSH_SSLID_TYPE;
 
 /*==========================================================
-µÇÂ¼ÀàÐÍ
+ç™»å½•ç±»åž‹
 ===========================================================*/
 typedef enum EB_UM_LOAD2_TYPE
 {
 	EB_UM_LOAD2_TYPE_UNKNOWN								= 0
-	, EB_UM_LOAD2_TYPE_CONTACT_HEAD_VER						// 1 ¼ÓÔØºÃÓÑÁªÏµÈËÍ·Ïñ°æ±¾
-	//, EB_UM_LOAD2_TYPE_GROUP_FORBID_INFO					// 2 ¼ÓÔØÈº×é½ûÑÔ×´Ì¬ -1:½â³ý½ûÑÔ 0:ÓÀ¾Ã½ûÑÔ >0½ûÑÔ·ÖÖÓÊý
-	//, EB_UM_LOAD2_TYPE_MEMBER_FORBID_INFO					// 3 ¼ÓÔØÈº³ÉÔ±½ûÑÔ×´Ì¬ -1:½â³ý½ûÑÔ 0:ÓÀ¾Ã½ûÑÔ >0½ûÑÔ·ÖÖÓÊý
+	, EB_UM_LOAD2_TYPE_CONTACT_HEAD_VER						// 1 åŠ è½½å¥½å‹è”ç³»äººå¤´åƒç‰ˆæœ¬
+	//, EB_UM_LOAD2_TYPE_GROUP_FORBID_INFO					// 2 åŠ è½½ç¾¤ç»„ç¦è¨€çŠ¶æ€ -1:è§£é™¤ç¦è¨€ 0:æ°¸ä¹…ç¦è¨€ >0ç¦è¨€åˆ†é’Ÿæ•°
+	//, EB_UM_LOAD2_TYPE_MEMBER_FORBID_INFO					// 3 åŠ è½½ç¾¤æˆå‘˜ç¦è¨€çŠ¶æ€ -1:è§£é™¤ç¦è¨€ 0:æ°¸ä¹…ç¦è¨€ >0ç¦è¨€åˆ†é’Ÿæ•°
 }EB_UM_LOAD2_TYPE;
 
 /*==========================================================
-ÏûÏ¢ÏìÓ¦ÀàÐÍ
+æ¶ˆæ¯å“åº”ç±»åž‹
 ===========================================================*/
 typedef enum EB_MSG_ACK_TYPE
 {
-	EB_MAT_SUCCESS											// 0 ³É¹¦
-	, EB_MAT_ERROR											// 1 ´íÎó
-	, EB_MAT_CANCEL											// 2 È¡Ïû£¨»ò¾Ü¾ø£©
-	, EB_MAT_REQUEST										// 3 ÇëÇó
-	, EB_MAT_WITHDRAW										// 4 ³·»ØÏûÏ¢
-	//, EB_MAT_DELETE										// 5 £¨±£ÁôÎ´ÓÃ£©
-	, EB_MAT_SELF_COLLECT					= 6		// 6 ¸öÈËÊÕ²Ø
-	, EB_MAT_GROUP_COLLECT							// 7 ÈºÊÕ²Ø
-	, EB_MAT_SAVE2CLOUDDRIVE	= 10			// 10 ´æÈëÔÆÅÌ
-	, EB_MAT_RESEND											// 11 ÖØÐÂ·¢ËÍ
+	EB_MAT_SUCCESS											// 0 æˆåŠŸ
+	, EB_MAT_ERROR											// 1 é”™è¯¯
+	, EB_MAT_CANCEL											// 2 å–æ¶ˆï¼ˆæˆ–æ‹’ç»ï¼‰
+	, EB_MAT_REQUEST										// 3 è¯·æ±‚
+	, EB_MAT_WITHDRAW										// 4 æ’¤å›žæ¶ˆæ¯
+	//, EB_MAT_DELETE										// 5 ï¼ˆä¿ç•™æœªç”¨ï¼‰
+	, EB_MAT_SELF_COLLECT					= 6		// 6 ä¸ªäººæ”¶è—
+	, EB_MAT_GROUP_COLLECT							// 7 ç¾¤æ”¶è—
+	, EB_MAT_SAVE2CLOUDDRIVE	= 10			// 10 å­˜å…¥äº‘ç›˜
+	, EB_MAT_RESEND											// 11 é‡æ–°å‘é€
 }EB_MSG_ACK_TYPE;
 
 /*==========================================================
-ÏûÏ¢ÁÄÌìÀàÐÍ
+æ¶ˆæ¯èŠå¤©ç±»åž‹
 ===========================================================*/
 typedef enum EB_MSG_CHAT_TYPE
 {
@@ -188,7 +165,7 @@ typedef enum EB_MSG_CHAT_TYPE
 	, EB_MSG_CHAT_TYPE_GROUP
 }EB_MSG_CHAT_TYPE;
 /*==========================================================
-ÊÕ²ØÊý¾ÝÀàÐÍ
+æ”¶è—æ•°æ®ç±»åž‹
 ===========================================================*/
 typedef enum EB_COLLECT_FROM_TYPE
 {
@@ -199,7 +176,7 @@ typedef enum EB_COLLECT_FROM_TYPE
 
 
 /*==========================================================
-Êý¾ÝÁ÷ÏìÓ¦ÀàÐÍ
+æ•°æ®æµå“åº”ç±»åž‹
 ===========================================================*/
 typedef enum EB_DATASTREAM_ACK_TYPE
 {
@@ -209,7 +186,7 @@ typedef enum EB_DATASTREAM_ACK_TYPE
 }EB_DATASTREAM_ACK_TYPE;
 
 /*==========================================================
-»á»°ÏìÓ¦ÀàÐÍ
+ä¼šè¯å“åº”ç±»åž‹
 ===========================================================*/
 typedef enum EB_CALL_ACK_TYPE
 {
@@ -226,7 +203,7 @@ typedef enum EB_CALL_ACK_TYPE
 #define OFFLINE_SERVER_CLOSE	3
 
 /*==========================================================
-SOTP SIGN£º
+SOTP SIGNï¼š
 ===========================================================*/
 typedef enum EB_CALL_SIGN
 {
@@ -237,21 +214,21 @@ typedef enum EB_CALL_SIGN
 	//, EB_CS_CS_QUERY
 	//, EB_CS_CS_LOAD
 	// LC
-	, EB_SIGN_S_ONLINE		= 0x101		// 257 *·þÎñ¶Ë×é¼þµÇ¼ÇÉÏÏß
-	, EB_SIGN_S_OFFLINE							// 258 *·þÎñ¶Ë×é¼þ×¢ÏúÏÂÏß
+	, EB_SIGN_S_ONLINE		= 0x101		// 257 *æœåŠ¡ç«¯ç»„ä»¶ç™»è®°ä¸Šçº¿
+	, EB_SIGN_S_OFFLINE							// 258 *æœåŠ¡ç«¯ç»„ä»¶æ³¨é”€ä¸‹çº¿
 	, EB_SIGN_S_ACTIVE							// 259
 	, EB_SIGN_S_QUERY								// 260
-	, EB_SIGN_L_LOGON								// 261 µÇÂ¼ÑéÖ¤£¬°üÀ¨APPIDÑéÖ¤£¬ÓÃ»§ÑéÖ¤µÈ
-	, EB_SIGN_L_LOGOUT							// 262 ×¢ÏúÍË³ö
-	, EB_SIGN_L_QUERY								// 263 ÓÃ»§²éÑ¯
-	, EB_SIGN_L_REGAUTH		= 0x111		// 273 ×¢²áÑéÖ¤
-	, EB_SIGN_L_FINDPWD							// 274 ÇëÇóÕÒ»ØÃÜÂë
-	, EB_SIGN_L_RESETPWD						// 275 ÖØÖÃÃÜÂë
-	, EB_SIGN_Q_INFO			= 0x121		// 289 *·þÎñ¶Ë×é¼þ²éÑ¯Êý¾Ý
-	, EB_SIGN_P_INFO								// 290 *·þÎñ¶Ë×é¼þÉèÖÃÊý¾Ý1
-	, EB_SIGN_SP_INFO								// 291 *·þÎñ¶Ë×é¼þ²éÑ¯Êý¾Ý2
+	, EB_SIGN_L_LOGON								// 261 ç™»å½•éªŒè¯ï¼ŒåŒ…æ‹¬APPIDéªŒè¯ï¼Œç”¨æˆ·éªŒè¯ç­‰
+	, EB_SIGN_L_LOGOUT							// 262 æ³¨é”€é€€å‡º
+	, EB_SIGN_L_QUERY								// 263 ç”¨æˆ·æŸ¥è¯¢
+	, EB_SIGN_L_REGAUTH		= 0x111		// 273 æ³¨å†ŒéªŒè¯
+	, EB_SIGN_L_FINDPWD							// 274 è¯·æ±‚æ‰¾å›žå¯†ç 
+	, EB_SIGN_L_RESETPWD						// 275 é‡ç½®å¯†ç 
+	, EB_SIGN_Q_INFO			= 0x121		// 289 *æœåŠ¡ç«¯ç»„ä»¶æŸ¥è¯¢æ•°æ®
+	, EB_SIGN_P_INFO								// 290 *æœåŠ¡ç«¯ç»„ä»¶è®¾ç½®æ•°æ®1
+	, EB_SIGN_SP_INFO								// 291 *æœåŠ¡ç«¯ç»„ä»¶æŸ¥è¯¢æ•°æ®2
 	// UM
-	, EB_SIGN_U_REG				= 0x201		// 513 ×¢²áÕÊºÅ
+	, EB_SIGN_U_REG				= 0x201		// 513 æ³¨å†Œå¸å·
 	, EB_SIGN_U_SINFO								// 514 
 	, EB_SIGN_U_SHEAD
 	, EB_SIGN_U_ONLINE
@@ -262,20 +239,20 @@ typedef enum EB_CALL_SIGN
 	, EB_SIGN_U_GINFO
 	, EB_SIGN_U_SPUSH
 	, EB_SIGN_U_LOAD2
-	, EB_SIGN_V_REQUEST			= 0x211	// 529 ÇëÇóÊÓÆµ»á»°
+	, EB_SIGN_V_REQUEST			= 0x211	// 529 è¯·æ±‚è§†é¢‘ä¼šè¯
 	, EB_SIGN_FV_REQUEST
 	, EB_SIGN_V_ACK
 	, EB_SIGN_FV_ACK
 	, EB_SIGN_V_END
 	, EB_SIGN_FV_END
-	, EB_SIGN_RD_REQUEST		= 0x218	// 536 ÇëÇóÔ¶³ÌÐ­Öú/Ô¶³Ì×ÀÃæ
+	, EB_SIGN_RD_REQUEST		= 0x218	// 536 è¯·æ±‚è¿œç¨‹ååŠ©/è¿œç¨‹æ¡Œé¢
 	, EB_SIGN_FRD_REQUEST
 	, EB_SIGN_RD_ACK
 	, EB_SIGN_FRD_ACK
 	, EB_SIGN_RD_END
 	, EB_SIGN_FRD_END
 
-	, EB_SIGN_C_CALL			= 0x221		// 545 ÇëÇó·¢Æð»á»°
+	, EB_SIGN_C_CALL			= 0x221		// 545 è¯·æ±‚å‘èµ·ä¼šè¯
 	, EB_SIGN_C_ENTER
 	, EB_SIGN_FC_CALL
 	, EB_SIGN_FC_ENTER
@@ -287,27 +264,27 @@ typedef enum EB_CALL_SIGN
 	, EB_SIGN_FU_MSG
 	, EB_SIGN_U_MACK
 
-	, EB_SIGN_AB_EDIT			= 0x231		// 561 ÐÂ½¨»òÐÞ¸ÄÁªÏµÈË×ÊÁÏ
-	, EB_SIGN_AB_DEL								// 562 É¾³ýÁªÏµÈË×ÊÁÏ
-	, EB_SIGN_AB_LOAD								// 563 ²éÑ¯¼ÓÔØÁªÏµÈË×ÊÁÏ
-	, EB_SIGN_UG_EDIT								// 564 ÐÂ½¨»òÐÞ¸ÄºÃÓÑ·Ö×é
-	, EB_SIGN_UG_DEL								// 565 É¾³ýºÃÓÑ·Ö×é
-	, EB_SIGN_UG_LOAD								// 566 ²éÑ¯¼ÓÔØºÃÓÑ·Ö×é
-	, EB_SIGN_ENT_EDIT		= 0x241		// 577 ÐÞ¸ÄÆóÒµ×ÊÁÏ
-	, EB_SIGN_DEP_EDIT							// 578 ÐÂ½¨»òÐÞ¸Ä²¿ÃÅ×ÊÁÏ
-	, EB_SIGN_DEP_DEL								// 579 É¾³ý²¿ÃÅ×ÊÁÏ
-	, EB_SIGN_EMP_EDIT							// 580 ÐÂ½¨»òÐÞ¸ÄÔ±¹¤×ÊÁÏ
-	, EB_SIGN_EMP_DEL								// 581 É¾³ýÔ±¹¤×ÊÁÏ
-	, EB_SIGN_ENT_LOAD							// 582 ²éÑ¯¼ÓÔØ×éÖ¯½á¹¹£¬²¿ÃÅ£¬Ô±¹¤µÈ×ÊÁÏ
-	, EB_SIGN_FENT_INFO							// 583 ÏÂÐÐÆóÒµ×ÊÁÏ
-	, EB_SIGN_FDEP_INFO							// 584 ÏÂÐÐ²¿ÃÅ×ÊÁÏ
-	, EB_SIGN_FEMP_INFO							// 585 ÏÂÐÐÔ±¹¤×ÊÁÏ
-	, EB_SIGN_DEP_GET			= 0x24E		// 590 ²éÑ¯»ñÈ¡²¿ÃÅ×ÊÁÏ
-	, EB_SIGN_EMP_GET								// 591 ²éÑ¯»ñÈ¡Ô±¹¤×ÊÁÏ
-	, EB_SIGN_R_EDIT		= 0x251			// 593 ÐÂ½¨»òÐÞ¸ÄÔÆÅÌ×ÊÔ´
-	, EB_SIGN_R_DEL									// 594 É¾³ýÔÆÅÌ×ÊÔ´
-	, EB_SIGN_R_LOAD								// 595 É¾³ýÔÆÅÌ×ÊÔ´
-	, EB_SIGN_R_INFO								// 596 É¾³ýÔÆÅÌ×ÊÔ´
+	, EB_SIGN_AB_EDIT			= 0x231		// 561 æ–°å»ºæˆ–ä¿®æ”¹è”ç³»äººèµ„æ–™
+	, EB_SIGN_AB_DEL								// 562 åˆ é™¤è”ç³»äººèµ„æ–™
+	, EB_SIGN_AB_LOAD								// 563 æŸ¥è¯¢åŠ è½½è”ç³»äººèµ„æ–™
+	, EB_SIGN_UG_EDIT								// 564 æ–°å»ºæˆ–ä¿®æ”¹å¥½å‹åˆ†ç»„
+	, EB_SIGN_UG_DEL								// 565 åˆ é™¤å¥½å‹åˆ†ç»„
+	, EB_SIGN_UG_LOAD								// 566 æŸ¥è¯¢åŠ è½½å¥½å‹åˆ†ç»„
+	, EB_SIGN_ENT_EDIT		= 0x241		// 577 ä¿®æ”¹ä¼ä¸šèµ„æ–™
+	, EB_SIGN_DEP_EDIT							// 578 æ–°å»ºæˆ–ä¿®æ”¹éƒ¨é—¨èµ„æ–™
+	, EB_SIGN_DEP_DEL								// 579 åˆ é™¤éƒ¨é—¨èµ„æ–™
+	, EB_SIGN_EMP_EDIT							// 580 æ–°å»ºæˆ–ä¿®æ”¹å‘˜å·¥èµ„æ–™
+	, EB_SIGN_EMP_DEL								// 581 åˆ é™¤å‘˜å·¥èµ„æ–™
+	, EB_SIGN_ENT_LOAD							// 582 æŸ¥è¯¢åŠ è½½ç»„ç»‡ç»“æž„ï¼Œéƒ¨é—¨ï¼Œå‘˜å·¥ç­‰èµ„æ–™
+	, EB_SIGN_FENT_INFO							// 583 ä¸‹è¡Œä¼ä¸šèµ„æ–™
+	, EB_SIGN_FDEP_INFO							// 584 ä¸‹è¡Œéƒ¨é—¨èµ„æ–™
+	, EB_SIGN_FEMP_INFO							// 585 ä¸‹è¡Œå‘˜å·¥èµ„æ–™
+	, EB_SIGN_DEP_GET			= 0x24E		// 590 æŸ¥è¯¢èŽ·å–éƒ¨é—¨èµ„æ–™
+	, EB_SIGN_EMP_GET								// 591 æŸ¥è¯¢èŽ·å–å‘˜å·¥èµ„æ–™
+	, EB_SIGN_R_EDIT		= 0x251			// 593 æ–°å»ºæˆ–ä¿®æ”¹äº‘ç›˜èµ„æº
+	, EB_SIGN_R_DEL									// 594 åˆ é™¤äº‘ç›˜èµ„æº
+	, EB_SIGN_R_LOAD								// 595 åˆ é™¤äº‘ç›˜èµ„æº
+	, EB_SIGN_R_INFO								// 596 åˆ é™¤äº‘ç›˜èµ„æº
 	, EB_SIGN_CS_LOAD		= 0x261
 	, EB_SIGN_CS_ADD
 	, EB_SIGN_CS_DEL
@@ -367,9 +344,9 @@ typedef enum EB_CALL_SIGN
 }EB_CALL_SIGN;
 
 /*==========================================================
-ÏµÍ³³£Á¿
+ç³»ç»Ÿå¸¸é‡
 ===========================================================*/
-const int	EB_MAX_REQUEST_OS_COUNT	= 140;		// Ò»´Î×î¶àÇëÇóÊý¾Ý²¹³¥Êý¾Ý°ü
+const int	EB_MAX_REQUEST_OS_COUNT	= 140;		// ä¸€æ¬¡æœ€å¤šè¯·æ±‚æ•°æ®è¡¥å¿æ•°æ®åŒ…
 
 ///////////////////
 #define POP_APP_NAME_CENTER_SERVER		"POPCenterServer"

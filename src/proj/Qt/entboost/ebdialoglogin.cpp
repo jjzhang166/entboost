@@ -13,25 +13,24 @@
 #define REG_RUN "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
 #endif
 
-CLoginInfo::CLoginInfo()
+EbLoginInfo::EbLoginInfo()
     : m_bSafePwd(false)
 {
 
 }
-CLoginInfo::CLoginInfo(const cgcSmartString &sAccount, const cgcSmartString &sPassword, bool bSafePwd)
+EbLoginInfo::EbLoginInfo(const cgcSmartString &sAccount, const cgcSmartString &sPassword, bool safePwd)
     : m_sAccount(sAccount)
     , m_sPassword(sPassword)
-    , m_bSafePwd(bSafePwd)
+    , m_bSafePwd(safePwd)
     , m_nLineState(EB_LINE_STATE_UNKNOWN)
     , m_nUserId(0), m_nPhone(0)
-//        , m_hItem(NULL)
     , m_item(NULL)
 {
 
 }
-CLoginInfo::pointer CLoginInfo::create(const mycp::tstring& sAccount, const mycp::tstring& sPassword, bool bSafePwd)
+EbLoginInfo::pointer EbLoginInfo::create(const mycp::tstring& sAccount, const mycp::tstring &sPassword, bool safePwd)
 {
-    return CLoginInfo::pointer(new CLoginInfo(sAccount, sPassword, bSafePwd));
+    return EbLoginInfo::pointer(new EbLoginInfo(sAccount, sPassword, safePwd));
 }
 
 
@@ -47,10 +46,6 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
     , m_canSearch(true), m_searchFirst(true)
 
 {
-    /// 设置窗口图标
-    setWindowIcon(QIcon(QStringLiteral(":/res/mainframe.ico")));
-
-//    QTimer::singleShot( 1, this, SLOT(processDatas()) );
     ui->setupUi(this);
 
     /// 设置初始大小
@@ -76,51 +71,11 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
 //    this->setStyleSheet("QWidget{background-color:gray;border-top-left-radius:15px;border-top-right-radius:5px;}");
     EbIconHelper::Instance()->SetIcon(ui->pushButtonSetting,QChar(0xf0d7),10);
     {
-//        ui->pushButton->setStyleSheet("QPushButton{border-image: url(:/new/icons/icons/play.png);}"
-//                                      "QPushButton:hover{border-image: url(:/new/icons/icons/play-hover.png);}"
-//                                      "QPushButton:pressed{border-image: url(:/new/icons/icons/play-pressed.png);}");
-
-        // **例子
-//        QString sButtonStyle = "QPushButton{background-color:black;color: white;   border-radius: 10px;  border: 2px groove gray;border-style: outset;}"
-//                               "QPushButton:hover{background-color:white; color: black;}"
-//                               "QPushButton:pressed{background-color:rgb(85, 170, 255);border-style: inset; }";
-
         int x = const_dialog_login_size.width()-this->getSysButtonWidth()-const_sys_button_size.width();
         ui->pushButtonSetting->setGeometry( x,0,const_sys_button_size.width(),const_sys_button_size.height() );
         ui->pushButtonSetting->setObjectName("SysTransButton");
 
-//        QString strTest("Tst");
-//        4     QString strSerInfo;
-//        5     strSerInfo = QString("%1 %2").arg(strTest).arg(m_baudRateCur);
-//        6     hintSerSts->setText(strSerInfo);
-
-        // 圆角样式: border-radius: 2px;
-//        QString sButtonStyle = "QPushButton{background-color:rgb(0,0,0,0); color: white; border-radius: 0px;}"
-//                               "QPushButton:hover{background-color:rgb(100,162,232,180); color: white;}"
-//                               "QPushButton:pressed{background-color:rgb(100,162,232,220); border-style: inset; }";
-
-//        ui->pushButton->setStyleSheet("QPushButton:hover{background-color: rgb(170, 0, 255);}");
-//        ui->pushButton->setStyleSheet("background-color: rgb(170, 0, 255);");
-//        // 圆角控件
-//        ui->pushButton->setStyleSheet ("border:2px groovegray;border-radius:10px;padding:2px 4px;");
-
-//        QPalette pPaletteBg(ui->pushButton->palette());
-//        // 普通状态
-//        pPaletteBg.setColor(QPalette::Button, QColor(250,162,232));
-//        pPaletteBg.setColor(QPalette::ButtonText, QColor(255,0,0));
-////        // 激活状态
-////        pPaletteBg.setColor(QPalette::Active, QPalette::Button, QColor(0,0,232));
-////        pPaletteBg.setColor(QPalette::Active, QPalette::ButtonText, QColor(255,128,0));
-
-////        // 点击状态
-////        pPaletteBg.setColor(QPalette::Inactive, QPalette::Button, QColor(0,128,232));
-////        pPaletteBg.setColor(QPalette::Inactive, QPalette::ButtonText, QColor(255,128,128));
-
-//        ui->pushButton->setAutoFillBackground(true);
-//        ui->pushButton->setPalette(pPaletteBg);
-
-
-        // 帐号 & 密码，包括小图标和，用户列表控件
+        /// 帐号 & 密码，包括小图标和，用户列表控件
         const int const_left_interval = 35;
         const int const_edit_width = const_dialog_login_size.width()-const_left_interval*2;
         const int const_edit_icon_size = const_common_edit_height-4;   // 18
@@ -161,7 +116,7 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         ui->labelPasswordIcon->move( const_edit_width-const_edit_icon_size-2,2 );
 //        ui->labelPasswordIcon->move( const_dialog_login_size.width()-const_left_interval-const_edit_icon_size-2,y+2 );
         y += (const_common_edit_height + 10);
-        // 记住密码 & 开机启动
+        /// 记住密码 & 开机启动
 //        ui->checkBoxSavePwd->setObjectName("CheckBoxSelect");
 //        ui->checkBoxAutoRun->setObjectName("CheckBoxSelect");
 #ifdef WIN32
@@ -211,15 +166,15 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         y = height()-30;
         const QSize const_button_size2(60, 19);
         const int const_button_interval = const_button_size2.width()+9;
-        // 游客登录
+        /// 游客登录
         ui->pushButtonVisitorLogon->setGeometry( x,y,const_button_size2.width(),const_button_size2.height() );
         ui->pushButtonVisitorLogon->setVisible(false);
         x += const_button_interval;
-        // 我要注册
+        /// 我要注册
         ui->pushButtonRegister->setGeometry( x,y,const_button_size2.width(),const_button_size2.height() );
         ui->pushButtonRegister->setVisible(false);
         x += const_button_interval;
-        // 忘记密码
+        /// 忘记密码
         ui->pushButtonForgetPwd->setGeometry( x,y,const_button_size2.width(),const_button_size2.height() );
         ui->pushButtonForgetPwd->setVisible(false);
         x += const_button_interval;
@@ -228,24 +183,11 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
 
 //        refreshSkin();
     }
-    // *** 必须放在 listWidgetLoginRecords->setGeometry 后面；
+    /// *** 必须放在 listWidgetLoginRecords->setGeometry 后面；
     QTimer::singleShot( 1, this, SLOT(processDatas()) );
-//    QString sWindowText = theLocales.getLocalText("login-dialog.window-text","登录界面");
-//    sWindowText.replace( "[PRODUCT_NAME]", theApp->productName() );
-////    char sSetWindowText[260];
-////    sprintf(sWindowText,"恩布登录界面");
-//    this->setWindowTitle(sWindowText);
-//    this->setWindowState(Qt::WindowNoState);
-
-//    {
-////        ui->pushButtonSetting->setMenu(m_menuSetting);
-////        // 去掉弹出菜单下拉三角图标
-////        ui->pushButtonSetting->setStyleSheet("QPushButton::menu-indicator{image:None;}");
-
-//    }
 
     connect( ui->pushButtonSetting,SIGNAL(clicked()),this,SLOT(onClickedPushButtonSetting()) );
-    connect( ui->pushButtonLogon,SIGNAL(clicked()),this,SLOT(onClickPushButtonLogon()) );
+    connect( ui->pushButtonLogon,SIGNAL(clicked()),this,SLOT(onClickedPushButtonLogon()) );
 
     ui->lineEditAccount->installEventFilter(this);
     connect(ui->lineEditAccount, SIGNAL(textChanged(QString)), this, SLOT(onTextChangedEditAccount(QString)));
@@ -259,13 +201,12 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
     connect(ui->listWidgetLoginRecords, SIGNAL(itemEntered(QListWidgetItem*)), this, SLOT(onItemEnteredLoginRecords(QListWidgetItem*)));
 //    connect(ui->listWidgetLoginRecords, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onCurrentItemChangedLoginRecords(QListWidgetItem*,QListWidgetItem*)));
 //    connect(ui->listWidgetLoginRecords, SIGNAL(currentRowChanged(int)), this, SLOT(onCurrentRowChangedLoginRecords(int)));
-    connect( ui->pushButtonDeleteAccount, SIGNAL(clicked()),this,SLOT(onClickPushButtonDeleteAccount()) );
+    connect( ui->pushButtonDeleteAccount, SIGNAL(clicked()),this,SLOT(onClickedPushButtonDeleteAccount()) );
 
-
-    connect( ui->pushButtonVisitorLogon,SIGNAL(clicked()),this,SLOT(onClickPushButtonVisitor()) );
-    connect( ui->pushButtonRegister,SIGNAL(clicked()),this,SLOT(onClickPushButtonRegister()) );
-    connect( ui->pushButtonForgetPwd,SIGNAL(clicked()),this,SLOT(onClickPushButtonForgetPwd()) );
-    connect( ui->pushButtonConnectSetting,SIGNAL(clicked()),this,SLOT(onClickPushButtonConnectSetting()) );
+    connect( ui->pushButtonVisitorLogon,SIGNAL(clicked()),this,SLOT(onClickedPushButtonVisitor()) );
+    connect( ui->pushButtonRegister,SIGNAL(clicked()),this,SLOT(onClickedPushButtonRegister()) );
+    connect( ui->pushButtonForgetPwd,SIGNAL(clicked()),this,SLOT(onClickedPushButtonForgetPwd()) );
+    connect( ui->pushButtonConnectSetting,SIGNAL(clicked()),this,SLOT(onClickedPushButtonConnectSetting()) );
 }
 
 EbDialogLogin::~EbDialogLogin()
@@ -276,34 +217,29 @@ EbDialogLogin::~EbDialogLogin()
 void EbDialogLogin::updateLocaleInfo()
 {
     /// 显示右上角关闭按钮
-    this->showPushButtonSysClose( theLocales.getLocalText("base-dialog.close-button.tooltip","Close") );
-    this->showPushButtonSysMin( theLocales.getLocalText("base-dialog.minimize-button.tooltip","Minimize") );
+    this->showPushButtonSysClose( theLocales.getLocalText("base-dialog.close-button.tooltip", "Close") );
+    this->showPushButtonSysMin( theLocales.getLocalText("base-dialog.minimize-button.tooltip", "Minimize") );
 
-    ui->pushButtonSetting->setToolTip( theLocales.getLocalText("base-dialog.setting-button.tooltip","Setting") );
-    ui->lineEditAccount->setToolTip( theLocales.getLocalText("login-dialog.edit-account.tooltip","") );
-    ui->lineEditAccount->setPlaceholderText( theLocales.getLocalText("login-dialog.edit-account.bg-text","Account") );
-    ui->pushButtonDeleteAccount->setToolTip( theLocales.getLocalText("login-dialog.button-delete-account.tooltip","删除帐号信息") );
-    ui->lineEditPassword->setToolTip( theLocales.getLocalText("login-dialog.edit-password.tooltip","") );
-    ui->lineEditPassword->setPlaceholderText( theLocales.getLocalText("login-dialog.edit-password.bg-text","Password") );
-    ui->checkBoxSavePwd->setText( theLocales.getLocalText("login-dialog.checkbox-savepwd.text","SavePwd") );
-    ui->checkBoxAutoRun->setText( theLocales.getLocalText("login-dialog.checkbox-autorun.text","AutoRun") );
-    ui->pushButtonLogon->setText( theLocales.getLocalText("login-dialog.button-logon.text","Login") );
-    ui->pushButtonLogon->setToolTip( theLocales.getLocalText("login-dialog.button-logon.tooltip","") );
-    ui->pushButtonVisitorLogon->setText( theLocales.getLocalText("login-dialog.button-visitor-logon.text","Visitor") );
-    ui->pushButtonVisitorLogon->setToolTip( theLocales.getLocalText("login-dialog.button-visitor-logon.tooltip","") );
-    ui->pushButtonRegister->setText( theLocales.getLocalText("login-dialog.button-register.text","Resister") );
-    ui->pushButtonRegister->setToolTip( theLocales.getLocalText("login-dialog.button-register.tooltip","") );
-    ui->pushButtonForgetPwd->setText( theLocales.getLocalText("login-dialog.button-forget-pwd.text","Forget Pwd") );
-    ui->pushButtonForgetPwd->setToolTip( theLocales.getLocalText("login-dialog.button-forget-pwd.tooltip","") );
-    ui->pushButtonConnectSetting->setText( theLocales.getLocalText("login-dialog.button-connect-setting.text","Connect Setting") );
-    ui->pushButtonConnectSetting->setToolTip( theLocales.getLocalText("login-dialog.button-connect-setting.tooltip","") );
+    ui->pushButtonSetting->setToolTip( theLocales.getLocalText("base-dialog.setting-button.tooltip", "Setting") );
+    ui->lineEditAccount->setToolTip( theLocales.getLocalText("login-dialog.edit-account.tooltip", "") );
+    ui->lineEditAccount->setPlaceholderText( theLocales.getLocalText("login-dialog.edit-account.bg-text", "Account") );
+    ui->pushButtonDeleteAccount->setToolTip( theLocales.getLocalText("login-dialog.button-delete-account.tooltip", "删除帐号信息") );
+    ui->lineEditPassword->setToolTip( theLocales.getLocalText("login-dialog.edit-password.tooltip", "") );
+    ui->lineEditPassword->setPlaceholderText( theLocales.getLocalText("login-dialog.edit-password.bg-text", "Password") );
+    ui->checkBoxSavePwd->setText( theLocales.getLocalText("login-dialog.checkbox-savepwd.text", "SavePwd") );
+    ui->checkBoxAutoRun->setText( theLocales.getLocalText("login-dialog.checkbox-autorun.text", "AutoRun") );
+    ui->pushButtonLogon->setText( theLocales.getLocalText("login-dialog.button-logon.text", "Login") );
+    ui->pushButtonLogon->setToolTip( theLocales.getLocalText("login-dialog.button-logon.tooltip", "") );
+    ui->pushButtonVisitorLogon->setText( theLocales.getLocalText("login-dialog.button-visitor-logon.text", "Visitor") );
+    ui->pushButtonVisitorLogon->setToolTip( theLocales.getLocalText("login-dialog.button-visitor-logon.tooltip", "") );
+    ui->pushButtonRegister->setText( theLocales.getLocalText("login-dialog.button-register.text", "Resister") );
+    ui->pushButtonRegister->setToolTip( theLocales.getLocalText("login-dialog.button-register.tooltip", "") );
+    ui->pushButtonForgetPwd->setText( theLocales.getLocalText("login-dialog.button-forget-pwd.text", "Forget Pwd") );
+    ui->pushButtonForgetPwd->setToolTip( theLocales.getLocalText("login-dialog.button-forget-pwd.tooltip", "") );
+    ui->pushButtonConnectSetting->setText( theLocales.getLocalText("login-dialog.button-connect-setting.text", "Connect Setting") );
+    ui->pushButtonConnectSetting->setToolTip( theLocales.getLocalText("login-dialog.button-connect-setting.tooltip", "") );
 
 }
-
-//void EbDialogLogin::refreshSkin(void)
-//{
-//    this->showTitleBackground(theApp->getMainColor(), 190);
-//}
 
 void EbDialogLogin::updateEntLogo(const QString& fileName)
 {
@@ -312,8 +248,6 @@ void EbDialogLogin::updateEntLogo(const QString& fileName)
         m_labelEntLogo = new EbLabel(this);
         m_labelEntLogo->setGeometry( 84,50,120,120 );
         m_labelEntLogo->setCursor( QCursor(Qt::PointingHandCursor) );
-//        m_labelEntLogo->setStyleSheet ("border:2px groove gray;border-radius:10px;padding:2px 4px");  // 不行
-//        m_labelEntLogo->setStyleSheet("QLabel{background-color:rgb(0,0,0,0); color: white; border-radius: 2px;}");
         connect( m_labelEntLogo, SIGNAL(clicked()),this,SLOT(onClickedEntLogo()) );
     }
     if (fileName.isEmpty() || !QFile::exists(fileName)) {
@@ -325,21 +259,15 @@ void EbDialogLogin::updateEntLogo(const QString& fileName)
         m_isDefaultEntLogo = false;
         m_labelEntLogo->setPixmap( QPixmap(fileName).scaled(120,120,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     }
-//    m_labelEntLogo->setPixmap( QPixmap::fromImage(QImage(qApp->applicationDirPath()+"/img/entlogo.png")).scaled(120,120,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
     m_labelEntLogo->show();
 }
 
 void EbDialogLogin::updateProductName(void)
 {
     this->showTitleLogoText( theApp->productName(),const_common_title_font_size );
-//    this->showTitleLogoText( tr("恩布互联"),11 );
 
-    QString sWindowText = theLocales.getLocalText("login-dialog.window-text","登录界面");
-    sWindowText.replace( "[PRODUCT_NAME]", theApp->productName() );
-//    char sSetWindowText[260];
-//    sprintf(sWindowText,"恩布登录界面");
-    this->setWindowTitle(sWindowText);
-
+    QString sWindowText = theLocales.getLocalText("login-dialog.window-text", "登录界面");
+    this->setWindowTitle(sWindowText.replace("[PRODUCT_NAME]", theApp->productName()));
 }
 
 void EbDialogLogin::setErrorText(const QString& errorText, bool bMessageShowError)
@@ -354,26 +282,26 @@ void EbDialogLogin::setErrorText(const QString& errorText, bool bMessageShowErro
 
 void EbDialogLogin::processDatas(void)
 {
-    // 加载本机登录帐号
+    /// 加载本机登录帐号
     loadLoginData();
-    // 创建“setting”菜单数据
+    /// 创建“setting”菜单数据
     createMenuData();
 
     ui->pushButtonLogon->setEnabled(false);
     if ( !theApp->setDevAppId(this) ) {
-        // ?
+        /// ?
     }
 
 }
 void EbDialogLogin::setLoginInfo(QListWidgetItem* item, bool bAccountSelect)
 {
     const mycp::bigint userId = item->data(Qt::UserRole).toLongLong();
-    CLoginInfo::pointer loginInfo;
+    EbLoginInfo::pointer loginInfo;
     if (m_pLoginInfoList.find(userId, loginInfo)) {
         setLoginInfo( loginInfo,bAccountSelect );
      }
 }
-void EbDialogLogin::setLoginInfo(const CLoginInfo::pointer& loginInfo, bool bAccountSelect)
+void EbDialogLogin::setLoginInfo(const EbLoginInfo::pointer& loginInfo, bool bAccountSelect)
 {
     ui->checkBoxSavePwd->setChecked( loginInfo->m_bSafePwd );
     ui->lineEditAccount->setText( loginInfo->m_sAccount.c_str() );
@@ -412,7 +340,7 @@ void EbDialogLogin::loadLoginData(void)
         const mycp::tstring sPassword( pRecord->getVector()[3]->getStr() );
         const bool bSafePwd = pRecord->getVector()[4]->getIntValue()==1?true:false;
         const EB_USER_LINE_STATE nLineState = (EB_USER_LINE_STATE)pRecord->getVector()[5]->getIntValue();
-        CLoginInfo::pointer pLoginInfo = CLoginInfo::create(sAccount, sPassword, bSafePwd);
+        EbLoginInfo::pointer pLoginInfo = EbLoginInfo::create(sAccount, sPassword, bSafePwd);
         pLoginInfo->m_sRealAccount = sRealAccount;
         pLoginInfo->m_nLineState = nLineState;
         pLoginInfo->m_nUserId = nUserId;
@@ -441,10 +369,10 @@ void EbDialogLogin::createMenuData(void)
 {
     if (m_menuSetting == NULL) {
         m_menuSetting = new QMenu(this);
-        const QString selectText = theLocales.getLocalText("color-skin.select-color.text","选择色调");
+        const QString selectText = theLocales.getLocalText("color-skin.select-color.text", "选择色调");
         QAction * pSelectColorAction = m_menuSetting->addAction( QIcon(QStringLiteral(":/res/color_select.bmp")), selectText );
         pSelectColorAction->setCheckable(true);
-        pSelectColorAction->setToolTip( theLocales.getLocalText("color-skin.select-color.tooltip","") );
+        pSelectColorAction->setToolTip( theLocales.getLocalText("color-skin.select-color.tooltip", "") );
         pSelectColorAction->setData( QVariant(0) );
         connect( pSelectColorAction, SIGNAL(triggered()), this, SLOT(onClickSelectColor()) );
         m_menuSetting->addSeparator();
@@ -463,27 +391,7 @@ void EbDialogLogin::createMenuData(void)
                 pAction->setChecked(true);
             }
         }
-//        for (int i=0; i<theColorSkinSize; i++) {
-//            const unsigned int nColor = theColorSkinsValue[i];
-//            QPixmap pixmap(16,16);
-//            pixmap.fill( QColor(GetRValue(nColor), GetGValue(nColor), GetBValue(nColor)) );
-//            sprintf(lpszBuffer, "color-skin.color-%d.name", i);
-//            const QString colorName = theLocales.getLocalText(lpszBuffer,"color");
-//            QAction * pAction = m_menuSetting->addAction( QIcon(pixmap), colorName );
-//            //            QAction * pAction = m_menuSetting->addAction( QIcon(pixmap), theColorSkinsString[i].c_str() );
-//            pAction->setCheckable(true);
-//            pAction->setData( QVariant(i+1) );
-//            connect( pAction, SIGNAL(triggered()), this, SLOT(onClickSelectColor()) );
-//            if (!bFindMainColorChecked) {
-//                const int r = theApp->getMainColor().red();
-//                const int g = theApp->getMainColor().green();
-//                const int b = theApp->getMainColor().blue();
-//                if (RGB(r,g,b)==nColor) {
-//                    bFindMainColorChecked = true;
-//                    pAction->setChecked(true);
-//                }
-//            }
-//        }
+
         if (!bFindMainColorChecked) {
             pSelectColorAction->setChecked(true);
         }
@@ -559,38 +467,10 @@ void EbDialogLogin::keyPressEvent(QKeyEvent * e)
 bool EbDialogLogin::eventFilter(QObject *obj, QEvent *e)
 {
     if (obj==ui->listWidgetLoginRecords) {
-//        if (e->type() == QEvent::FocusOut && !ui->pushButtonDeleteAccount->hasFocus()) {
         if (e->type() == QEvent::FocusOut && !ui->pushButtonDeleteAccount->hasFocus() && !ui->lineEditAccount->hasFocus()) {
             ui->listWidgetLoginRecords->setVisible(false);
             ui->pushButtonDeleteAccount->setVisible(false);
-//            ui->pushButtonDeleteAccount->setProperty("delete-row",QVariant(-1));
         }
-//        else if (e->type() == QEvent::KeyPress) {
-//            const QKeyEvent * event = (QKeyEvent*)e;
-//            switch (event->key()) {
-//            case Qt::Key_Enter:
-//            case Qt::Key_Return: {
-//                break;
-//            }
-//            case Qt::Key_Up: {
-//                // 实现鼠标向上移动，切换到 lineEditAccount
-//                if ( ui->listWidgetLoginRecords->isVisible() && ui->listWidgetLoginRecords->hasFocus() ){
-//                    if (ui->listWidgetLoginRecords->count()==0) {
-//                        ui->lineEditAccount->setFocus();
-//                    }
-//                    else {
-//                        QList<QListWidgetItem*> items = ui->listWidgetLoginRecords->selectedItems();
-//                        if ( items.size()==1 && ui->listWidgetLoginRecords->row(items.at(0))==0 ) {
-//                            ui->lineEditAccount->setFocus();
-//                        }
-//                    }
-//                }
-//                break;
-//            }
-//            default:
-//                break;
-//            }
-//        }
     }
     else if (obj == ui->lineEditPassword) {
         if (e->type() == QEvent::KeyPress) {
@@ -639,25 +519,12 @@ bool EbDialogLogin::eventFilter(QObject *obj, QEvent *e)
     return EbDialogBase::eventFilter(obj, e);
 }
 
-//void EbDialogLogin::onUpdateProductName(QEvent* )
-//{
-//    updateProductName();
-//}
-
-//void EbDialogLogin::onUpdateEntLogo(QEvent* )
-//{
-//    if (theApp->isLicenseUser())
-//        updateEntLogo(theApp->getAppImgPath() + "/entlogo");    // 企业定制LOGO，空或不存在使用系统默认
-//    else
-//        updateEntLogo("");
-//}
-
 void EbDialogLogin::onAppIdSuccess(QEvent *)
 {
 //    const EB_Event * pEvent = (EB_Event*)e;
     updateProductName();
     if (theApp->isLicenseUser())
-        updateEntLogo(theApp->getAppImgPath() + "/entlogo");    // 企业定制LOGO，空或不存在使用系统默认
+        updateEntLogo(theApp->getAppImgPath() + "/entlogo");    /// 企业定制LOGO，空或不存在使用系统默认
     else
         updateEntLogo("");
     ui->pushButtonLogon->setEnabled(true);
@@ -675,10 +542,10 @@ void EbDialogLogin::onAppIdError(QEvent * e)
     switch (stateCode) {
     case EB_STATE_NOT_SUPPORT_VERSION_ERROR:
         /// 系统不支持当前版本，请更新客户端后重试！
-        setErrorText( theLocales.getLocalText("on-appid-response.not-support-version.text","EB_STATE_NOT_SUPPORT_VERSION_ERROR"),true );
+        setErrorText( theLocales.getLocalText("on-appid-response.not-support-version.text", "EB_STATE_NOT_SUPPORT_VERSION_ERROR"),true );
         break;
     case EB_STATE_TIMEOUT_ERROR: {
-        QString text = theLocales.getLocalText("on-appid-response.timeout-error.text","Timeout error");
+        QString text = theLocales.getLocalText("on-appid-response.timeout-error.text", "Timeout error");
         text.replace( "[STATE_CODE]", sStateCode );
         setErrorText( text,false );
         break;
@@ -687,13 +554,13 @@ void EbDialogLogin::onAppIdError(QEvent * e)
 //        break;
     default:
         /// 系统APPID验证失败，请退出程序后重新进入！<br>错误代码:[STATE_CODE]
-        QString text = theLocales.getLocalText("on-appid-response.other-error.text","APPID Error");
+        QString text = theLocales.getLocalText("on-appid-response.other-error.text", "APPID Error");
         text.replace( "[STATE_CODE]", sStateCode );
         setErrorText( text,false );
         if (m_inMessageBox) {
             break;
         }
-        const QString title = theLocales.getLocalText("on-appid-response.other-error.title","");
+        const QString title = theLocales.getLocalText("on-appid-response.other-error.title", "");
         m_inMessageBox = true;
         EbMessageBox::doExec(0,title, QChar::Null, text, EbMessageBox::IMAGE_WARNING, 0, QMessageBox::Ok );
         m_inMessageBox = false;
@@ -742,11 +609,6 @@ void EbDialogLogin::onLogonSuccess(QEvent *e)
     this->accept();
 }
 
-//void EbDialogLogin::onLogonTimeout(QEvent *e)
-//{
-//    onLogonError(e);
-//}
-
 void EbDialogLogin::onLogonError(QEvent *e)
 {
     const EB_AccountInfo * pAccountInfo = (EB_AccountInfo*)e;
@@ -757,10 +619,10 @@ void EbDialogLogin::onLogonError(QEvent *e)
     ui->lineEditAccount->selectAll();
 
     if (stateCode == EB_STATE_APPID_KEY_ERROR) {
-        QString title = theLocales.getLocalText("on-logon-response.appid-key-error.title","");
+        QString title = theLocales.getLocalText("on-logon-response.appid-key-error.title", "");
         if (title.isEmpty())
             title = theApp->productName();
-        const QString text = theLocales.getLocalText("on-logon-response.appid-key-error.text","AppId Key Error");
+        const QString text = theLocales.getLocalText("on-logon-response.appid-key-error.text", "AppId Key Error");
         EbMessageBox::doExec( 0,title, QChar::Null, text, EbMessageBox::IMAGE_WARNING,0,QMessageBox::Ok );
         theApp->exitApp(true);
         theApp->initApp();
@@ -775,35 +637,35 @@ void EbDialogLogin::onLogonError(QEvent *e)
     switch (stateCode) {
     case EB_WM_LOGON_TIMEOUT:
         /// 登录超时，请重新登录！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.logon-timeout.text","Logon Timeout");
+        sErrorText = theLocales.getLocalText("on-logon-response.logon-timeout.text", "Logon Timeout");
         break;
     case EB_STATE_UNAUTH_ERROR:
         /// 帐号未激活，请查收邮件，完成注册！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.unauth-error.text","Unauth Error");
+        sErrorText = theLocales.getLocalText("on-logon-response.unauth-error.text", "Unauth Error");
         break;
     case EB_STATE_ACCOUNT_FREEZE:
         /// 帐号已经被临时冻结，请联系公司客服！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.account-freeze.text","Account Freeze");
+        sErrorText = theLocales.getLocalText("on-logon-response.account-freeze.text", "Account Freeze");
         break;
     case EB_STATE_MAX_RETRY_ERROR:
         /// 错误次数太多，帐号被临时锁住，请稍候再试！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.max-retry-error.text","Max Retry Error");
+        sErrorText = theLocales.getLocalText("on-logon-response.max-retry-error.text", "Max Retry Error");
         break;
     case EB_STATE_NOT_AUTH_ERROR:
         /// 没有权限错误！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.not-auth-error.text","Not Auth Error");
+        sErrorText = theLocales.getLocalText("on-logon-response.not-auth-error.text", "Not Auth Error");
         break;
     case EB_STATE_ACCOUNT_NOT_EXIST:
         /// 帐号不存在，请重新输入！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.account-not-exist.text","Account Not Exist");
+        sErrorText = theLocales.getLocalText("on-logon-response.account-not-exist.text", "Account Not Exist");
         break;
     case EB_STATE_ACC_PWD_ERROR:
         /// 帐号或密码错误，请重新输入！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.acc-pwd-error.text","Account Or Password Error");
+        sErrorText = theLocales.getLocalText("on-logon-response.acc-pwd-error.text", "Account Or Password Error");
         break;
     default:
         /// 登录失败，请重试！\r\n错误代码:%d
-        sErrorText = theLocales.getLocalText("on-logon-response.other-error.text","Logon Error");
+        sErrorText = theLocales.getLocalText("on-logon-response.other-error.text", "Logon Error");
         break;
     }
     sErrorText.replace( "[STATE_CODE]", QString::number((int)stateCode) );
@@ -821,7 +683,7 @@ void EbDialogLogin::onOnlineAnother(QEvent *e)
 void EbDialogLogin::onClickedPushButtonSetting(void)
 {
     createMenuData();
-    // ** set menu checked and uncheck
+    /// ** set menu checked and uncheck
     int nFindColorIndex = 0;
     const std::vector<EbColorInfo::pointer>& colors = theLocales.colors();
     for (size_t i=0; i<colors.size(); i++) {
@@ -877,9 +739,6 @@ void EbDialogLogin::onClickSelectColor(void)
     const std::vector<EbColorInfo::pointer>& colors = theLocales.colors();
     if (nColorIndex>=1 && nColorIndex<=(int)colors.size()) {
         theApp->setMainColor( colors[nColorIndex-1]->color(), true );
-//    if ( nColorIndex>=1 && nColorIndex<=theColorSkinSize ) {
-//        const unsigned int nColor = theColorSkinsValue[nColorIndex-1];
-//        theApp->setMainColor( GetRValue(nColor), GetGValue(nColor), GetBValue(nColor), true );
     }
     else {
         QColor c = QColorDialog::getColor( theApp->getMainColor() );
@@ -888,7 +747,6 @@ void EbDialogLogin::onClickSelectColor(void)
         }
         theApp->setMainColor( c,true );
     }
-//    refreshSkin();
 }
 void EbDialogLogin::setLogonCtrlEnabled(bool enable)
 {
@@ -904,46 +762,50 @@ void EbDialogLogin::setLogonCtrlEnabled(bool enable)
     ui->pushButtonVisitorLogon->setEnabled(enable);
 }
 
-void EbDialogLogin::onClickPushButtonLogon(void)
+void EbDialogLogin::onClickedPushButtonLogon(void)
 {
     const QString sAccount = ui->lineEditAccount->text();
     if (sAccount.isEmpty()) {
         ui->lineEditAccount->setFocus();
         /// 帐号不能为空：<br>请重新输入！
-        setErrorText( theLocales.getLocalText( "message-show.account-empty-error","Account Empty" ),true );
+        setErrorText( theLocales.getLocalText( "message-show.account-empty-error", "Account Empty" ),true );
         return;
     }
     const QString sPassword = ui->lineEditPassword->text();
     if (sPassword.isEmpty()) {
         ui->lineEditPassword->setFocus();
         /// 密码不能为空：<br>请输入密码！
-        setErrorText( theLocales.getLocalText( "message-show.password-empty","Password Empty" ),true );
+        setErrorText( theLocales.getLocalText( "message-show.password-empty", "Password Empty" ),true );
         return;
     }
 
     setErrorText( "",false );
     setLogonCtrlEnabled(false);
 //    bool m_bAutoLogSuccess = false;
-    const char * m_sReqCode = "";   // ??
-    const EB_USER_LINE_STATE m_nOutLineState = EB_LINE_STATE_ONLINE_NEW;
-
+    const char * requestCode = "";   /// ?
+    const EB_USER_LINE_STATE lineState = EB_LINE_STATE_ONLINE_NEW;
+#ifdef WIN32
+    EB_LOGON_TYPE logonType = EB_LOGON_TYPE_PC;
+#else
+    EB_LOGON_TYPE logonType = EB_LOGON_TYPE_MAC;
+#endif
     int ret = 0;
     if (theApp->ebServerVersion()==0 && sPassword != "********") {
         /// ** 兼容旧版本，("********"))是新版本自动登录
-        ret = theApp->m_ebum.EB_LogonByAccount(sAccount.toStdString().c_str(),sPassword.toStdString().c_str(),
-                                               m_sReqCode,"",m_nOutLineState);
+        ret = theApp->m_ebum.EB_LogonByAccount(sAccount.toStdString().c_str(), sPassword.toStdString().c_str(),
+                                               requestCode, "", lineState, logonType);
     }
     else {
         mycp::tstring sLocalHostOAuthKey;
         if (ui->checkBoxSavePwd->isChecked())
             entboost::GetLocalHostOAuthKey(sLocalHostOAuthKey);
         if (!m_sOAuthKey.empty() && m_sOAuthKey==sLocalHostOAuthKey) {
-            ret = theApp->m_ebum.EB_LogonByAccount(sAccount.toStdString().c_str(),"",
-                                                   m_sReqCode,sLocalHostOAuthKey.c_str(),m_nOutLineState);
+            ret = theApp->m_ebum.EB_LogonByAccount(sAccount.toStdString().c_str(), "",
+                                                   requestCode, sLocalHostOAuthKey.c_str(), lineState, logonType);
         }
         else {
-            ret = theApp->m_ebum.EB_LogonByAccount(sAccount.toStdString().c_str(),sPassword.toStdString().c_str(),
-                                                   m_sReqCode,sLocalHostOAuthKey.c_str(),m_nOutLineState);
+            ret = theApp->m_ebum.EB_LogonByAccount(sAccount.toStdString().c_str(), sPassword.toStdString().c_str(),
+                                                   requestCode, sLocalHostOAuthKey.c_str(), lineState, logonType);
         }
     }
     if (ret<0) {
@@ -951,13 +813,12 @@ void EbDialogLogin::onClickPushButtonLogon(void)
         ui->lineEditAccount->setFocus();
         ui->lineEditAccount->selectAll();
         /// 帐号格式错误，请重新输入！
-        setErrorText( theLocales.getLocalText("message-show.account-format-error","Account Format Error"),true );
+        setErrorText( theLocales.getLocalText("message-show.account-format-error", "Account Format Error"),true );
     }
 }
 #ifdef WIN32
 void EbDialogLogin::onClickedCheckBoxAutoRun()
 {
-#define REG_RUN "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
     const QString application_name = QApplication::applicationName();
     QSettings *settings = new QSettings(REG_RUN, QSettings::NativeFormat);
     if(ui->checkBoxAutoRun->isChecked()) {
@@ -978,9 +839,9 @@ void EbDialogLogin::onTextChangedEditAccount(const QString& sEditAccountText)
     bool bFindAccount = false;
     if (!sEditAccountText.isEmpty()) {
         const std::string sAccount = sEditAccountText.toStdString();
-        CLockMap<mycp::bigint, CLoginInfo::pointer>::iterator pIter = m_pLoginInfoList.begin();
+        CLockMap<mycp::bigint, EbLoginInfo::pointer>::iterator pIter = m_pLoginInfoList.begin();
         for (; pIter!=m_pLoginInfoList.end(); pIter++) {
-            const CLoginInfo::pointer& pLoginInfo = pIter->second;
+            const EbLoginInfo::pointer& pLoginInfo = pIter->second;
             if ( (m_searchFirst && pLoginInfo->m_sAccount.find(sAccount)==0) ||
                  (!m_searchFirst && pLoginInfo->m_sAccount==sAccount) ) {
                 bFindAccount = true;
@@ -1003,7 +864,6 @@ void EbDialogLogin::onTextChangedEditAccount(const QString& sEditAccountText)
         ui->lineEditPassword->setText("");
         ui->checkBoxSavePwd->setChecked(false);
     }
-
 }
 
 void EbDialogLogin::onClickedLabelAccountIcon(void)
@@ -1052,7 +912,7 @@ void EbDialogLogin::onItemEnteredLoginRecords(QListWidgetItem* item)
 //        return;
 //    }
 //    const mycp::bigint userId = current->data(Qt::UserRole).toLongLong();
-//    CLoginInfo::pointer loginInfo;
+//    EbLoginInfo::pointer loginInfo;
 //    if (m_pLoginInfoList.find(userId, loginInfo)) {
 //        const int rowIndex = loginInfo->m_rowIndex;
 //        const QRect& rect = ui->listWidgetLoginRecords->geometry();
@@ -1093,7 +953,7 @@ bool DeleteDirectory(const QString &path)
 //    return dir.rmpath(dir.absolutePath());
 }
 
-void EbDialogLogin::onClickPushButtonDeleteAccount(void)
+void EbDialogLogin::onClickedPushButtonDeleteAccount(void)
 {
     const int rowIndex = ui->pushButtonDeleteAccount->property("track-row").toInt();
     QListWidgetItem* item = ui->listWidgetLoginRecords->item(rowIndex);
@@ -1101,7 +961,7 @@ void EbDialogLogin::onClickPushButtonDeleteAccount(void)
         return;
     }
     const mycp::bigint userId = item->data(Qt::UserRole).toLongLong();
-    CLoginInfo::pointer loginInfo;
+    EbLoginInfo::pointer loginInfo;
     if (!m_pLoginInfoList.find(userId, loginInfo)) {
         return;
     }
@@ -1111,11 +971,11 @@ void EbDialogLogin::onClickPushButtonDeleteAccount(void)
     const mycp::tstring sRealUserAccount(loginInfo->m_sRealAccount);
     const QString sUserDirectory = theApp->getAppUsersPath() + "/" + QString::fromStdString(sRealUserAccount.string());
     if (QFile::exists(sUserDirectory)) {
-        QString title = theLocales.getLocalText("message-box.delete-logon-account.title","删除登录信息");
+        QString title = theLocales.getLocalText("message-box.delete-logon-account.title", "删除登录信息");
         if (title.isEmpty())
             title = theApp->productName();
         /// 确定删除本地：<br>[USER_ACCOUNT] 帐号及所有聊天信息吗？
-        QString text = theLocales.getLocalText("message-box.delete-logon-account.text","Confirm Delete Local <br>Account and Chat Messages?");
+        QString text = theLocales.getLocalText("message-box.delete-logon-account.text", "Confirm Delete Local <br>Account and Chat Messages?");
         text.replace( "[USER_ACCOUNT]", sRealUserAccount.string().c_str() );
         if (loginInfo->m_nUserId>0) {
             char lpszUserId[24];
@@ -1132,7 +992,7 @@ void EbDialogLogin::onClickPushButtonDeleteAccount(void)
         }
         if (!DeleteDirectory(sUserDirectory)) {
             /// 删除用户数据失败：<br>请重试！
-            setErrorText( theLocales.getLocalText("message-show.delete-logon-account-error","删除用户数据失败：<br>请重试！"),true );
+            setErrorText( theLocales.getLocalText("message-show.delete-logon-account-error", "删除用户数据失败：<br>请重试！"),true );
             return;
         }
     }
@@ -1183,11 +1043,11 @@ void EbDialogLogin::onClickPushButtonDeleteAccount(void)
     }
 }
 
-void EbDialogLogin::onClickPushButtonVisitor(void)
+void EbDialogLogin::onClickedPushButtonVisitor(void)
 {
     if (!theApp->isOpenVisitor()) {
-        const QString text = theLocales.getLocalText("message-box.not-support-visitor.text","Not Support Visitor");
-        const QString title = theLocales.getLocalText("message-box.not-support-visitor.title","");
+        const QString text = theLocales.getLocalText("message-box.not-support-visitor.text", "Not Support Visitor");
+        const QString title = theLocales.getLocalText("message-box.not-support-visitor.title", "");
         EbMessageBox::doShow( NULL, title, QChar::Null, text, EbMessageBox::IMAGE_WARNING,default_warning_auto_close );
         return;
     }
@@ -1196,31 +1056,23 @@ void EbDialogLogin::onClickPushButtonVisitor(void)
     const char * sRegCode = "";
     theApp->m_ebum.EB_LogonByVisitor(sRegCode);
 }
-void EbDialogLogin::onClickPushButtonRegister(void)
+void EbDialogLogin::onClickedPushButtonRegister(void)
 {
-    // for test
-//    EbMessageBox::doExec( NULL, "", QChar::Null, "测试第一行<br>系统APPID验证失败，请退出程序后重新进入！", EbMessageBox::IMAGE_WARNING,5 );
-//    EbMessageBox::doShow( NULL, "", QChar::Null, "测试第一行<br>系统APPID验证失败，请退出程序后重新进入！", EbMessageBox::IMAGE_WARNING,5 );
-////    QMessageBox::warning(this, tr("事件类型"), QString::number((int)12), QMessageBox::Yes | QMessageBox::No);
-//    return;
     if (!theApp->isAppIdResponseOk()) {
-        QString text = theLocales.getLocalText("on-appid-response.other-error.text","APPID Error");
+        QString text = theLocales.getLocalText("on-appid-response.other-error.text", "APPID Error");
         text.replace( "[STATE_CODE]", "1" );
-        const QString title = theLocales.getLocalText("on-appid-response.other-error.title","");
+        const QString title = theLocales.getLocalText("on-appid-response.other-error.title", "");
         EbMessageBox::doShow( NULL, title, QChar::Null, text, EbMessageBox::IMAGE_WARNING,default_warning_auto_close );
         return;
     }
     EbDialogRegister dlg;
     if (dlg.exec()==QDialog::Accepted && dlg.registerUserId()>0) {
         ui->lineEditAccount->setText(dlg.account());
-//        char lpszUserId[24];
-//        sprintf( lpszUserId, "%lld", dlg.registerUserId() );
-//        ui->lineEditAccount->setText(lpszUserId);
         ui->lineEditPassword->setFocus();
     }
 }
 
-void EbDialogLogin::onClickPushButtonForgetPwd(void)
+void EbDialogLogin::onClickedPushButtonForgetPwd(void)
 {
     const QString& sForgetPwdUrl = theApp->forgetPwdUrl();
     if ( !sForgetPwdUrl.isEmpty() ) {
@@ -1228,20 +1080,13 @@ void EbDialogLogin::onClickPushButtonForgetPwd(void)
     }
 }
 
-//#include "ebdialogpoptip.h"
-void EbDialogLogin::onClickPushButtonConnectSetting(void)
+void EbDialogLogin::onClickedPushButtonConnectSetting(void)
 {
-    /// for test
-//    EbDialogPopTip * dlg = EbDialogPopTip::create(EbDialogPopTip::AuthMessage);
-//    dlg->setPopTipMessage(theLocales.getLocalText("pop-tip-dialog.request-add-to-group","Request add to group"));
-//    dlg->show();
-//    return;
-
     EbDialogConnectSetting pDialogConnectSetting;
     const int ret = pDialogConnectSetting.exec();
     if ( ret==QDialog::Accepted && pDialogConnectSetting.isServerModified() ) {
-        const QString title = theLocales.getLocalText("message-box.change-server.title","修改服务器地址");
-        const QString text = theLocales.getLocalText("message-box.change-server.text","需要重新加载验证流程才能生效：<br>确定立即加载吗？");
+        const QString title = theLocales.getLocalText("message-box.change-server.title", "修改服务器地址");
+        const QString text = theLocales.getLocalText("message-box.change-server.text", "需要重新加载验证流程才能生效：<br>确定立即加载吗？");
         const int ret = EbMessageBox::doExec( 0,title, QChar(0xf0ec), text, EbMessageBox::IMAGE_QUESTION );
         if (ret==QDialog::Accepted) {
             setErrorText("",false);

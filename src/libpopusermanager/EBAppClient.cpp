@@ -685,13 +685,15 @@ int CEBAppClient::EB_LogonByVisitor(const char* sReqCode)
 	}
 	return -1;
 }
-int CEBAppClient::EB_LogonByAccount(const char * sAccount, const char * sPassword,const char* sReqCode, const char * sOAuthKey,EB_USER_LINE_STATE nNewLineState)
+int CEBAppClient::EB_LogonByAccount(const char * sAccount, const char * sPassword,
+                                    const char* sReqCode, const char * sOAuthKey,
+                                    EB_USER_LINE_STATE nNewLineState, EB_LOGON_TYPE logonType)
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
 	{
 		//CPOPLogonInfo::pointer pLogonInfo = CPOPLogonInfo::create(EB_LOGON_TYPE_ANDROID|EB_LOGON_TYPE_EMAIL, sAccount, sPassword);		// 测试
-		int nLogonType = EB_LOGON_TYPE_PC;
+        int nLogonType = logonType;
 		mycp::tstring sAccountTemp(sAccount);
 		const bool bIsFullNumber = entboost::IsFullNumber(sAccountTemp.c_str(),sAccountTemp.size());
 		if (!pManager->m_sAccountPrefix.empty() && !bIsFullNumber && sAccountTemp.find(pManager->m_sAccountPrefix)==std::string::npos)

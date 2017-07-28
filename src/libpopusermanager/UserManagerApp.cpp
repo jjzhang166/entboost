@@ -1078,7 +1078,27 @@ void CUserManagerApp::DoProcess(void)
 }
 
 #ifdef _QT_MAKE_
-long CUserManagerApp::waitEventResult(unsigned long resultKey,int waitMaxSecond, long defaultResult)
+long CUserManagerApp::postWaitEventResult(QObject *receiver, EB_Event *event)
+{
+    static unsigned long theIndex = 0;
+    const unsigned long resultKey = (++theIndex)+(unsigned long)event;
+    event->setReceiver(this, resultKey);
+    QCoreApplication::postEvent(receiver, event, thePostEventPriority);
+    /// 等待最长 60 秒
+    return waitEventResult(resultKey, 60);
+}
+
+long CUserManagerApp::postWaitEventResult(QObject *receiver, CCrInfo *event)
+{
+    static unsigned long theIndex = 0;
+    const unsigned long resultKey = (++theIndex)+(unsigned long)event;
+    event->setReceiver(this, resultKey);
+    QCoreApplication::postEvent(receiver, event, thePostEventPriority);
+    /// 等待最长 60 秒
+    return waitEventResult(resultKey, 60);
+}
+
+long CUserManagerApp::waitEventResult(unsigned long resultKey, int waitMaxSecond, long defaultResult)
 {
     long result = defaultResult;
     for (int i=0; i<waitMaxSecond*200; i++) {
@@ -1095,11 +1115,11 @@ void CUserManagerApp::customEvent(QEvent *e)
 {
     const QEvent::Type eventType = e->type();
     if (eventType==CR_WM_EVENT_RESULT) {
-        CCrInfo * event = (CCrInfo*)e;
+        const CCrInfo * event = (CCrInfo*)e;
         m_eventResult.insert(event->receiveKey(),event->GetEventParameter());
     }
     else if (eventType==EB_WM_EVENT_RESULT) {
-        EB_Event * event = (EB_Event*)e;
+        const EB_Event * event = (EB_Event*)e;
         m_eventResult.insert(event->receiveKey(),event->GetEventParameter());
     }
 }
@@ -3758,11 +3778,7 @@ int CUserManagerApp::VideoEnd(mycp::bigint sCallId)
 #endif
 	if (m_pVideoHwnd.find(sCallId,hWnd)) {
 #ifdef _QT_MAKE_
-        const unsigned long resultKey = (unsigned long)pVideoInfo;
-        pVideoInfo->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 		::SendMessage(hWnd, EB_WM_VIDEO_CLOSE, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 		delete pVideoInfo;
@@ -3770,11 +3786,7 @@ int CUserManagerApp::VideoEnd(mycp::bigint sCallId)
 	}
 	else if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
-        const unsigned long resultKey = (unsigned long)pVideoInfo;
-        pVideoInfo->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 		::SendMessage(m_pHwnd, EB_WM_VIDEO_CLOSE, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 		delete pVideoInfo;
@@ -9810,11 +9822,7 @@ void CUserManagerApp::OnFVRequest(const CPOPSotpRequestInfo::pointer & pReqeustI
 #endif
 	if (m_pVideoHwnd.find(sCallId,hWnd)) {
 #ifdef _QT_MAKE_
-        const unsigned long resultKey = (unsigned long)pVideoInfo;
-        pVideoInfo->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 		::SendMessage(hWnd, EB_WM_VIDEO_REQUEST, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 		delete pVideoInfo;
@@ -9822,11 +9830,7 @@ void CUserManagerApp::OnFVRequest(const CPOPSotpRequestInfo::pointer & pReqeustI
 	}
 	else if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
-        const unsigned long resultKey = (unsigned long)pVideoInfo;
-        pVideoInfo->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 		::SendMessage(m_pHwnd, EB_WM_VIDEO_REQUEST, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 		delete pVideoInfo;
@@ -9909,11 +9913,7 @@ void CUserManagerApp::OnFVAck(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 #endif
 		if (m_pVideoHwnd.find(sCallId,hWnd)) {
 #ifdef _QT_MAKE_
-            const unsigned long resultKey = (unsigned long)pVideoInfo;
-            pVideoInfo->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-            // 等待最长 60 秒
-            waitEventResult(resultKey,60);
+            postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 			::SendMessage(hWnd, EB_WM_VIDEO_ACCEPT, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 			delete pVideoInfo;
@@ -9921,11 +9921,7 @@ void CUserManagerApp::OnFVAck(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 		}
 		else if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
-            const unsigned long resultKey = (unsigned long)pVideoInfo;
-            pVideoInfo->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-            // 等待最长 60 秒
-            waitEventResult(resultKey,60);
+            postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 			::SendMessage(m_pHwnd, EB_WM_VIDEO_ACCEPT, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 			delete pVideoInfo;
@@ -9966,11 +9962,7 @@ void CUserManagerApp::OnFVAck(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 #endif
 			if (m_pVideoHwnd.find(sCallId,hWnd)) {
 #ifdef _QT_MAKE_
-                const unsigned long resultKey = (unsigned long)pVideoInfo;
-                pVideoInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 				::SendMessage(hWnd, EB_WM_VIDEO_TIMEOUT, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 				delete pVideoInfo;
@@ -9978,11 +9970,7 @@ void CUserManagerApp::OnFVAck(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 			}
 			else if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
-                const unsigned long resultKey = (unsigned long)pVideoInfo;
-                pVideoInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_VIDEO_TIMEOUT, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 				delete pVideoInfo;
@@ -10009,11 +9997,7 @@ void CUserManagerApp::OnFVAck(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 #endif
 			if (m_pVideoHwnd.find(sCallId,hWnd)) {
 #ifdef _QT_MAKE_
-                const unsigned long resultKey = (unsigned long)pVideoInfo;
-                pVideoInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 				::SendMessage(hWnd, EB_WM_VIDEO_REJECT, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 				delete pVideoInfo;
@@ -10021,11 +10005,7 @@ void CUserManagerApp::OnFVAck(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 			}
 			else if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
-                const unsigned long resultKey = (unsigned long)pVideoInfo;
-                pVideoInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_VIDEO_REJECT, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 				delete pVideoInfo;
@@ -10146,11 +10126,7 @@ void CUserManagerApp::OnFVEnd(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 #endif
 	if (m_pVideoHwnd.find(sCallId,hWnd)) {
 #ifdef _QT_MAKE_
-        const unsigned long resultKey = (unsigned long)pVideoInfo;
-        pVideoInfo->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 		::SendMessage(hWnd, EB_WM_VIDEO_CLOSE, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 		delete pVideoInfo;
@@ -10158,11 +10134,7 @@ void CUserManagerApp::OnFVEnd(const CPOPSotpRequestInfo::pointer & pReqeustInfo,
 	}
 	else if (m_pHwnd!=NULL) {
 #ifdef _QT_MAKE_
-        const unsigned long resultKey = (unsigned long)pVideoInfo;
-        pVideoInfo->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pVideoInfo, thePostEventPriority);
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pVideoInfo);
 #else
 		::SendMessage(m_pHwnd, EB_WM_VIDEO_CLOSE, (WPARAM)pVideoInfo, (LPARAM)&pUserVideoInfo);
 		delete pVideoInfo;
@@ -10664,11 +10636,7 @@ void CUserManagerApp::OnUMEMEmpDeleteResponse(const CPOPSotpRequestInfo::pointer
 			EB_GroupInfo * pEvent = new EB_GroupInfo(pDepartmentInfo.get());
 			pEvent->SetQEventType((QEvent::Type)EB_WM_REMOVE_GROUP);
 			pEvent->SetEventData((void*)(const EB_MemberInfo*)pEmployeeInfo.get());
-            const unsigned long resultKey = (unsigned long)pEvent;
-            pEvent->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pEvent, thePostEventPriority);
-            // 等待最长 60 秒
-            waitEventResult(resultKey,60);
+            postWaitEventResult(m_pHwnd, pEvent);
 #else
 			::SendMessage(m_pHwnd, EB_WM_REMOVE_GROUP, (WPARAM)(const EB_GroupInfo*)pDepartmentInfo.get(), (LPARAM)(const EB_MemberInfo*)pEmployeeInfo.get());
 #endif
@@ -12118,11 +12086,7 @@ void CUserManagerApp::OnSendRich(const CCrRichInfo& pCrMsgInfo)
 #ifdef _QT_MAKE_
 		CCrRichInfo * pEvent = new CCrRichInfo(pCrMsgInfo);
 		pEvent->SetQEventType((QEvent::Type)CR_WM_SEND_RICH);
-        const unsigned long resultKey = (unsigned long)pEvent;
-        pEvent->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pEvent,thePostEventPriority );
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pEvent);
 #else
 		::SendMessage(m_pHwnd, CR_WM_SEND_RICH, (WPARAM)&pCrMsgInfo, 0);	// nState
 #endif
@@ -12287,11 +12251,7 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 #ifdef _QT_MAKE_
 			CCrRichInfo * pEvent = new CCrRichInfo(pCrMsgInfo);
 			pEvent->SetQEventType((QEvent::Type)CR_WM_SEND_RICH);
-            const unsigned long resultKey = (unsigned long)pEvent;
-            pEvent->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pEvent,thePostEventPriority );
-            // 等待最长 60 秒
-            waitEventResult(resultKey,60);
+            postWaitEventResult(m_pHwnd, pEvent);
 #else
 			::SendMessage(m_pHwnd, CR_WM_SEND_RICH, (WPARAM)&pCrMsgInfo, 0);	// EB_STATE_FORWARD_MSG
 #endif
@@ -12304,11 +12264,7 @@ int CUserManagerApp::OnReceiveRich(const CCrRichInfo& pCrMsgInfo)
 #ifdef _QT_MAKE_
             CCrRichInfo * pEvent = new CCrRichInfo(pCrMsgInfo);
             pEvent->SetQEventType((QEvent::Type)CR_WM_RECEIVE_RICH);
-            const unsigned long resultKey = (unsigned long)pEvent;
-            pEvent->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pEvent, thePostEventPriority);
-            // 等待最长 60 秒
-            ret = (int)waitEventResult(resultKey,60);
+            ret = (int)postWaitEventResult(m_pHwnd, pEvent);
 #else
 			ret = (int)::SendMessage(m_pHwnd, CR_WM_RECEIVE_RICH, (WPARAM)&pCrMsgInfo,0);
 #endif
@@ -12344,11 +12300,7 @@ void CUserManagerApp::OnMsgReceipt(const CCrRichInfo& pRichInfo, int nAckType)
 			CCrRichInfo * pEvent = new CCrRichInfo(pRichInfo);
 			pEvent->SetQEventType((QEvent::Type)CR_WM_MSG_RECEIPT);
 			pEvent->SetEventParameter((long)nAckType);
-            const unsigned long resultKey = (unsigned long)pEvent;
-            pEvent->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pEvent,thePostEventPriority );
-            // 等待最长 60 秒
-            waitEventResult(resultKey,60);
+            postWaitEventResult(m_pHwnd, pEvent);
 #else
 			::SendMessage(m_pHwnd, CR_WM_MSG_RECEIPT, (WPARAM)&pRichInfo, (LPARAM)nAckType);
 #endif
@@ -12909,11 +12861,7 @@ int CUserManagerApp::OnReceivingFile(const CCrFileInfo& pFileInfo)
 #ifdef _QT_MAKE_
 			CCrFileInfo * pEvent = new CCrFileInfo(pFileInfo);
 			pEvent->SetQEventType((QEvent::Type)CR_WM_RECEIVING_FILE);
-            const unsigned long resultKey = (unsigned long)pEvent;
-            pEvent->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pEvent, thePostEventPriority);
-            // 等待最长 60 秒
-            ret = (int)waitEventResult(resultKey,60);
+            postWaitEventResult(m_pHwnd, pEvent);
 #else
 			ret = (int)::SendMessage(m_pHwnd, CR_WM_RECEIVING_FILE, (WPARAM)&pFileInfo, 0);
 #endif
@@ -12997,11 +12945,7 @@ int CUserManagerApp::OnReceivingFile(const CCrFileInfo& pFileInfo)
 #ifdef _QT_MAKE_
 			CCrFileInfo * pEvent = new CCrFileInfo(pFileInfo);
 			pEvent->SetQEventType((QEvent::Type)CR_WM_RECEIVING_FILE);
-            const unsigned long resultKey = (unsigned long)pEvent;
-            pEvent->setReceiver(this,resultKey);
-            QCoreApplication::postEvent( m_pHwnd, pEvent, thePostEventPriority);
-            // 等待最长 60 秒
-            ret = (int)waitEventResult(resultKey,60);
+            ret = (int)postWaitEventResult(m_pHwnd, pEvent);
 #else
 			ret = (int)::SendMessage(m_pHwnd, CR_WM_RECEIVING_FILE, (WPARAM)&pFileInfo, 0);
 #endif
@@ -16556,11 +16500,7 @@ void CUserManagerApp::OnFUMIUUser(const CPOPSotpRequestInfo::pointer & pReqeustI
 #ifdef _QT_MAKE_
 		pEbCallInfo->SetQEventType((QEvent::Type)EB_WM_CALL_INCOMING);
 		pEbCallInfo->SetEventData((void*)(const EB_AccountInfo*)pFromAccountInfo.get());
-        const unsigned long resultKey = (unsigned long)pEbCallInfo;
-        pEbCallInfo->setReceiver(this,resultKey);
-        QCoreApplication::postEvent( m_pHwnd, pEbCallInfo, thePostEventPriority);
-        // 等待最长 60 秒
-        waitEventResult(resultKey,60);
+        postWaitEventResult(m_pHwnd, pEbCallInfo);
 #else
 		::SendMessage(m_pHwnd, EB_WM_CALL_INCOMING, (WPARAM)pEbCallInfo,(LPARAM)(const EB_AccountInfo*)pFromAccountInfo.get());
 		delete pEbCallInfo;
@@ -18367,11 +18307,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 #ifdef _QT_MAKE_
 				pAccountInfo->SetQEventType((QEvent::Type)EB_WM_INVITE_ADD2GROUP);
 				pAccountInfo->SetEventData((void*)(const EB_APMsgInfo*)&pApMsgInfo);
-                const unsigned long resultKey = (unsigned long)pAccountInfo;
-                pAccountInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pAccountInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pAccountInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_INVITE_ADD2GROUP, (WPARAM)pAccountInfo, (LPARAM)&pApMsgInfo);
 				delete pAccountInfo;
@@ -18398,11 +18334,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 #ifdef _QT_MAKE_
 				pAccountInfo->SetQEventType((QEvent::Type)EB_WM_REJECT_ADD2GROUP);
 				pAccountInfo->SetEventData((void*)(const EB_APMsgInfo*)&pApMsgInfo);
-                const unsigned long resultKey = (unsigned long)pAccountInfo;
-                pAccountInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pAccountInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pAccountInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_REJECT_ADD2GROUP, (WPARAM)pAccountInfo, (LPARAM)&pApMsgInfo);
 				delete pAccountInfo;
@@ -18548,11 +18480,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 #ifdef _QT_MAKE_
 				pAccountInfo->SetQEventType((QEvent::Type)EB_WM_REQUEST_ADDCONTACT);
                 pAccountInfo->SetEventData((void*)(const EB_APMsgInfo*)&pApMsgInfo);
-                const unsigned long resultKey = (unsigned long)pAccountInfo;
-                pAccountInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pAccountInfo, thePostEventPriority);
-                /// 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pAccountInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_REQUEST_ADDCONTACT, (WPARAM)pAccountInfo, (LPARAM)&pApMsgInfo);
 				delete pAccountInfo;
@@ -18670,11 +18598,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 #ifdef _QT_MAKE_
 				pAccountInfo->SetQEventType((QEvent::Type)EB_WM_REJECT_ADDCONTACT);
 				pAccountInfo->SetEventData((void*)(const EB_APMsgInfo*)&pApMsgInfo);
-                const unsigned long resultKey = (unsigned long)pAccountInfo;
-                pAccountInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pAccountInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pAccountInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_REJECT_ADDCONTACT, (WPARAM)pAccountInfo, (LPARAM)&pApMsgInfo);
 				delete pAccountInfo;
@@ -18777,11 +18701,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 #ifdef _QT_MAKE_
 				pAccountInfo->SetQEventType((QEvent::Type)EB_WM_REQUEST_ADD2GROUP);
 				pAccountInfo->SetEventData((void*)(const EB_APMsgInfo*)&pApMsgInfo);
-                const unsigned long resultKey = (unsigned long)pAccountInfo;
-                pAccountInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pAccountInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pAccountInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_REQUEST_ADD2GROUP, (WPARAM)pAccountInfo, (LPARAM)&pApMsgInfo);
 				delete pAccountInfo;
@@ -18954,11 +18874,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 					EB_GroupInfo * pEvent = new EB_GroupInfo(pDepartmentInfo.get());
 					pEvent->SetQEventType((QEvent::Type)EB_WM_REMOVE_GROUP);
 					pEvent->SetEventData((void*)(const EB_MemberInfo*)pEmployeeInfo.get());
-                    const unsigned long resultKey = (unsigned long)pEvent;
-                    pEvent->setReceiver(this,resultKey);
-                    QCoreApplication::postEvent( m_pHwnd, pEvent, thePostEventPriority);
-                    // 等待最长 60 秒
-                    waitEventResult(resultKey,60);
+                    postWaitEventResult(m_pHwnd, pEvent);
 #else
 					::SendMessage(m_pHwnd, EB_WM_REMOVE_GROUP, (WPARAM)(const EB_GroupInfo*)pDepartmentInfo.get(), (LPARAM)(const EB_MemberInfo*)pEmployeeInfo.get());
 #endif
@@ -18972,11 +18888,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 					EB_GroupInfo * pEvent = new EB_GroupInfo(pDepartmentInfo.get());
 					pEvent->SetQEventType((QEvent::Type)EB_WM_EXIT_GROUP);
 					pEvent->SetEventData((void*)(const EB_MemberInfo*)pEmployeeInfo.get());
-                    const unsigned long resultKey = (unsigned long)pEvent;
-                    pEvent->setReceiver(this,resultKey);
-                    QCoreApplication::postEvent( m_pHwnd, pEvent, thePostEventPriority);
-                    // 等待最长 60 秒
-                    waitEventResult(resultKey,60);
+                    postWaitEventResult(m_pHwnd, pEvent);
 #else
 					::SendMessage(m_pHwnd, EB_WM_EXIT_GROUP, (WPARAM)(const EB_GroupInfo*)pDepartmentInfo.get(), (LPARAM)(const EB_MemberInfo*)pEmployeeInfo.get());
 #endif
@@ -19087,11 +18999,7 @@ void CUserManagerApp::ProcessP2PMsgInfo(const CEBAppMsgInfo::pointer& pMsgInfo,b
 #ifdef _QT_MAKE_
 				pAccountInfo->SetQEventType((QEvent::Type)EB_WM_BROADCAST_MSG);
 				pAccountInfo->SetEventData((void*)(const EB_APMsgInfo*)&pApMsgInfo);
-                const unsigned long resultKey = (unsigned long)pAccountInfo;
-                pAccountInfo->setReceiver(this,resultKey);
-                QCoreApplication::postEvent( m_pHwnd, pAccountInfo, thePostEventPriority);
-                // 等待最长 60 秒
-                waitEventResult(resultKey,60);
+                postWaitEventResult(m_pHwnd, pAccountInfo);
 #else
 				::SendMessage(m_pHwnd, EB_WM_BROADCAST_MSG, (WPARAM)pAccountInfo, (LPARAM)&pApMsgInfo);
 				delete pAccountInfo;

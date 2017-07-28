@@ -1846,16 +1846,16 @@ void EbDialogMainFrame::onClickedPushButtonApps()
 
     /// 集成应用菜单
     theApp->clearSubscribeSelectInfo();
-    theApp->m_pSubscribeFuncList.clear();
-    theApp->m_ebum.EB_GetSubscribeFuncList(EB_FUNC_LOCATION_MAINFRAME_BTN1,theApp->m_pSubscribeFuncList);
-    if (!theApp->m_pSubscribeFuncList.empty()) {
-        for (size_t i=0;i<theApp->m_pSubscribeFuncList.size();i++) {
-            const EB_SubscribeFuncInfo & funcInfo = theApp->m_pSubscribeFuncList[i];
+    std::vector<EB_SubscribeFuncInfo> funcList;
+    theApp->m_ebum.EB_GetSubscribeFuncList(EB_FUNC_LOCATION_MAINFRAME_BTN1,funcList);
+    if (!funcList.empty()) {
+        for (size_t i=0;i<funcList.size();i++) {
+            const EB_SubscribeFuncInfo & funcInfo = funcList[i];
             const QImage image = theApp->funcImage(&funcInfo);
             const QIcon icon( QPixmap::fromImage(image).scaled(const_default_menu_image_size,Qt::IgnoreAspectRatio, Qt::SmoothTransformation) );
             QAction * action = m_menuApps->addAction( icon, funcInfo.m_sFunctionName.c_str() );
             action->setToolTip( funcInfo.m_sDescription.c_str() );
-            action->setData( QVariant((int)i+1) );
+            action->setData( QVariant(funcInfo.m_nSubscribeId) );
             connect( action, SIGNAL(triggered()), this, SLOT(onTriggeredActionApps()) );
         }
     }
@@ -1870,9 +1870,9 @@ void EbDialogMainFrame::onClickedPushButtonApps()
 void EbDialogMainFrame::onTriggeredActionApps()
 {
     bool ok = false;
-    const int index = ((QAction*)sender())->data().toInt(&ok)-1;
-    if (index>=0 && index<(int)theApp->m_pSubscribeFuncList.size()) {
-        this->openSubscribeFuncWindow(theApp->m_pSubscribeFuncList[index]);
+    const eb::bigint subId = ((QAction*)sender())->data().toLongLong(&ok);
+    if (ok && subId>0) {
+        this->openSubscribeFuncWindow(subId);
     }
 
 }
