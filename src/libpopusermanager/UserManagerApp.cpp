@@ -4265,7 +4265,11 @@ int CUserManagerApp::SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::b
 
 int CUserManagerApp::AcceptCrFile(eb::bigint sCallId, bigint nMsgId, const EBFileString &sSaveTo)
 {
+#ifdef _QT_MAKE_
     return AcceptCrFile(sCallId, nMsgId, sSaveTo.toStdString().c_str());
+#else
+    return AcceptCrFile(sCallId, nMsgId, sSaveTo.c_str());
+#endif
 
 }
 int CUserManagerApp::AcceptCrFile(eb::bigint sCallId,mycp::bigint nMsgId,const char* sSaveTo)
