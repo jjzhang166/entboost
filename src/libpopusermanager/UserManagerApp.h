@@ -452,7 +452,8 @@ public:
     int SendCrFile(eb::bigint sCallId,const EBFileString &sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile, bool bFromToSendList=false,bool* pOutInviteCall=NULL,bool bNeedWaitingCallback=false);
     int SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::bigint nResourceId);
 	int SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::bigint sTo,bool bPrivate,bool bOffFile, bool bFromToSendList=false,bool* pOutInviteCall=NULL,bool bNeedWaitingCallback=false);
-	int AcceptCrFile(eb::bigint sCallId,mycp::bigint nMsgId,const char* sSaveTo);
+    int AcceptCrFile(eb::bigint sCallId,mycp::bigint nMsgId, const EBFileString &sSaveTo);
+    int AcceptCrFile(eb::bigint sCallId,mycp::bigint nMsgId, const char* sSaveTo);
 	int Save2CloudDrive(eb::bigint sCallId,mycp::bigint nMsgId);
 	//int AcceptCrFileRes(eb::bigint sCallId,const char* sResId,const char* sSaveTo);
 	int CancelCrFile(eb::bigint sCallId,mycp::bigint nMsgId);

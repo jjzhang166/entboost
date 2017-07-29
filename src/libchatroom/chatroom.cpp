@@ -269,11 +269,7 @@ public:
 		if (m_pProcessThread.get() == NULL)
 		{
 			boost::thread_attributes attrs;
-#ifdef _QT_MAKE_
-            attrs.set_stack_size(CGC_THREAD_STACK_MAX);
-#else
             attrs.set_stack_size(CGC_THREAD_STACK_MIN);
-#endif
 			m_pProcessThread = boost::shared_ptr<boost::thread>(new boost::thread(attrs,boost::bind(&CThreadRequestReceiveFileInfo::SendThreadCallBack, this)));
 		}
 	}
@@ -1717,9 +1713,9 @@ int Cchatroom::MsgAck(cr::bigint nMsgId,int nAckType)
 int Cchatroom::RecviveResource(cr::bigint sResourceId,const EBFileString &sSaveTo)
 {
 #ifdef _QT_MAKE_
-    return ReceiveFile(sResourceId, sSaveTo.toStdString().c_str());
+    return RecviveResource(sResourceId, sSaveTo.toStdString().c_str());
 #else
-    return ReceiveFile(sResourceId, sSaveTo.c_str());
+    return RecviveResource(sResourceId, sSaveTo.c_str());
 #endif
 }
 int Cchatroom::RecviveResource(mycp::bigint sResourceId,const char* sSaveTo)

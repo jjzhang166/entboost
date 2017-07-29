@@ -1165,10 +1165,13 @@ int CEBAppClient::EB_AddTempGroupFileRes(const char* sFilePath,const char* sFile
 //			return 1;
 //		}
 		mycp::tstring sName(sFileName);
-		if (sName=="")
-		{
+        if (sName.empty()) {
 			sName = sFilePath;
-			sName = sName.substr(sName.rfind('\\')+1);
+            std::string::size_type find = sName.rfind('\\');
+            if (find==std::string::npos)
+                find = sName.rfind('/');
+            if (find!=std::string::npos)
+                sName = sName.substr(find+1);
 		}
 		return pManager->AddFileRes(sName,sFilePath,"",0,EB_RESOURCE_SHARE_TEMP,nGroupId,EB_RESOURCE_FROM_TYPE_GROUP);
 		//return pManager->AddFileRes(sName,sFilePath,"",0,nGroupId,0,EB_RESOURCE_SHARE_TEMP);
@@ -1297,9 +1300,19 @@ bool CEBAppClient::EB_GetResourceCmInfo(eb::bigint sResId,mycp::tstring& pOutRes
 			}
 		}
 	}
-	return false;
+    return false;
 }
-int CEBAppClient::EB_DownloadFileRes(eb::bigint sResId,const char * sSaveTo)
+
+int CEBAppClient::EB_DownloadFileRes(eb::bigint sResId, const EBFileString &sSaveTo)
+{
+    CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
+    if (pManager != NULL)
+    {
+        return pManager->DownloadFileRes(sResId,sSaveTo);
+    }
+    return -1;
+}
+int CEBAppClient::EB_DownloadFileRes(eb::bigint sResId,const char *sSaveTo)
 {
 	CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
 	if (pManager != NULL)
@@ -2158,7 +2171,17 @@ int CEBAppClient::EB_SendFile(eb::bigint nCallId,const char* sFilePath,eb::bigin
 #endif
 		return pManager->SendCrFile(nCallId,sFilePath,nToUserId,bPrivate,bOffFile,false,NULL,true);
 	}
-	return -1;
+    return -1;
+}
+
+int CEBAppClient::EB_AcceptFile(eb::bigint nCallId, eb::bigint nMsgId, const EBFileString &sSaveTo)
+{
+    CUserManagerApp * pManager = (CUserManagerApp*)m_handle;
+    if (pManager != NULL)
+    {
+        return pManager->AcceptCrFile(nCallId,nMsgId,sSaveTo);
+    }
+    return -1;
 }
 int CEBAppClient::EB_AcceptFile(eb::bigint nCallId,mycp::bigint nMsgId,const char * sSaveTo)
 {

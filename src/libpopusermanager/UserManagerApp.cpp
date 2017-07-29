@@ -1541,7 +1541,6 @@ int CUserManagerApp::SetDevAppId(mycp::bigint sAppId, const tstring& sAppKey,boo
 			//}
 		}
 
-		//MessageBox(NULL,sAppKey.c_str(),"SetDevAppId",MB_OK);
 		CPOPLogonInfo::pointer pLogonInfo = CPOPLogonInfo::create(EB_LOGON_TYPE_APPID);
 		pLogonInfo->m_sAppId = sAppId;
 		pLogonInfo->m_sPassword = sAppKey;
@@ -1551,8 +1550,16 @@ int CUserManagerApp::SetDevAppId(mycp::bigint sAppId, const tstring& sAppKey,boo
 		pSotpRequestInfo->m_pRequestList.SetParameter(CGC_PARAMETER("app-id", sAppId));
 		pSotpRequestInfo->m_pRequestList.SetParameter(CGC_PARAMETER("app-key", sAppKey));
 //		LogMessage("SetDevAppId, m_pLogonCenter->SendLCLogon...\r\n");
-        return m_pLogonCenter->SendLCLogon(m_sLogonUserData,m_nSDKVersion,0,pLogonInfo,0,"",pSotpRequestInfo);
-	}else
+        const int ret = m_pLogonCenter->SendLCLogon(m_sLogonUserData,m_nSDKVersion,0,pLogonInfo,0,"",pSotpRequestInfo);
+        if (ret!=0) {
+#ifdef _QT_MAKE_
+            EB_Event * pEvent = new EB_Event((QEvent::Type)EB_WM_APPID_ERROR);
+            pEvent->SetEventParameter((long)EB_STATE_ERROR);
+            QCoreApplication::postEvent( m_pHwnd, pEvent,thePostEventPriority );
+#endif
+        }
+		return ret;
+    }else
 	{
 		return 1;
 	}
@@ -4253,7 +4260,13 @@ int CUserManagerApp::SendCrFile(eb::bigint sCallId,const char* sFilePath,mycp::b
 	//LogMessage("SendCrFile->m_pChatRoom->SendFile->InviteCall->AddFilePath... (%s)\r\n",sFilePath);
 	pCallToSendList->AddFilePath(sFilePath,sTo,bPrivate,bOffFile);
 	//pCallToSendList->m_list.add(CToSendInfo::create(sFilePath,sTo,bPrivate,bOffFile));
-	return pCallInfo->m_pChatRoom->SendFile(sFilePath,sTo,bPrivate,bOffFile);
+    return pCallInfo->m_pChatRoom->SendFile(sFilePath,sTo,bPrivate,bOffFile);
+}
+
+int CUserManagerApp::AcceptCrFile(eb::bigint sCallId, bigint nMsgId, const EBFileString &sSaveTo)
+{
+    return AcceptCrFile(sCallId, nMsgId, sSaveTo.toStdString().c_str());
+
 }
 int CUserManagerApp::AcceptCrFile(eb::bigint sCallId,mycp::bigint nMsgId,const char* sSaveTo)
 {
@@ -12861,7 +12874,7 @@ int CUserManagerApp::OnReceivingFile(const CCrFileInfo& pFileInfo)
 #ifdef _QT_MAKE_
 			CCrFileInfo * pEvent = new CCrFileInfo(pFileInfo);
 			pEvent->SetQEventType((QEvent::Type)CR_WM_RECEIVING_FILE);
-            postWaitEventResult(m_pHwnd, pEvent);
+            ret = (int)postWaitEventResult(m_pHwnd, pEvent);
 #else
 			ret = (int)::SendMessage(m_pHwnd, CR_WM_RECEIVING_FILE, (WPARAM)&pFileInfo, 0);
 #endif
@@ -19805,10 +19818,10 @@ void CUserManagerApp::ProcessSubResourceInfo(mycp::bigint sResId)
 void CUserManagerApp::OnResInfo(const CPOPSotpRequestInfo::pointer & pReqeustInfo, const CPOPSotpResponseInfo::pointer & pSotpResponseInfo,const CPOPCUserManager* pUMOwner)
 {
 	const mycp::bigint nDownloadResourceId = pReqeustInfo.get()==NULL?0:pReqeustInfo->m_pRequestList.getParameterValue("download_resource_id",(mycp::bigint)0);
-    const EBFileString sDownloadSaveTo = pReqeustInfo.get()==NULL?"":pReqeustInfo->m_pRequestList.getParameterValue("download_save_to");
+    const EBFileString sDownloadSaveTo = pReqeustInfo.get()==NULL?"":pReqeustInfo->m_pRequestList.getParameterValue("download_save_to").c_str();
 
 	const int sResCount = pSotpResponseInfo->m_pResponseList.getParameterValue("r-count",(int)-1);
-	const int nResOffset = pSotpResponseInfo->m_pResponseList.getParameterValue("r-offset",(int)-1);
+//	const int nResOffset = pSotpResponseInfo->m_pResponseList.getParameterValue("r-offset",(int)-1);
 	const mycp::bigint sResId = pSotpResponseInfo->m_pResponseList.getParameterValue("r_id",(mycp::bigint)0);
 	const mycp::bigint sParentResId = pSotpResponseInfo->m_pResponseList.getParameterValue("pr_id",(mycp::bigint)0);
 	const tstring sResName(pSotpResponseInfo->m_pResponseList.getParameterValue("name"));

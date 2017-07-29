@@ -49,7 +49,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm148"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\"
+				AdditionalIncludeDirectories=".\;../libpopusermanager"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;CGC_SMART_STRING_USES_BSTR"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -76,7 +76,7 @@
 				AdditionalDependencies="Winmm.lib"
 				OutputFile="../build/$(ProjectName)d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib\plib"
+				AdditionalLibraryDirectories="..\lib\plib;../build"
 				UACExecutionLevel="0"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -221,7 +221,7 @@
 				AdditionalOptions="-Zm148"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\"
+				AdditionalIncludeDirectories=".\;../libpopusermanager"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CGC_SMART_STRING_USES_BSTR"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -249,7 +249,7 @@
 				AdditionalDependencies="Winmm.lib"
 				OutputFile="../build/$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\lib\plib"
+				AdditionalLibraryDirectories="..\lib\plib;../build"
 				UACExecutionLevel="0"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
@@ -401,7 +401,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm138"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\"
+				AdditionalIncludeDirectories=".\;../libpopusermanager"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;USES_EBCOM_TEST;EBSTRING_USES_BSTR"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -426,7 +426,7 @@
 				Name="VCLinkerTool"
 				OutputFile="../build/$(ProjectName)d2.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib\plib"
+				AdditionalLibraryDirectories="..\lib\plib;../build"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -567,7 +567,7 @@
 				AdditionalOptions="-Zm122"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\"
+				AdditionalIncludeDirectories=".\;../libpopusermanager"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;USES_EBCOM_TEST;EBSTRING_USES_BSTR"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -593,7 +593,7 @@
 				Name="VCLinkerTool"
 				OutputFile="../build/$(ProjectName)2.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\lib\plib"
+				AdditionalLibraryDirectories="..\lib\plib;../build"
 				UACExecutionLevel="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -744,7 +744,7 @@
 				AdditionalOptions="-Zm122"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\"
+				AdditionalIncludeDirectories=".\;../libpopusermanager"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;EBSTRING_USES_BSTR"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -771,7 +771,7 @@
 				AdditionalOptions="/FORCE:MULTIPLE"
 				OutputFile="../build/$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\lib\plib"
+				AdditionalLibraryDirectories="..\lib\plib;../build"
 				UACExecutionLevel="2"
 				IgnoreDefaultLibraryNames="libcmt"
 				GenerateDebugInformation="true"
@@ -923,7 +923,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm130"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\"
+				AdditionalIncludeDirectories=".\;../libpopusermanager"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;EBSTRING_USES_BSTR"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -949,7 +949,7 @@
 				Name="VCLinkerTool"
 				OutputFile="../build/$(ProjectName)d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\lib\plib"
+				AdditionalLibraryDirectories="..\lib\plib;../build"
 				UACExecutionLevel="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -1094,7 +1094,7 @@
 				AdditionalOptions="-Zm122"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\"
+				AdditionalIncludeDirectories=".\;../libpopusermanager"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;EBSTRING_USES_BSTR"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -1121,7 +1121,7 @@
 				AdditionalOptions="/FORCE:MULTIPLE"
 				OutputFile="../build/$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\lib\plib"
+				AdditionalLibraryDirectories="..\lib\plib;../build"
 				UACExecutionLevel="2"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
@@ -1271,6 +1271,22 @@
 			<File
 				RelativePath="..\include\ebc_public.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\EbcLanguages.cpp"

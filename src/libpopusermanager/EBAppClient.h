@@ -470,7 +470,8 @@ public:
 	/****
 	功能：下载云盘资源文件
 	====================================================================*/
-	int EB_DownloadFileRes(eb::bigint sResId,const char * sSaveTo);
+    int EB_DownloadFileRes(eb::bigint sResId, const EBFileString &sSaveTo);
+    int EB_DownloadFileRes(eb::bigint sResId, const char *sSaveTo);
 
 	/****
 	功能：取消上传（或下载）云盘资源文件
@@ -640,7 +641,8 @@ public:
 	参数：nMsgId 文件消息编号
 	参数：sSaveTo 保存文件
 	====================================================================*/
-	int EB_AcceptFile(eb::bigint nCallId,eb::bigint nMsgId,const char * sSaveTo);
+    int EB_AcceptFile(eb::bigint nCallId, eb::bigint nMsgId, const EBFileString &sSaveTo);
+    int EB_AcceptFile(eb::bigint nCallId, eb::bigint nMsgId, const char *sSaveTo);
 
 	/****
 	功能：保存离线文件到我的云盘

@@ -164,21 +164,13 @@ int CPOPCChatManager::Start(const CCgcAddress & address, const tstring & sAppNam
     if (bBuildResponseThread && m_pResponseThread.get() == NULL)
     {
         boost::thread_attributes attrs;
-#ifdef _QT_MAKE_
-        attrs.set_stack_size(CGC_THREAD_STACK_MAX);
-#else
         attrs.set_stack_size(CGC_THREAD_STACK_MIN);
-#endif
         m_pResponseThread = boost::shared_ptr<boost::thread>(new boost::thread(attrs,boost::bind(&CPOPCChatManager::cm_response_thread_svr, this)));
     }
     if (bBuildProcessThread && m_pProcessThread.get() == NULL)
     {
         boost::thread_attributes attrs;
-#ifdef _QT_MAKE_
-        attrs.set_stack_size(CGC_THREAD_STACK_MAX);
-#else
         attrs.set_stack_size(CGC_THREAD_STACK_MIN);
-#endif
         m_pProcessThread = boost::shared_ptr<boost::thread>(new boost::thread(attrs,boost::bind(&CPOPCChatManager::cm_process_thread_svr, this)));
     }
     return 0;
@@ -684,7 +676,7 @@ void CPOPCChatManager::ProcFDSSend(const CPOPSotpRequestInfo::pointer & pRequest
     //}
     if (pChatMsgInfo->m_tBeginTranTime==0)
     {
-        // ** 这里先创建好；
+        /// ** 这里先创建好；
         if (pChatMsgInfo->GetMsgType() == EB_MSG_FILE) {
             boost::mutex::scoped_lock lockFile(pChatMsgInfo->m_mutexFile);
             if (pChatMsgInfo->m_pFileHandle == NULL) {
@@ -1593,7 +1585,7 @@ void CPOPCChatManager::ProcCMMAck(const CPOPSotpRequestInfo::pointer & pRequestI
             //pChatMsgInfo->m_pWaitStreamList[index] = false;
         }
     }
-    // 开始接收资源文件
+    /// 开始接收资源文件
     SendCMReceiveFile(nMsgId,sSaveTo);
 }
 

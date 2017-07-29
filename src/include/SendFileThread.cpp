@@ -141,11 +141,7 @@ void CSendFileThread::SetThread(void)
 	if (m_pThreadSendFile.get() == NULL)
 	{
 		boost::thread_attributes attrs;
-#ifdef _QT_MAKE_
-        attrs.set_stack_size(CGC_THREAD_STACK_MAX);
-#else
         attrs.set_stack_size(CGC_THREAD_STACK_MIN);
-#endif
 		m_pThreadSendFile = boost::shared_ptr<boost::thread>(new boost::thread(attrs,boost::bind(&CSendFileThread::SendData, this)));
 	}
 }
@@ -262,11 +258,7 @@ void CSendFileThread::WriteFile(void)
 		if (nThreadCount>0)
 		{
 			boost::thread_attributes attrs;
-#ifdef _QT_MAKE_
-            attrs.set_stack_size(CGC_THREAD_STACK_MAX);
-#else
             attrs.set_stack_size(CGC_THREAD_STACK_MIN);
-#endif
 			for (int i=0;i<nThreadCount;i++)
 			{
 				boost::shared_ptr<boost::thread> pThreadSendFile(new boost::thread(attrs,boost::bind(&CSendFileThread::SendData, this)));
@@ -583,11 +575,7 @@ void CSendFileThread::SendFile(void)
 		// 二个线程 + if ((nSendIndex%4)==1) ，正常发送流量为3-3.3MB（本机达到20MB以上）
 		// 三个线程 + if ((nSendIndex%3)==1) ，正常发送流量为7-9MB
 		boost::thread_attributes attrs;
-#ifdef _QT_MAKE_
-        attrs.set_stack_size(CGC_THREAD_STACK_MAX);
-#else
         attrs.set_stack_size(CGC_THREAD_STACK_MIN);
-#endif
 		for (int i=0;i<1;i++)
 		{
 			boost::shared_ptr<boost::thread> pThreadSendFile(new boost::thread(attrs,boost::bind(&CSendFileThread::SendData, this)));
@@ -608,11 +596,7 @@ void CSendFileThread::SendFile(void)
 			else if (bFirstThread && !bMove1MB && nSendIndex>800 && (nSendIndex%80)==50 && pNewSpeechInfo.m_nCurSpeed>128*1024 && pNewSpeechInfo.m_nCurSpeed<512*1024 && m_pTreadSendFileList.size()<5)
 			{
 				boost::thread_attributes attrs;
-#ifdef _QT_MAKE_
-                attrs.set_stack_size(CGC_THREAD_STACK_MAX);
-#else
                 attrs.set_stack_size(CGC_THREAD_STACK_MIN);
-#endif
 				boost::shared_ptr<boost::thread> pThreadSendFile(new boost::thread(attrs,boost::bind(&CSendFileThread::SendData, this)));
 				m_pTreadSendFileList.push_back(pThreadSendFile);
 				//char lpszBuffer[128];
