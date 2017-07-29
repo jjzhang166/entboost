@@ -216,7 +216,7 @@ void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, IEB_MemberInfo* pEBEmploye
 	}
 }
 #else
-void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemberInfo)
+void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemberInfo, SORT_ITEMS_FLAG nSortItems)
 {
 	if (hGroupItem != NULL && pMemberInfo != NULL && pMemberInfo->m_sMemberCode>0)
 	{
@@ -232,9 +232,18 @@ void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemb
 			pEmpItemInfo = CTreeItemInfo::create(CTreeItemInfo::ITEM_TYPE_MEMBER,hEmpItem);
 			m_pEmpItemInfo.insert(pMemberInfo->m_sMemberCode, pEmpItemInfo);
 			m_treeDepartment.SetItemData(hEmpItem, (DWORD)pEmpItemInfo.get());
-		}else
-		{
+			if (nSortItems==AUTO_SORT) {
+				nSortItems=ENABLE_SORT;
+			}
+		}
+		else {
 			m_treeDepartment.SetItemText(pEmpItemInfo->m_hItem, sText);
+			if ( nSortItems==AUTO_SORT &&
+				(pMemberInfo->m_nLineState!=(EB_USER_LINE_STATE)pEmpItemInfo->m_dwItemData ||
+				pEmpItemInfo->m_nIndex!=pMemberInfo->m_nDisplayIndex ||
+				pEmpItemInfo->m_sName!=pMemberInfo->m_sUserName) ) {
+					nSortItems=ENABLE_SORT;
+			}
 		}
 		pEmpItemInfo->m_sGroupCode = pMemberInfo->m_sGroupCode;
 		pEmpItemInfo->m_sMemberCode = pMemberInfo->m_sMemberCode;
@@ -264,7 +273,8 @@ void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemb
 		// **不需要选择
 		//m_treeDepartment.SelectItem(pEmpItemInfo->m_hItem);
 		// ?? 这里要实现，状况改变
-		m_treeDepartment.Sort(hGroupItem, CPOPApp::TreeCmpFunc);
+		if (nSortItems==ENABLE_SORT)
+			m_treeDepartment.Sort(hGroupItem, CPOPApp::TreeCmpFunc);
 	}
 }
 #endif
@@ -400,9 +410,11 @@ void CDlgMyGroup::MyDepartmentInfo(const EB_GroupInfo* pGroupInfo)
 
 	CString sText;
 	sText.Format(_T("%s(%d)"), pGroupInfo->m_sGroupName.c_str(), pGroupInfo->m_nEmpCount);
+	bool bSortItems = false;
 	CTreeItemInfo::pointer pDepItemInfo;
 	if (!m_pDepItemInfo.find(pGroupInfo->m_sGroupCode, pDepItemInfo))
 	{
+		bSortItems = true;
 		HTREEITEM hGroupItem = m_treeDepartment.InsertItem(sText);
 		pDepItemInfo = CTreeItemInfo::create(CTreeItemInfo::ITEM_TYPE_GROUP,hGroupItem);
 		pDepItemInfo->m_sEnterpriseCode = pGroupInfo->m_sEnterpriseCode;
@@ -417,7 +429,9 @@ void CDlgMyGroup::MyDepartmentInfo(const EB_GroupInfo* pGroupInfo)
 		//}
 	}else
 	{
-		m_treeDepartment.SetItemText(pDepItemInfo->m_hItem, sText);
+		//m_treeDepartment.SetItemText(pDepItemInfo->m_hItem, sText);
+        if (pDepItemInfo->m_nIndex!=pGroupInfo->m_nDisplayIndex || pDepItemInfo->m_sName!=pGroupInfo->m_sGroupName)
+            bSortItems = true;
 	}
 	pDepItemInfo->m_nBigId = pGroupInfo->m_nMyEmpId;
 	pDepItemInfo->m_sName = pGroupInfo->m_sGroupName;
@@ -427,7 +441,10 @@ void CDlgMyGroup::MyDepartmentInfo(const EB_GroupInfo* pGroupInfo)
 	{
 		const EB_MemberInfo& pMemberInfo = pOutMemberInfoList[i];
 		if (pMemberInfo.m_sMemberCode==0) continue;
-		SetMemberInfo(pDepItemInfo->m_hItem, &pMemberInfo);
+		SetMemberInfo(pDepItemInfo->m_hItem, &pMemberInfo,DISABLE_SORT);
+	}
+	if ( !pOutMemberInfoList.empty() ) {
+		m_treeDepartment.Sort(pDepItemInfo->m_hItem, CPOPApp::TreeCmpFunc);
 	}
 	const int nMemberSize = pGroupInfo->m_nEmpCount;
 	const int nOnlineSize = theEBAppClient.EB_GetGroupOnlineSize(pGroupInfo->m_sGroupCode,1);
@@ -436,7 +453,9 @@ void CDlgMyGroup::MyDepartmentInfo(const EB_GroupInfo* pGroupInfo)
 	else
 		sText.Format(_T("%s [%d]"), pGroupInfo->m_sGroupName.c_str(),nMemberSize);
 	m_treeDepartment.SetItemText(pDepItemInfo->m_hItem, sText);
-	m_treeDepartment.Sort(TVI_ROOT, CPOPApp::TreeCmpFunc);
+	if (bSortItems) {
+		m_treeDepartment.Sort(TVI_ROOT, CPOPApp::TreeCmpFunc);
+	}
 	//m_treeDepartment.Expand(pDepItemInfo->m_hItem,TVE_EXPAND);
 	
 	if (m_treeDepartment.GetSelectedItem()==NULL)
@@ -528,7 +547,7 @@ void CDlgMyGroup::MyDepMemberInfo(const EB_MemberInfo* pMemberInfo, bool bChange
 			m_treeDepartment.SetItemText(pDepItemInfo->m_hItem, sText);
 		}
 	}
-	m_treeDepartment.Sort(pDepItemInfo->m_hItem, CPOPApp::TreeCmpFunc);
+	//m_treeDepartment.Sort(pDepItemInfo->m_hItem, CPOPApp::TreeCmpFunc);
 }
 #endif
 
@@ -574,7 +593,7 @@ void CDlgMyGroup::DeleteEmployeeInfo(IEB_GroupInfo* pGroupInfo, eb::bigint sMemb
 	}
 }
 #else
-void CDlgMyGroup::DeleteEmployeeInfo(const EB_GroupInfo* pGroupInfo, eb::bigint nMemberCode)
+void CDlgMyGroup::DeleteEmployeeInfo(const EB_GroupInfo* pGroupInfo, eb::bigint nMemberCode, bool fromDeleteGroup)
 {
 	eb::bigint nGroupCode = pGroupInfo->m_sGroupCode;
 	CTreeItemInfo::pointer pDepItemInfo;
@@ -585,6 +604,7 @@ void CDlgMyGroup::DeleteEmployeeInfo(const EB_GroupInfo* pGroupInfo, eb::bigint 
 		{
 			m_treeDepartment.DeleteItem(pEmpItemInfo->m_hItem);
 		}
+		if (fromDeleteGroup) return;
 		//CEBString sGroupName;
 		//if (theEBAppClient.EB_GetGroupName(nGroupCode,sGroupName))
 		{
@@ -662,7 +682,7 @@ void CDlgMyGroup::DeleteDepartmentInfo(const EB_GroupInfo* pGroupInfo)
 			for (size_t i=0;i<pOutMemberCodeList.size(); i++)
 			{
 				eb::bigint nMemberCode = pOutMemberCodeList[i];
-				DeleteEmployeeInfo(pGroupInfo,nMemberCode);
+				DeleteEmployeeInfo(pGroupInfo,nMemberCode,true);
 			}
 		}
 	}
@@ -890,7 +910,7 @@ void CDlgMyGroup::OnNMRClickTreeDepartment(NMHDR *pNMHDR, LRESULT *pResult)
 			m_menu2.AppendMenu(MF_SEPARATOR);
 			m_menu2.AppendMenu(MF_BYCOMMAND,EB_COMMAND_DEPARTMENT_EDIT_EMP,_T("修改成员名片"));
 			//m_menu2.InsertODMenu(-1,_T("修改成员名片"),MF_BYPOSITION,EB_COMMAND_DEPARTMENT_EDIT_EMP,IDB_BITMAP_MENU_EDIT);
-			m_menu2.AppendODMenu(_T("移除成员(&D)"),MF_BYPOSITION,EB_COMMAND_DEPARTMENT_DEL_EMP,&theApp.m_pMenuImageList,MENU_TOOLBAR_ICON_OFFSET_DELETE);
+			m_menu2.AppendODMenu(_T("移除成员"),MF_BYPOSITION,EB_COMMAND_DEPARTMENT_DEL_EMP,&theApp.m_pMenuImageList,MENU_TOOLBAR_ICON_OFFSET_DELETE);
 			//m_menu2.AppendMenu(MF_BYCOMMAND,EB_COMMAND_DEPARTMENT_DEL_EMP,_T("移除成员"));
 
 			int nForbidMinutes = 0;
@@ -984,7 +1004,7 @@ void CDlgMyGroup::OnNMRClickTreeDepartment(NMHDR *pNMHDR, LRESULT *pResult)
 				nGroupType != EB_GROUP_TYPE_DEPARTMENT &&	// 公司部门
 				nGroupType != EB_GROUP_TYPE_PROJECT)			// 公司项目组
 			{
-				sText.Format(_T("解散该%s(&D)"),GetGroupTypeText((EB_GROUP_TYPE)nGroupType));
+				sText.Format(_T("解散该%s"),GetGroupTypeText((EB_GROUP_TYPE)nGroupType));
 				m_menu2.AppendMenu(MF_BYCOMMAND,EB_COMMAND_DELETE_DEPARTMENT,sText);
 			}
 		}

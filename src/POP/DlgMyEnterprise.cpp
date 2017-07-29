@@ -2125,7 +2125,7 @@ void CDlgMyEnterprise::OnTimer(UINT_PTR nIDEvent)
 		}
 	}else if (nIDEvent==TIMERID_UPDATE_GROUP_COUNT)
 	{
-		KillTimer(nIDEvent);
+		//KillTimer(nIDEvent);
 		{
 			BoostWriteLock wtlock(m_pUpdateGroupCountList.mutex());
 			CLockMap<eb::bigint,CTreeItemInfo::pointer>::iterator pIter = m_pUpdateGroupCountList.begin();
@@ -2135,6 +2135,9 @@ void CDlgMyEnterprise::OnTimer(UINT_PTR nIDEvent)
 				const CTreeItemInfo::pointer pGroupItem = pIter->second;
 				m_pUpdateGroupCountList.erase(pIter);
 				wtlock.unlock();
+				if (m_pUpdateGroupCountList.empty()) {
+					KillTimer(nIDEvent);
+				}
 				int nMemberSize = 0;
 				int nOnlineSize = 0;
 				theEBAppClient.EB_GetGroupMemberSize(nGroupId,0,nMemberSize,nOnlineSize);
