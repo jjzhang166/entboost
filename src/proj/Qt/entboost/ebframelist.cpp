@@ -196,9 +196,9 @@ AddUnreadMsgCount:
     if (nMsgId>0) {
         /// *** read_flag=1 已经读；
         /// *** read_flag=2 对方接收回执
-        char sSql[256];
-        sprintf(sSql,"UPDATE msg_record_t SET read_flag=read_flag&2 WHERE msg_id=%lld AND (read_flag&1)=1",nMsgId);	// 1->0;3->2
-        theApp->m_sqliteUser->execute(sSql);
+        char sql[256];
+        sprintf(sql,"UPDATE msg_record_t SET read_flag=read_flag&2 WHERE msg_id=%lld AND (read_flag&1)=1",nMsgId);	// 1->0;3->2
+        theApp->m_sqliteUser->execute(sql);
     }
     return bResult;
 }
@@ -523,33 +523,32 @@ void EbFrameList::clickedLeftButton(const QPushButton *leftButton, const QPoint&
             const int clickState = frameInfo->checkLeftButtonClickState( leftButton,pt );
             if (clickState==2) {
                 frameInfo->setChecked(true);
+                frameInfo->clearUnreadMsg(true);
                 frameInfoPrevChecked.reset();
             }
             else if (clickState==1) {
                 frameInfoClose = frameInfo;
                 wtLock.unlock();
                 frameInfoClose->requestClose();
-                return;
+//                return;
 //                frameInfoClose = frameInfo;
 //                m_hide.add(frameInfo);
 //                m_list.erase(pIter++);
-//                if (frameInfoClose->isChecked() && frameInfoPrevClose.get()!=0) {
-//                    /// *关闭显示ITEM，显示前一个 ITEM，然后退出
-//                    frameInfoPrevClose->setChecked(true);
-//                    break;
-//                }
-//                else if(frameInfoClose->isChecked()) {
-//                    /// *关闭显示ITEM，需要显示下一个ITEM
-//                    continue;
-//                }
-//                else {
-//                    /// *关闭其他ITEM，直接退出
-//                    if (frameInfoPrevChecked.get()!=NULL) {
-//                        /// 重新设置前一个 checked ITEM
-//                        frameInfoPrevChecked->setChecked(true);
-//                    }
-//                    break;
-//                }
+                if (frameInfoClose->isChecked() && frameInfoPrevClose.get()!=0) {
+                    /// *关闭显示ITEM，显示前一个 ITEM，然后退出
+                    frameInfoPrevClose->setChecked(true);
+                }
+                else if(frameInfoClose->isChecked()) {
+                    /// *关闭显示ITEM，需要显示下一个ITEM
+                }
+                else {
+                    /// *关闭其他ITEM，直接退出
+                    if (frameInfoPrevChecked.get()!=NULL) {
+                        /// 重新设置前一个 checked ITEM
+                        frameInfoPrevChecked->setChecked(true);
+                    }
+                }
+                return;
             }
             else {
                 if (frameInfoPrevChecked.get()==0 && frameInfo->isChecked()) {
@@ -607,7 +606,7 @@ void EbFrameList::closeItem(const EbDialogChatBase *chatBase)
             if (chatBase==frameInfo->dialogChatBase().get()) {
                 /// * 找到要关闭 ITEM
                 frameInfoClose = frameInfo;
-//                m_hide.add(frameInfo);
+                m_hide.add(frameInfo);
                 m_list.erase(pIter++);
                 if (!frameInfoClose->isChecked()) {
                     /// 不是当前显示 checked，直接跳出

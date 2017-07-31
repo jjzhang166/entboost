@@ -903,11 +903,7 @@ void CUserManagerApp::DoProcess(void)
 					if (theREsendIdList.find(nMsgId,pCallToSendInfo,true))
 					{
 						const mycp::bigint sCallId = pProcessMsgInfo->m_nBigInt2;
-#ifdef _QT_MAKE_
                         SendCrFile(sCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
-#else
-                        SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
-#endif
 					}
 				}break;
 #endif
@@ -939,13 +935,8 @@ void CUserManagerApp::DoProcess(void)
 				{
 					const mycp::bigint sCallId = pProcessMsgInfo->m_nCallGroupId;
 					const mycp::bigint sResourceId = pProcessMsgInfo->m_nBigInt1;
-#ifdef _QT_MAKE_
-                    const QString sFileName(pProcessMsgInfo->m_sString1);
+                    const EBFileString sFileName(pProcessMsgInfo->m_sString1);
                     SendCrFile(sCallId,sFileName,sResourceId);
-#else
-                    const tstring sFileName(pProcessMsgInfo->m_sString1);
-					SendCrFile(sCallId,sFileName.c_str(),sResourceId);
-#endif
 				}break;
 			case CProcessMsgInfo::PROCESS_MSG_TYPE_LOAD_RESOURCE_INFO:
 				{
@@ -6385,11 +6376,7 @@ void CUserManagerApp::OnProcessTimer(const CPOPCUserManager* pUMOwner)
 				//}
 				//DeleteOnlineFileList(sCallId,pCallToSendInfo->m_nMsgId);
 				// 重新发送
-#ifdef _QT_MAKE_
                 SendCrFile(sCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
-#else
-                SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
-#endif
 			}
 		}
 	}
@@ -11916,17 +11903,10 @@ void CUserManagerApp::ProcessToSendList(mycp::bigint nCallId, bool bSendGroupCal
 				if (!pSendFileList.exist(pCallToSendInfo->m_sFilePath))
 				{
 					pSendFileList.insert(pCallToSendInfo->m_sFilePath,true,false);
-#ifdef _QT_MAKE_
                     if (pCallToSendInfo->m_nResourceId>0)
                         SendCrFile(nCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_nResourceId);
                     else
                         SendCrFile(nCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile,true);
-#else
-                    if (pCallToSendInfo->m_nResourceId>0)
-						SendCrFile(nCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_nResourceId);
-					else
-						SendCrFile(nCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile,true);
-#endif
 				}
 			}
 		}
@@ -12438,11 +12418,7 @@ void CUserManagerApp::OnSendingFile(const CCrFileInfo& pFileInfo)
 				if (bResendFile)
 				{
 					bool bInviteCall = false;
-#ifdef _QT_MAKE_
                     this->SendCrFile(sCallId,pFileInfo.m_sFileName,pFileInfo.m_sSendTo,pFileInfo.m_bPrivate,pFileInfo.m_bOffFile,false,&bInviteCall);
-#else
-                    this->SendCrFile(sCallId,pFileInfo.m_sFileName.c_str(),pFileInfo.m_sSendTo,pFileInfo.m_bPrivate,pFileInfo.m_bOffFile,false,&bInviteCall);
-#endif
 					if (bInviteCall)
 						bP2Pequest = false;
 				}
@@ -12753,11 +12729,7 @@ void CUserManagerApp::OnCancelFile(const CCrFileInfo& pFileInfo)
 		CToSendInfo::pointer pCallToSendInfo;
 		if (theREsendIdList.find(pFileInfo.m_nMsgId,pCallToSendInfo,true))
 		{
-#ifdef _QT_MAKE_
             SendCrFile(sCallId,pCallToSendInfo->m_sFilePath,pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
-#else
-            SendCrFile(sCallId,pCallToSendInfo->m_sFilePath.c_str(),pCallToSendInfo->m_sTo,pCallToSendInfo->m_bPrivate,pCallToSendInfo->m_bOffFile);
-#endif
 		}
 #endif
 		return;

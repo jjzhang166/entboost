@@ -867,17 +867,26 @@ void EbContextMenu::onTriggeredActionExitGroup()
 
 void EbContextMenu::onTriggeredActionGroupAddForbidSpeech()
 {
-    if (m_itemInfo.get()==0 || m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_GROUP) return;
+    if (m_itemInfo.get()==0 || m_itemInfo->m_sGroupCode==0) {
+        return;
+    }
     /// 群组禁言
-    theApp->m_ebum.EB_SetGroupForbidSpeech(m_itemInfo->m_sGroupCode,true);
-
+    if (m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_GROUP ||
+            m_type==UserList) {
+        theApp->m_ebum.EB_SetGroupForbidSpeech(m_itemInfo->m_sGroupCode,true);
+    }
 }
 
 void EbContextMenu::onTriggeredActionGroupDelForbidSpeech()
 {
-    if (m_itemInfo.get()==0 || m_itemInfo->m_nItemType!=EbWidgetItemInfo::ITEM_TYPE_GROUP) return;
+    if (m_itemInfo.get()==0 || m_itemInfo->m_sGroupCode==0) {
+        return;
+    }
     /// 解除群组禁言
-    theApp->m_ebum.EB_SetGroupForbidSpeech(m_itemInfo->m_sGroupCode,false);
+    if (m_itemInfo->m_nItemType==EbWidgetItemInfo::ITEM_TYPE_GROUP ||
+            m_type==UserList) {
+        theApp->m_ebum.EB_SetGroupForbidSpeech(m_itemInfo->m_sGroupCode,false);
+    }
 }
 
 void EbContextMenu::onTriggeredActionEditMember()

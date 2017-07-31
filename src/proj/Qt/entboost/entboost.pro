@@ -176,7 +176,6 @@ SOURCES += main.cpp\
     ebdialogmemberinfo.cpp \
     ebdialogmessagetip.cpp \
     ebdialogmycenter.cpp \
-    ebdialogmessagetip.cpp \
     ebdialogpoptip.cpp
 
 HEADERS  += ../../../include/ebc_public.h \
@@ -250,7 +249,6 @@ HEADERS  += ../../../include/ebc_public.h \
     ebdialogmemberinfo.h \
     ebdialogmessagetip.h \
     ebdialogmycenter.h \
-    ebdialogmessagetip.h \
     ebdialogpoptip.h
 
 FORMS    += ebmessagebox.ui \
@@ -272,11 +270,14 @@ FORMS    += ebmessagebox.ui \
     ebdialogmemberinfo.ui \
     ebdialogmessagetip.ui \
     ebdialogmycenter.ui \
-    ebdialogmessagetip.ui \
     ebdialogpoptip.ui
 
 RESOURCES += \
     entboost.qrc
 
+win32 {
 RC_FILE = entboost.rc
+}
+else:unix: {
 ICON = entboost.icns
+}

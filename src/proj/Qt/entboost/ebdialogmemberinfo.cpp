@@ -124,6 +124,9 @@ EbDialogMemberInfo::EbDialogMemberInfo(QWidget *parent) :
 //    QValidator *validator = new QRegExpValidator(regx, ui->lineEdit );
 //    lineEdit->setValidator(validator);
 //    lineEdit的第一个数是1-9的，第二个数和之后的是0-9的
+
+    ui->pushButtonDefaultMember->setObjectName("RequestAddContact");
+    connect( ui->pushButtonDefaultMember, SIGNAL(clicked()), this, SLOT(onClickedButtonDefaultMember()) );
 }
 
 EbDialogMemberInfo::~EbDialogMemberInfo()
@@ -169,6 +172,21 @@ void EbDialogMemberInfo::updateLocaleInfo()
     ui->labelDisplayIndex->setText( theLocales.getLocalText("member-info-dialog.label-display-index.text","Display Index:") );
     ui->labelAddress->setText( theLocales.getLocalText("member-info-dialog.label-address.text","Address:") );
     ui->labelDescription->setText( theLocales.getLocalText("member-info-dialog.label-description.text","Description:") );
+
+    ui->pushButtonDefaultMember->setToolTip( theLocales.getLocalText("member-info-dialog.button-default-member.tooltip","") );
+    /// 设为默认名片
+    ui->pushButtonDefaultMember->setText( theLocales.getLocalText("member-info-dialog.button-default-member.text-0","Set Default Member") );
+    if (m_memberInfo.m_sMemberCode>0) {
+        eb::bigint defaultMemberId = 0;
+        theApp->m_ebum.EB_GetMyDefaultMemberCode(defaultMemberId);
+        if (m_memberInfo.m_sMemberCode==defaultMemberId) {
+            /// 当前默认名片
+            ui->pushButtonDefaultMember->setText( theLocales.getLocalText("member-info-dialog.button-default-member.text-1","Current Default Member") );
+        }
+    }
+    else {
+        ui->pushButtonDefaultMember->setVisible(false);
+    }
 
 }
 
@@ -325,6 +343,30 @@ void EbDialogMemberInfo::accept()
     m_memberInfo.m_sDescription = ui->plainTextEditDescription->toPlainText().toStdString();
 
     EbDialogBase::accept();
+}
+
+void EbDialogMemberInfo::resizeEvent(QResizeEvent *e)
+{
+    ui->pushButtonDefaultMember->setGeometry(20, height()-42, 80, 22);
+    EbDialogBase::resizeEvent(e);
+}
+
+void EbDialogMemberInfo::onClickedButtonDefaultMember()
+{
+    if (m_memberInfo.m_sMemberCode==0) {
+        ui->pushButtonDefaultMember->setVisible(false);
+        return;
+    }
+    eb::bigint defaultMemberId = 0;
+    theApp->m_ebum.EB_GetMyDefaultMemberCode(defaultMemberId);
+    if (m_memberInfo.m_sMemberCode==defaultMemberId) {
+        /// 当前默认名片
+        const QString text = theLocales.getLocalText("member-info-dialog.button-default-member.text-1","Current Default Member");
+        ui->pushButtonDefaultMember->setText(text);
+        EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_INFORMATION, default_warning_auto_close );
+        return;
+    }
+    theApp->m_ebum.EB_SetMyDefaultMemberCode(m_memberInfo.m_sMemberCode);
 }
 
 void EbDialogMemberInfo::onSelectedHeadImage(qint64 resourceId, const QString &resourceFile)

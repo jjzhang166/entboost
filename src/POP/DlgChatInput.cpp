@@ -141,7 +141,9 @@ void CDlgChatInput::SetCtrlColor(bool bInvalidate)
 }
 void CDlgChatInput::SetInputFocus(void)
 {
-	m_richInput.SetFocus();
+	if (m_richInput.GetSafeHwnd()!=0) {
+		m_richInput.SetFocus();
+	}
 }
 
 // CDlgChatInput message handlers

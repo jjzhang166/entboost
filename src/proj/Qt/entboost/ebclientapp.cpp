@@ -21,6 +21,7 @@ EbcLocales theLocales;
 EbClientApp::EbClientApp(QObject *parent)
     : QObject(parent)
     , m_nSelectCallId(0)
+    , m_nSelectGroupId(0)
     , m_mainColor(0,162,232)
 //    , m_hotColor(m_mainColor), m_preColor(m_mainColor)
 
@@ -100,6 +101,7 @@ EbClientApp::pointer EbClientApp::create(QObject *parent)
 void EbClientApp::clearSubscribeSelectInfo()
 {
     m_nSelectCallId = 0;
+    m_nSelectGroupId = 0;
 }
 
 //void EbClientApp::triggeredApps(eb::bigint subId)
@@ -584,6 +586,7 @@ void EbClientApp::onAppIdSuccess(QEvent * e)
         }
         else {
             /// 没有配置，使用默认
+            m_sqliteEbc->execute("UPDATE sys_value_t SET value1='' WHERE name='product-name'");
             this->m_sProductName = QString::fromStdString( this->m_setting.GetEnterprise() );
         }
     }
@@ -731,14 +734,13 @@ void EbClientApp::onAppIdSuccess(QEvent * e)
         const std::string sEnterprise( this->m_setting.GetEnterprise() );
         if ( sEnterprise.find("恩布")==std::string::npos ) {
             m_sProductName = QString::fromUtf8("恩布互联");
-//            if (m_receiver!=NULL)
-//                QApplication::postEvent(m_receiver, new QEvent((QEvent::Type)EB_COMMAND_UPDATE_PRODUCT_NAME));
+        }
+        else {
+            m_sProductName = sEnterprise.c_str();
         }
 
         if (QFile::exists(sEntLogoImagePath)) {
             QFile::remove(sEntLogoImagePath);   // ?
-//            if (m_receiver!=NULL)
-//                QApplication::postEvent(m_receiver, new QEvent((QEvent::Type)EB_COMMAND_UPDATE_ENT_LOGO));
         }
     }
 
@@ -843,6 +845,9 @@ bool EbClientApp::initApp(void)
 }
 void EbClientApp::exitApp(bool bResetEbumOnly)
 {
+    if (!bResetEbumOnly) {
+        this->m_ebum.EB_SetMsgReceiver(0);
+    }
     this->m_ebum.EB_UnInit();
     if (!bResetEbumOnly) {
         m_sqliteEbc.reset();
@@ -987,10 +992,8 @@ QString EbClientApp::urlIconFilePath(const QUrl &url)
 
 QString EbClientApp::subscribeFuncUrl(mycp::bigint subId, const std::string &sParameters)
 {
-    mycp::bigint m_nSelectCallId = 0;
     mycp::bigint m_nSelectUserId = 0;
     tstring m_sSelectAccount;
-    mycp::bigint m_nSelectGroupId = 0;
 
     const tstring sFuncUrl = m_ebum.EB_GetSubscribeFuncUrl(
                 subId,m_nSelectCallId,m_nSelectUserId,m_sSelectAccount,m_nSelectGroupId );

@@ -1280,7 +1280,7 @@ void CDlgMyEnterprise::EmployeeInfo(const EB_MemberInfo* pMemberInfo, bool bChan
 	else
 		pEmpItemInfo->m_nExtData |= CTreeItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
 
-	if (theApp.IsEnterpriseCreateUserId(pMemberInfo->m_nMemberUserId))
+	if (pDepItemInfo->m_nSubType<=EB_GROUP_TYPE_PROJECT && theApp.IsEnterpriseCreateUserId(pMemberInfo->m_nMemberUserId))
 		pEmpItemInfo->m_nSubType = 11;
 	else if (theEBAppClient.EB_IsGroupCreator(pMemberInfo->m_sGroupCode, pMemberInfo->m_nMemberUserId))
 		pEmpItemInfo->m_nSubType = 10;

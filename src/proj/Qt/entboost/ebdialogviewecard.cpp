@@ -18,7 +18,6 @@ EbDialogViewECard::EbDialogViewECard(QWidget *parent) :
     resize(const_dialog_view_ecard_size);
     /// 去掉标题栏
     this->setWindowFlags( Qt::FramelessWindowHint );
-//    this->setWindowFlags( Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint );
     /// 设置位置，显示在上面
     this->showTitleBackground(60);
     /// 屏蔽 ESC 按键不退出

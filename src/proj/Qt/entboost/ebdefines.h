@@ -50,6 +50,8 @@ static const char * theHideMainFrame  = "eb-hide-mainframe";
 static const char * theOpenFileManager  = "eb-open-filemanager";
 static const char * theMailTo  = "mailto";
 
+const qint64 constGroupShareSubId = 1002300105;
+
 
 typedef enum EB_VIEW_MODE {
     EB_VIEW_MAIN_FRAME,    /// 主界面

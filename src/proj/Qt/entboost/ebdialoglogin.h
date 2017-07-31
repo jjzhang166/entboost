@@ -30,6 +30,12 @@ public:
     QListWidgetItem* m_item;
 };
 
+//#ifdef __MACH__
+//#define EbLoginDialogType QMainWindow
+//#else
+//#define EbLoginDialogType EbDialogBase
+//#endif
+
 class EbDialogLogin : public EbDialogBase
 {
     Q_OBJECT

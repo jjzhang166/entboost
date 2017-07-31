@@ -18,8 +18,8 @@ public:
     virtual ~EbWidgetChatRecord(void);
 
     void updateLocaleInfo(void);
+    EbTextBrowser *textBrowser(void) const {return m_textBrowser;}
 signals:
-
 public slots:
     void updateViewButtonCheckState(void);
     void onClickedButtonViewMsg(void);
@@ -39,21 +39,21 @@ protected:
 private:
     EbcCallInfo::pointer m_callInfo;
     QString m_fromName;
-    QPushButton * m_buttonViewAll;
-    QPushButton * m_buttonViewImage;
-    QPushButton * m_buttonViewFile;
-    QPushButton * m_buttonViewAudio;
-    QPushButton * m_buttonViewText;
-    EbLineEdit * m_lineEditSearch;
-    QPushButton * m_buttonClearAll;
-    EbTextBrowser * m_textBrowser;
+    QPushButton *m_buttonViewAll;
+    QPushButton *m_buttonViewImage;
+    QPushButton *m_buttonViewFile;
+    QPushButton *m_buttonViewAudio;
+    QPushButton *m_buttonViewText;
+    EbLineEdit *m_lineEditSearch;
+    QPushButton *m_buttonClearAll;
+    EbTextBrowser *m_textBrowser;
     EbWidgetWorkView::pointer m_widgetWorkView;
-    QCheckBox * m_checkBoxOnlineMsg;
-    QDateEdit * m_dateEdit;
-    QPushButton * m_buttonMoveFirst;
-    QPushButton * m_buttonMovePrev;
-    QPushButton * m_buttonMoveNext;
-    QPushButton * m_buttonMoveLast;
+    QCheckBox *m_checkBoxOnlineMsg;
+    QDateEdit *m_dateEdit;
+    QPushButton *m_buttonMoveFirst;
+    QPushButton *m_buttonMovePrev;
+    QPushButton *m_buttonMoveNext;
+    QPushButton *m_buttonMoveLast;
     int m_nRecordPages;
     int m_nCurrentPage;
     int m_timerIdLoadChatRecord;

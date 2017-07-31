@@ -73,6 +73,8 @@ public slots:
     void onListResultsKeyPressFirstItemUp(void);
     void onListResultsKeyPressEsc(void);
 
+    void onLoadLocalUnreadMsg(void);
+    void onClearAutoCallInfo(void);
     void processDatas(void);
 protected:
     virtual void accept(void);

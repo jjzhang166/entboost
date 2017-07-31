@@ -60,7 +60,7 @@ protected:
 #ifdef USES_EBCOM_TEST
 	void SetMemberInfo(HTREEITEM hGroupItem, IEB_MemberInfo* pEBEmployeeInfo);
 #else
-	void SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemberInfo,SORT_ITEMS_FLAG nSortItems=AUTO_SORT);
+	void SetMemberInfo(const CTreeItemInfo::pointer &hGroupItem, const EB_MemberInfo* pMemberInfo,SORT_ITEMS_FLAG nSortItems=AUTO_SORT);
 #endif
 	CTreeItemInfo::pointer GetDepItemInfo(HTREEITEM hItem) const;
 	void CallItem(HTREEITEM hItem);

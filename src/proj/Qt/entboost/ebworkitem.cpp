@@ -86,6 +86,7 @@ void EbWorkItem::buildButton(bool saveUrl,int topHeight, QWidget *parent)
     }
     else if ( isItemType(WORK_ITEM_CHAT_RECORD) && m_widgetUserInfo==0 ) {
         m_widgetChatRecord = new EbWidgetChatRecord(m_callInfo,parent);
+        parent->connect(m_widgetChatRecord->textBrowser(), SIGNAL(openSubId(eb::bigint)), parent, SLOT(onOpenSubId(eb::bigint)));
         m_itemText = theLocales.getLocalText("chat-record.title","Chat Record");
     }
     else if ( isItemType(WORK_ITEM_TRAN_FILE) && m_widgetTranFile==0 ) {

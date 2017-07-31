@@ -22,7 +22,7 @@ EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
   , m_labelLinState(0)
   , m_menuSetting(0)
   , m_menuLineState(0)
-  , m_menuContext(0)//, m_menuSysTray(0)
+  , m_menuContext(0)
   , m_menuApps(0)
   , m_pDlgMyCenter(0)
   , m_pDlgFrameList(0)
@@ -70,13 +70,26 @@ EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
         const_main_frame_width = theLocales.getLocalInt("main-frame.window1-size.1.width", 288);
         const_main_frame_height = theLocales.getLocalInt("main-frame.window1-size.1.height", 568);
     }
-
 //    this->resize( const_main_frame_width,const_main_frame_height );
+#ifdef __MACH__
+    this->setWindowFlags(Qt::Dialog|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint|Qt::CustomizeWindowHint);
+#else
     /// 去掉标题栏
-    this->setWindowFlags( Qt::Window|Qt::FramelessWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinMaxButtonsHint);
-    /// 设置位置，显示在上面
+    this->setWindowFlags(Qt::Window|Qt::FramelessWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinMaxButtonsHint);
+#endif
     this->showTitleBackground(190);
 
+#ifdef __MACH__
+    QMenuBar *menuBar = new QMenuBar(0);
+    QMenu *wnd = menuBar->addMenu( theLocales.getLocalText("menu-bar.window.text", "Window") );
+    QAction * actionMinimize = wnd->addAction( theLocales.getLocalText("base-dialog.minimize-button.text", "Minimize") );
+    actionMinimize->setToolTip( theLocales.getLocalText("base-dialog.minimize-button.tooltip", "") );
+    connect( actionMinimize, SIGNAL(triggered()), this, SLOT(onClickedPushButtonSysMin()) );
+
+    QAction * minAction = new QAction(tr("Min"), this);
+    minAction->setShortcut(QKeySequence(tr("Ctrl+M")));
+    wnd->addAction(minAction);
+#endif
 
     /// 产品名称 & 登录LOGO
     this->showTitleLogoText( theApp->productName(),const_common_title_font_size );
@@ -245,11 +258,9 @@ EbDialogMainFrame::EbDialogMainFrame(QWidget *parent) :
 
     this->resize( const_main_frame_width,const_main_frame_height );
     onLogonSuccess(0);
-
     refreshSkin();
 
     connect( ui->pushButtonSetting,SIGNAL(clicked()),this,SLOT(onClickedPushButtonSetting()) );
-
     connect( ui->pushButtonMyGroup,SIGNAL(clicked()),this,SLOT(onClickedPushButtonMyGroup()) );
     connect( ui->pushButtonMyContact,SIGNAL(clicked()),this,SLOT(onClickedPushButtonMyContact()) );
     connect( ui->pushButtonMySession,SIGNAL(clicked()),this,SLOT(onClickedPushButtonMySession()) );
@@ -307,10 +318,6 @@ EbDialogMainFrame::~EbDialogMainFrame()
 //    if (m_dialogFileManager!=0) {
 //        delete m_dialogFileManager;
 //        m_dialogFileManager = 0;
-//    }
-//    if (m_menuSysTray!=0) {
-//        delete m_menuSysTray;
-//        m_menuSysTray = 0;
 //    }
     delete ui;
 }
@@ -1142,6 +1149,7 @@ void EbDialogMainFrame::onLogonSuccess(QEvent * e)
 
     /// 登录成功，先创建加载好表情，等需要的时候，直接可以用
     theApp->showDialogEmotionSelect(QPoint());
+    QTimer::singleShot(6000, this, SLOT(onLoadLocalUnreadMsg()));
 
 //    theUpdateResetTimer = false;
 //    KillTimer(TIMERID_CHECK_UPDATE);
@@ -1175,35 +1183,35 @@ void EbDialogMainFrame::onLogonError(QEvent *e)
     QString sErrorText;
     switch (stateCode) {
     case EB_WM_LOGON_TIMEOUT:
-        // 登录超时，请重新登录！\r\n错误代码:%d
+        /// 登录超时，请重新登录！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.logon-timeout.text","Logon Timeout");
         break;
     case EB_STATE_UNAUTH_ERROR:
-        // 帐号未激活，请查收邮件，完成注册！\r\n错误代码:%d
+        /// 帐号未激活，请查收邮件，完成注册！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.unauth-error.text","Unauth Error");
         break;
     case EB_STATE_ACCOUNT_FREEZE:
-        // 帐号已经被临时冻结，请联系公司客服！\r\n错误代码:%d
+        /// 帐号已经被临时冻结，请联系公司客服！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.account-freeze.text","Account Freeze");
         break;
     case EB_STATE_MAX_RETRY_ERROR:
-        // 错误次数太多，帐号被临时锁住，请稍候再试！\r\n错误代码:%d
+        /// 错误次数太多，帐号被临时锁住，请稍候再试！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.max-retry-error.text","Max Retry Error");
         break;
     case EB_STATE_NOT_AUTH_ERROR:
-        // 没有权限错误！\r\n错误代码:%d
+        /// 没有权限错误！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.not-auth-error.text","Not Auth Error");
         break;
     case EB_STATE_ACCOUNT_NOT_EXIST:
-        // 帐号不存在，请重新输入！\r\n错误代码:%d
+        /// 帐号不存在，请重新输入！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.account-not-exist.text","Account Not Exist");
         break;
     case EB_STATE_ACC_PWD_ERROR:
-        // 帐号或密码错误，请重新输入！\r\n错误代码:%d
+        /// 帐号或密码错误，请重新输入！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.acc-pwd-error.text","Account Or Password Error");
         break;
     default:
-        // 登录失败，请重试！\r\n错误代码:%d
+        /// 登录失败，请重试！\r\n错误代码:%d
         sErrorText = theLocales.getLocalText("on-logon-response.other-error.text","Logon Error");
         break;
     }
@@ -1590,7 +1598,7 @@ void EbDialogMainFrame::contextMenuEvent(QContextMenuEvent * e)
     m_actionMyCollection->setEnabled( theApp->myCollectionSugId()>0 );
 
     m_menuContext->exec(e->globalPos());
-    EbDialogBase::contextMenuEvent(e);
+//    EbDialogBase::contextMenuEvent(e);
 }
 
 bool EbDialogMainFrame::eventFilter(QObject *obj, QEvent *e)
@@ -1755,13 +1763,6 @@ void EbDialogMainFrame::onTriggeredActionOpenWorkFrame()
     if (nDefaultUIStyleType==EB_UI_STYLE_TYPE_CHAT) {
         /// 添加工作台
         m_pDlgFrameList->showWorkFrame();
-//            m_pDlgFrameList->addFrameItem( EbFrameItem::create(EbFrameItem::FRAME_ITEM_WORK_FRAME),true,false );
-//            EbDialogWorkFrame * pDialogWorkFrame = m_pDlgFrameList->getDialogWorkFrame();
-//            if ( pDialogWorkFrame->isEmpty() ) {
-//                pDialogWorkFrame->addUrl(false,"about:blank","");
-//                /// for test
-////                pDialogWorkFrame->addUrl(false,"www.baidu.com","");
-//            }
     }
     else {
     }
@@ -1787,11 +1788,13 @@ void EbDialogMainFrame::onTriggeredActionMyCollection()
 void EbDialogMainFrame::onTriggeredActionLogout()
 {
     m_requestLogout = true;
+    qApp->quit();
     this->accept();
 }
 
 void EbDialogMainFrame::onTriggeredActionExitApp()
 {
+    qApp->quit();
     this->accept();
 }
 
@@ -1879,15 +1882,6 @@ void EbDialogMainFrame::onTriggeredActionApps()
 
 void EbDialogMainFrame::onClickedPushButtonMyGroup(void)
 {
-//    if (m_widgetMyGroup==0) {
-//        m_widgetMyGroup = new EbWidgetMyGroup(this);
-//        const QRect & clientRect = this->geometry();
-//        const QRect & buttonRect = ui->pushButtonMyGroup->geometry();
-//        const int y = buttonRect.bottom()+1;
-//        const int h = clientRect.height()-y-22;
-//        m_widgetMyGroup->setGeometry( 1,y,clientRect.width()-2,h );
-//        m_widgetMyGroup->show();
-//    }
     updateMyButton(ui->pushButtonMyGroup);
 }
 
@@ -1914,18 +1908,30 @@ void EbDialogMainFrame::updateMyButton(const QPushButton* fromButton)
     ui->pushButtonMyGroup->setChecked(ui->pushButtonMyGroup==fromButton?true:false);
     if (m_widgetMyGroup!=0) {
         m_widgetMyGroup->setVisible(ui->pushButtonMyGroup->isChecked());
+        if (ui->pushButtonMyGroup->isChecked()) {
+            m_widgetMyGroup->setFocus();
+        }
     }
     ui->pushButtonMyContact->setChecked(ui->pushButtonMyContact==fromButton?true:false);
     if (m_widgetMyContact!=0) {
         m_widgetMyContact->setVisible(ui->pushButtonMyContact->isChecked());
+        if (ui->pushButtonMyContact->isChecked()) {
+            m_widgetMyContact->setFocus();
+        }
     }
     ui->pushButtonMySession->setChecked(ui->pushButtonMySession==fromButton?true:false);
     if (m_widgetMySession!=0) {
         m_widgetMySession->setVisible(ui->pushButtonMySession->isChecked());
+        if (ui->pushButtonMySession->isChecked()) {
+            m_widgetMySession->setFocus();
+        }
     }
     ui->pushButtonMyEnterprise->setChecked(ui->pushButtonMyEnterprise==fromButton?true:false);
     if (m_widgetMyEnterprise!=0) {
         m_widgetMyEnterprise->setVisible(ui->pushButtonMyEnterprise->isChecked());
+        if (ui->pushButtonMyEnterprise->isChecked()) {
+            m_widgetMyEnterprise->setFocus();
+        }
     }
     ui->pushButtonMyApp->setChecked(ui->pushButtonMyApp==fromButton?true:false);
 }
@@ -2161,6 +2167,45 @@ void EbDialogMainFrame::onListResultsKeyPressEsc()
     m_widgetSearchResult->hide();
 }
 
+void EbDialogMainFrame::onLoadLocalUnreadMsg()
+{
+    std::vector<eb::bigint> pGroupIdList;
+    std::vector<eb::bigint> pFromUserIdList;
+    char sql[256];
+    sprintf(sql, "SELECT DISTINCT dep_code,from_uid FROM msg_record_t WHERE from_uid<>%lld AND (read_flag&1)=0 LIMIT 30",theApp->logonUserId());
+    int nCookie = 0;
+    theApp->m_sqliteUser->select(sql, nCookie);
+    cgcValueInfo::pointer pRecord = theApp->m_sqliteUser->first(nCookie);
+    while (pRecord.get()!=0) {
+        const eb::bigint nGroupId = pRecord->getVector()[0]->getBigIntValue();
+        const eb::bigint nFromUserId = pRecord->getVector()[1]->getBigIntValue();
+        pRecord = theApp->m_sqliteUser->next(nCookie);
+
+        if (nGroupId>0)
+            pGroupIdList.push_back(nGroupId);
+        else if (nFromUserId>0 && !is_visitor_uid(nFromUserId))
+            pFromUserIdList.push_back(nFromUserId);
+    }
+    theApp->m_sqliteUser->reset(nCookie);
+    for (size_t i=0;i<pGroupIdList.size();i++) {
+        if (theApp->m_pAutoCallGroupIdList.insert(pGroupIdList[i],true,false))
+            theApp->m_ebum.EB_CallGroup(pGroupIdList[i]);
+    }
+    for (size_t i=0;i<pFromUserIdList.size();i++) {
+        if (theApp->m_pAutoCallFromUserIdList.insert(pFromUserIdList[i],true,false))
+            theApp->m_ebum.EB_CallUserId(pFromUserIdList[i]);
+    }
+    if (!pGroupIdList.empty() || !pFromUserIdList.empty()) {
+        QTimer::singleShot(18000, this, SLOT(onClearAutoCallInfo()));
+    }
+}
+
+void EbDialogMainFrame::onClearAutoCallInfo()
+{
+    theApp->m_pAutoCallFromUserIdList.clear();
+    theApp->m_pAutoCallGroupIdList.clear();
+}
+
 void EbDialogMainFrame::createMenuData(void)
 {
      if (m_menuSetting == 0) {
@@ -2216,8 +2261,6 @@ void EbDialogMainFrame::createMenuData(void)
     /// 鼠标右键菜单，托盘菜单
     if (m_menuContext==0) {
         m_menuContext = new QMenu(this);
-//        m_menuContext->insertAction();
-//        m_menuContext->removeAction();
         /// 打开工作台
         QAction * openFrameListAction = m_menuContext->addAction( theLocales.getLocalText("context-menu.open-frame-list.text","Open Frame"));
         connect( openFrameListAction, SIGNAL(triggered()), this, SLOT(onTriggeredActionOpenWorkFrame()) );
@@ -2235,18 +2278,6 @@ void EbDialogMainFrame::createMenuData(void)
         QAction * quitAction = m_menuContext->addAction( theLocales.getLocalText("context-menu.quit.text","Exit"));
         connect( quitAction, SIGNAL(triggered()), this, SLOT(onTriggeredActionExitApp()) );
     }
-//    /// 系统托盘菜单
-//    if (m_menuSysTray==0) {
-//        m_menuSysTray = new QMenu((QWidget*)QApplication::desktop());
-//        /// 注销
-//        QAction * logoutAction = m_menuSysTray->addAction( theLocales.getLocalText("context-menu.logout.text","注销"));
-//        logoutAction->setData( QVariant((int)EB_COMMAND_LOGOUT) );
-//        connect( logoutAction, SIGNAL(triggered()), this, SLOT(onClickedMenuContext()) );
-//        /// 退出
-//        QAction * quitAction = m_menuSysTray->addAction( theLocales.getLocalText("context-menu.quit.text","退出"));
-//        quitAction->setData( QVariant((int)EB_COMMAND_EXIT_APP) );
-//        connect( quitAction, SIGNAL(triggered()), this, SLOT(onClickedMenuContext()) );
-//   }
 }
 
 bool EbDialogMainFrame::creatTrayIcon()
@@ -2689,6 +2720,9 @@ bool EbDialogMainFrame::onReceiveRich(QEvent *e)
 
         if (bRet && m_pDlgFrameList!=0 && m_pDlgFrameList->isVisible()) {
 //            ::FlashWindow(m_pDlgFrameList->GetSafeHwnd(), TRUE);
+            /// 会弹到最前面
+            m_pDlgFrameList->showNormal();
+            m_pDlgFrameList->activateWindow();
             return true;
         }
         //m_btnMySession.SetWindowText(_T("！"));
@@ -2699,7 +2733,8 @@ bool EbDialogMainFrame::onReceiveRich(QEvent *e)
     else {
         if (m_pDlgFrameList!=0) {
             /// 会弹到最前面
-            m_pDlgFrameList->setFocus();
+            m_pDlgFrameList->showNormal();
+            m_pDlgFrameList->activateWindow();
         }
     }
     return true;
@@ -2949,6 +2984,9 @@ bool EbDialogMainFrame::onReceivingFile(QEvent *e)
         }
         if ( bRet && m_pDlgFrameList!=0 && m_pDlgFrameList->isVisible() ) {
 //            ::FlashWindow(m_pDlgFrameList->GetSafeHwnd(), TRUE);
+            /// 会弹到最前面
+            m_pDlgFrameList->showNormal();
+            m_pDlgFrameList->activateWindow();
             return true;
         }
 
@@ -2997,12 +3035,11 @@ void EbDialogMainFrame::onReceivedFile(QEvent *e)
                           "VALUES(%lld,%lld,'',%lld,%d,'%s')",
                      fileInfo->m_nMsgId,fileInfo->m_sSendFrom,fileInfo->m_sSendTo,(int)MRT_FILE,sInFileName.c_str());
             theApp->m_sqliteUser->execute(sql);
-//            delete fileInfo;
-            if (m_dialogFileManager->isVisible() && m_dialogFileManager->isEmpty()) {
+            if (m_dialogFileManager!=0 && m_dialogFileManager->isVisible() && m_dialogFileManager->isEmpty()) {
                 m_dialogFileManager->onClickedButtonRefresh();
                 m_dialogFileManager->onClickedButtonTranedFile();
+                m_dialogFileManager->activateWindow();
             }
-//            m_dialogFileManager->FlashWindow(TRUE);
             return;
         }
     }
@@ -3085,7 +3122,6 @@ void EbDialogMainFrame::CreateFrameList(bool bShow)
         m_pDlgFrameList->setVisible(false);
         m_pDlgFrameList->setModal(false);
         m_pDlgFrameList->setWindowModality(Qt::WindowModal);
-//        m_pDlgFrameList->SetWorkFrameCallback(this);
     }
     if (bShow) {
         m_pDlgFrameList->showFrameList();
@@ -3291,15 +3327,15 @@ void EbDialogMainFrame::onCallConnected(QEvent *e)
             }
 
             if (bAutoCall) {
-                char sSql[256];
+                char sql[256];
                 if (pConnectInfo->m_sGroupCode>0)
-                    sprintf(sSql,"SELECT count(msg_id) FROM msg_record_t WHERE dep_code=%lld AND (read_flag&1)=0",pConnectInfo->m_sGroupCode);
+                    sprintf(sql,"SELECT count(msg_id) FROM msg_record_t WHERE dep_code=%lld AND (read_flag&1)=0",pConnectInfo->m_sGroupCode);
                 else
-                    sprintf(sSql,"SELECT count(msg_id) FROM msg_record_t WHERE from_uid=%lld AND dep_code=0 AND (read_flag&1)=0",pConnectInfo->GetFromUserId());
+                    sprintf(sql,"SELECT count(msg_id) FROM msg_record_t WHERE from_uid=%lld AND dep_code=0 AND (read_flag&1)=0",pConnectInfo->GetFromUserId());
                 int nCookie = 0;
-                theApp->m_sqliteUser->select(sSql,nCookie);
+                theApp->m_sqliteUser->select(sql,nCookie);
                 cgcValueInfo::pointer pRecord = theApp->m_sqliteUser->first(nCookie);
-                if (pRecord.get()!=NULL) {
+                if (pRecord.get()!=0) {
                     const int nUnReadMsgCount = pRecord->getVector()[0]->getIntValue();
                     theApp->m_sqliteUser->reset(nCookie);
 

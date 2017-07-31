@@ -344,11 +344,11 @@ void EbFrameItem::setCloseButtonVisible(bool visible)
     }
 }
 
-void EbFrameItem::clearUnreadMsg(bool bFromUserClick)
+void EbFrameItem::clearUnreadMsg(bool fromUserClick)
 {
     if (m_nUnreadMsgCount>0) {
         if (m_dialogChatBase.get()!=0) {
-            if (!m_dialogChatBase->clearUnreadMsg(bFromUserClick))
+            if (!m_dialogChatBase->clearUnreadMsg(fromUserClick))
                 return;
         }
         m_nUnreadMsgCount = 0;

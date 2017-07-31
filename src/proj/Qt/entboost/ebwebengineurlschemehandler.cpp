@@ -42,25 +42,22 @@ void EbWebEngineUrlSchemeHandler::requestUrl(const QUrl &pUrl, QWebEngineUrlRequ
         if (nFind1<=0) return;
 //        const int nType = resourceInfo.left(nFind1).toInt();
         const int nFind2 = resourceInfo.indexOf(',',nFind1+1);
-        eb::bigint nResourceId = 0;
-        tstring sDefaultFileName;
+        eb::bigint resourceId = 0;
+        tstring defaultFileName;
         if (nFind2>0)
         {
-            nResourceId = resourceInfo.mid(nFind1+1,nFind2-nFind1).toLongLong();
-            sDefaultFileName = libEbc::URLDecode(resourceInfo.mid(nFind2+1).toStdString().c_str(),true);
+            const QString temp = resourceInfo.mid(nFind1+1,nFind2-nFind1-1);
+            resourceId = resourceInfo.mid(nFind1+1,nFind2-nFind1-1).toLongLong();
+            defaultFileName = libEbc::URLDecode(resourceInfo.mid(nFind2+1).toStdString().c_str(),true);
 //            sDefaultFileName = libEbc::UTF82ACP(sFileName.c_str()).c_str();
         }
         else {
-            nResourceId = resourceInfo.mid(nFind1+1).toLongLong();
-            sDefaultFileName = QString("%1").arg(nResourceId).toStdString();
+            resourceId = resourceInfo.mid(nFind1+1).toLongLong();
+            defaultFileName = QString("%1").arg(resourceId).toStdString();
         }
-
-        tstring sFileName;
-        tstring sFileExt;
-        libEbc::GetFileExt(sDefaultFileName,sFileName,sFileExt);
-        const QString newPath = QFileDialog::getSaveFileName(0, QString(), sFileName.c_str() );
+        const QString newPath = QFileDialog::getSaveFileName(0, QString(), defaultFileName.c_str() );
         if (!newPath.isEmpty()) {
-            theApp->m_ebum.EB_DownloadFileRes(nResourceId, newPath.toStdString().c_str());
+            theApp->m_ebum.EB_DownloadFileRes(resourceId, newPath.toStdString().c_str());
         }
     }
     else if (scheme==theReqAddContact) {
