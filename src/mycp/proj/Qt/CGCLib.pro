@@ -6,11 +6,21 @@
 
 QT       -= gui
 
-Release {
-TARGET = "../../../../build/CGCLibQt"
+win32 {
+CONFIG(debug,debug|release) {
+TARGET = "../../../build/CGCLibQtd"
 }
-Debug {
-TARGET = "../../../../build/CGCLibQtd"
+else {
+TARGET = "../../../build/CGCLibQt"
+}
+}
+else {
+CONFIG(debug,debug|release) {
+TARGET = "../../build/CGCLibQtd"
+}
+else {
+TARGET = "../../build/CGCLibQt"
+}
 }
 #TARGET = CGCLib
 TEMPLATE = lib
@@ -39,23 +49,23 @@ else:unix: {
 INCLUDEPATH += "/Users/akee/src/boost_1_62_0"
 }
 
-SOURCES += ../../../CGCLib/CgcBaseClient.cpp \
-    ../../../CGCLib/CgcRtpClient.cpp \
-    ../../../CGCLib/CgcTcpClient.cpp \
-    ../../../CGCLib/CgcUdpClient.cpp \
-    ../../../CGCLib/SotpClient.cpp
+SOURCES += ../../CGCLib/CgcBaseClient.cpp \
+    ../../CGCLib/CgcRtpClient.cpp \
+    ../../CGCLib/CgcTcpClient.cpp \
+    ../../CGCLib/CgcUdpClient.cpp \
+    ../../CGCLib/SotpClient.cpp
 
-HEADERS += ../../../CGCLib/cgc_sotpclient.h \
-    ../../../CGCLib/CgcBaseClient.h \
-    ../../../CGCLib/CgcClientHandler.h \
-    ../../../CGCLib/CgcData.h \
-    ../../../CGCLib/CGCLib.h \
-    ../../../CGCLib/CgcRtpClient.h \
-    ../../../CGCLib/CgcTcpClient.h \
-    ../../../CGCLib/CgcUdpClient.h \
-    ../../../CGCLib/dlldefine.h \
-    ../../../CGCLib/IncludeBase.h \
-    ../../../CGCLib/SotpClient.h
+HEADERS += ../../CGCLib/cgc_sotpclient.h \
+    ../../CGCLib/CgcBaseClient.h \
+    ../../CGCLib/CgcClientHandler.h \
+    ../../CGCLib/CgcData.h \
+    ../../CGCLib/CGCLib.h \
+    ../../CGCLib/CgcRtpClient.h \
+    ../../CGCLib/CgcTcpClient.h \
+    ../../CGCLib/CgcUdpClient.h \
+    ../../CGCLib/dlldefine.h \
+    ../../CGCLib/IncludeBase.h \
+    ../../CGCLib/SotpClient.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

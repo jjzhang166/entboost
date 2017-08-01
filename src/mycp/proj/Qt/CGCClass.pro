@@ -6,11 +6,21 @@
 
 QT       -= gui
 
-Release {
-TARGET = "../../../../build/CGCClassQt"
+win32 {
+CONFIG(debug,debug|release) {
+TARGET = "../../../build/CGCClassQtd"
 }
-Debug {
-TARGET = "../../../../build/CGCClassQtd"
+else {
+TARGET = "../../../build/CGCClassQt"
+}
+}
+else {
+CONFIG(debug,debug|release) {
+TARGET = "../../build/CGCClassQtd"
+}
+else {
+TARGET = "../../build/CGCClassQt"
+}
 }
 #TARGET = CGCClass
 TEMPLATE = lib
@@ -50,37 +60,37 @@ INCLUDEPATH += "/Users/akee/src/boost_1_62_0"
 }
 
 
-SOURCES += ../../../CGCClass/AttributesImpl.cpp \
-    ../../../CGCClass/Base64.cpp \
-    ../../../CGCClass/MethodItem.cpp \
-    ../../../CGCClass/ModuleItem.cpp \
-    ../../../CGCClass/ParseCgcSotp2.cpp \
-    ../../../CGCClass/PpHttp.cpp \
-    ../../../CGCClass/PpSotp2.cpp \
-    ../../../CGCClass/SotpCallTable2.cpp \
-    ../../../CGCClass/SotpRtpRoom.cpp \
-    ../../../CGCClass/SotpRtpSession.cpp \
-    ../../../CGCClass/SotpRtpSource.cpp
+SOURCES += ../../CGCClass/AttributesImpl.cpp \
+    ../../CGCClass/Base64.cpp \
+    ../../CGCClass/MethodItem.cpp \
+    ../../CGCClass/ModuleItem.cpp \
+    ../../CGCClass/ParseCgcSotp2.cpp \
+    ../../CGCClass/PpHttp.cpp \
+    ../../CGCClass/PpSotp2.cpp \
+    ../../CGCClass/SotpCallTable2.cpp \
+    ../../CGCClass/SotpRtpRoom.cpp \
+    ../../CGCClass/SotpRtpSession.cpp \
+    ../../CGCClass/SotpRtpSource.cpp
 
-HEADERS += ../../../CGCClass/AttributesImpl.h \
-    ../../../CGCClass/Base64.h \
-    ../../../CGCClass/CGCClass.h \
-    ../../../CGCClass/cgcclassinclude.h \
-    ../../../CGCClass/clustersvr.h \
-    ../../../CGCClass/dlldefine.h \
-    ../../../CGCClass/IpFormat.h \
-    ../../../CGCClass/md5.h \
-    ../../../CGCClass/MethodItem.h \
-    ../../../CGCClass/ModuleItem.h \
-    ../../../CGCClass/ParseCgcSotp2.h \
-    ../../../CGCClass/PpHttp.h \
-    ../../../CGCClass/PpSotp2.h \
-    ../../../CGCClass/SotpCallTable2.h \
-    ../../../CGCClass/SotpRtpRoom.h \
-    ../../../CGCClass/SotpRtpSession.h \
-    ../../../CGCClass/SotpRtpSource.h \
-    ../../../CGCClass/tchar.h \
-    ../../../CGCClass/XmlParseUpload.h
+HEADERS += ../../CGCClass/AttributesImpl.h \
+    ../../CGCClass/Base64.h \
+    ../../CGCClass/CGCClass.h \
+    ../../CGCClass/cgcclassinclude.h \
+    ../../CGCClass/clustersvr.h \
+    ../../CGCClass/dlldefine.h \
+    ../../CGCClass/IpFormat.h \
+    ../../CGCClass/md5.h \
+    ../../CGCClass/MethodItem.h \
+    ../../CGCClass/ModuleItem.h \
+    ../../CGCClass/ParseCgcSotp2.h \
+    ../../CGCClass/PpHttp.h \
+    ../../CGCClass/PpSotp2.h \
+    ../../CGCClass/SotpCallTable2.h \
+    ../../CGCClass/SotpRtpRoom.h \
+    ../../CGCClass/SotpRtpSession.h \
+    ../../CGCClass/SotpRtpSource.h \
+    ../../CGCClass/tchar.h \
+    ../../CGCClass/XmlParseUpload.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
