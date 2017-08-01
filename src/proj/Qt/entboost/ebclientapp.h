@@ -66,6 +66,7 @@ public:
     CLockMap<eb::bigint,bool> m_pAutoCallFromUserIdList;
     CLockMap<eb::bigint,bool> m_pCancelFileList;
     eb::bigint m_nSelectCallId;
+    eb::bigint m_nSelectGroupId;
     void clearSubscribeSelectInfo(void);
 //    void triggeredApps(eb::bigint subId);
 //    std::vector<EB_SubscribeFuncInfo> m_pSubscribeFuncList;

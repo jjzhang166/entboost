@@ -7467,7 +7467,7 @@ void CPOPDlg::OnTimer(UINT_PTR nIDEvent)
 			std::vector<eb::bigint> pGroupIdList;
 			std::vector<eb::bigint> pFromUserIdList;
 			CString sSql;
-			sSql.Format(_T("SELECT DISTINCT dep_code,from_uid FROM msg_record_t WHERE from_uid<>%lld (read_flag&1)=0 LIMIT 30"),theApp.GetLogonUserId());
+			sSql.Format(_T("SELECT DISTINCT dep_code,from_uid FROM msg_record_t WHERE from_uid<>%lld AND (read_flag&1)=0 LIMIT 30"),theApp.GetLogonUserId());
 			int nCookie = 0;
 			theApp.m_pBoUsers->select(sSql, nCookie);
 			cgcValueInfo::pointer pRecord = theApp.m_pBoUsers->first(nCookie);

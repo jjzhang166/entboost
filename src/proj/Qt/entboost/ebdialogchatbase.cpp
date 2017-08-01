@@ -118,6 +118,7 @@ EbDialogChatBase::EbDialogChatBase(const EbcCallInfo::pointer& pCallInfo,QWidget
     /// 聊天记录
     m_textBrowserMessage = EbTextBrowser::create(m_callInfo,this);
     m_textBrowserMessage->loadHistoryMsg(20);
+    connect( m_textBrowserMessage,SIGNAL(openSubId(eb::bigint)),this,SLOT(onOpenSubId(eb::bigint)) );
     m_widgetChatInput = new EbWidgetChatInput(m_callInfo,this);
     connect( m_widgetChatInput,SIGNAL(clickedClose()),this,SLOT(onClickedInputClose()) );
     connect( m_widgetChatInput,SIGNAL(clickedMsgRecord()),this,SLOT(onClickedInputMsgRecord()) );
@@ -210,25 +211,25 @@ void EbDialogChatBase::setCallInfo(const EbcCallInfo::pointer &pCallInfo)
     }
 }
 
-bool EbDialogChatBase::clearUnreadMsg(bool bFromUserClick)
+bool EbDialogChatBase::clearUnreadMsg(bool fromUserClick)
 {
     if (m_callInfo.get()==0) {
         return false;
     }
-    char sSql[256];
-    if (m_callInfo->m_pCallInfo.m_sGroupCode>0) {
-        if (bFromUserClick)
+    char sql[256];
+    if (m_callInfo->isGroupCall()) {
+        if (fromUserClick)
             theApp->m_pAutoCallGroupIdList.remove(m_callInfo->m_pCallInfo.m_sGroupCode);
         else if (theApp->m_pAutoCallGroupIdList.exist(m_callInfo->m_pCallInfo.m_sGroupCode)) return false;
-        sprintf(sSql,"UPDATE msg_record_t SET read_flag=read_flag|1 WHERE dep_code=%lld AND (read_flag&1)=0",m_callInfo->m_pCallInfo.m_sGroupCode);
+        sprintf(sql,"UPDATE msg_record_t SET read_flag=read_flag|1 WHERE dep_code=%lld AND (read_flag&1)=0",m_callInfo->m_pCallInfo.m_sGroupCode);
     }
     else {
-        if (bFromUserClick)
+        if (fromUserClick)
             theApp->m_pAutoCallFromUserIdList.remove(m_callInfo->m_pFromAccountInfo.GetUserId());
         else if (theApp->m_pAutoCallFromUserIdList.exist(m_callInfo->m_pFromAccountInfo.GetUserId())) return false;
-        sprintf(sSql,"UPDATE msg_record_t SET read_flag=read_flag|1 WHERE from_uid=%lld AND dep_code=0 AND (read_flag&1)=0",m_callInfo->m_pFromAccountInfo.GetUserId());
+        sprintf(sql,"UPDATE msg_record_t SET read_flag=read_flag|1 WHERE from_uid=%lld AND dep_code=0 AND (read_flag&1)=0",m_callInfo->m_pFromAccountInfo.GetUserId());
     }
-    theApp->m_sqliteUser->execute(sSql);
+    theApp->m_sqliteUser->execute(sql);
     return true;
 }
 
@@ -417,83 +418,14 @@ void EbDialogChatBase::onRemoveMember(const EB_GroupInfo* groupInfo, mycp::bigin
 
 void EbDialogChatBase::onMsgReceipt(const CCrRichInfo *pCrMsgInfo, int nAckType)
 {
-    const eb::bigint nFromUserId = pCrMsgInfo->m_sSendFrom;
-    const eb::bigint nMsgId = pCrMsgInfo->m_pRichMsg->GetMsgId();
-    updateMsgReceiptData(nMsgId, nFromUserId, nAckType, pCrMsgInfo->GetStateCode());
+    if (m_textBrowserMessage!=0) {
+        const eb::bigint nFromUserId = pCrMsgInfo->m_sSendFrom;
+        const eb::bigint nMsgId = pCrMsgInfo->m_pRichMsg->GetMsgId();
+        m_textBrowserMessage->updateMsgReceiptData(nMsgId, nFromUserId, nAckType, pCrMsgInfo->GetStateCode());
+    }
 
     if ( m_widgetChatRight!=0 ) {
         m_widgetChatRight->onMsgReceipt(pCrMsgInfo, nAckType);
-    }
-}
-
-void EbDialogChatBase::updateMsgReceiptData(eb::bigint nMsgId, eb::bigint nFromUserId, int nAckType, EB_STATE_CODE nState)
-{
-    /// nAckType=0 收到消息回执
-    /// nAckType=4 请求撤回消息
-    /// nAckType=6 请求“个人收藏”消息
-    /// nAckType=7 请求“群收藏”消息
-    /// *** read_flag=1 已经读；
-    /// *** read_flag=2 对方接收回执
-    if (nState==EB_STATE_OK)
-        theApp->updateMsgReceiptData(nMsgId, nFromUserId, nAckType);
-
-    if (nAckType==6 ||	/// 个人收藏
-            nAckType==7) {			/// 群收藏
-        QString text;
-        EbMessageBox::IMAGE_TYPE imageType = EbMessageBox::IMAGE_WARNING;
-        if (nState==EB_STATE_OK) {   /// 消息收藏成功！
-            imageType = EbMessageBox::IMAGE_INFORMATION;
-            text = theLocales.getLocalText("message-show.collect-msg-ok","");
-        }
-        else if (nState==EB_STATE_NOT_AUTH_ERROR)   /// 没有操作权限：\r\n消息收藏失败！
-            text = theLocales.getLocalText("message-show.collect-msg-not-auth","");
-        else    /// 消息不存在或者已经被删除：\r\n消息收藏失败！
-            text = theLocales.getLocalText("message-show.collect-msg-error","");
-        if ( !text.isEmpty() ) {
-            text.replace( "[STATE_CODE]", QString::number((int)nState) );
-            EbMessageBox::doShow( NULL, "", QChar::Null, text, imageType, default_warning_auto_close );
-        }
-    }
-    else if (nAckType==4) {
-        /// 请求撤回消息
-        if (nState==EB_STATE_OK) {
-            /// 1: 表示只更新第1行，第0行是标题，不更新；
-            /// [撤回一条消息]
-            const QString text = theLocales.getLocalText("withdraw-msg-response.state-ok-update","");
-            const QString newText = QString("<font color=#808080>%1</font>").arg(text);
-            m_textBrowserMessage->updateMsgText(nMsgId,newText,1);
-//            m_pMrFrameInterface->SetMsgReceiptFlag(nMsgId, EBC_CONTRON_RECEIPT_FLAG_HIDE);
-        }
-        if ( nFromUserId==theApp->logonUserId() ) {
-            if (nState!=EB_STATE_OK) {
-                /// 发送时间超过2分钟的消息：<br>不能撤回！
-                QString text = theLocales.getLocalText("withdraw-msg-response.other-error.text","");
-                if ( !text.isEmpty() ) {
-                    text.replace( "[STATE_CODE]", QString::number((int)nState) );
-                    EbMessageBox::doShow( NULL, "", QChar::Null, text, EbMessageBox::IMAGE_WARNING, default_warning_auto_close );
-                }
-            }
-            else {
-                /// 请求撤回了一条消息！
-                m_textBrowserMessage->addLineString(0, theLocales.getLocalText("withdraw-msg-response.state-ok","") );
-            }
-        }
-        else if (m_callInfo->groupId()==0) {
-            /// 对方撤回了一条消息！
-            m_textBrowserMessage->addLineString(0, theLocales.getLocalText("withdraw-msg-response.msg-receipt-dest","") );
-        }
-        else {
-            /// %s 撤回了一条消息！
-            tstring sMemberUserName;
-            theApp->m_ebum.EB_GetMemberNameByUserId(m_callInfo->groupId(),nFromUserId,sMemberUserName);
-            QString text = theLocales.getLocalText("withdraw-msg-response.msg-receipt-group","");
-            text.replace( "[USER_NAME]",sMemberUserName.c_str() );
-            m_textBrowserMessage->addLineString(0,text);
-        }
-    }
-    else if (nAckType==0) {	/// ?
-        const long nReceiptFlag = EBC_CONTRON_RECEIPT_FLAG_TRUE|EBC_CONTRON_RECEIPT_FLAG_SHOW;
-        m_textBrowserMessage->setMsgReceiptFlag(nMsgId, nReceiptFlag);
     }
 }
 
@@ -633,8 +565,11 @@ void EbDialogChatBase::onReceivingFile(const CCrFileInfo *fileInfo, QString *sOu
     const eb::bigint sSendFrom = fileInfo->m_sSendFrom;
     const tstring sFileName = libEbc::GetFileName(fileInfo->m_sFileName.toStdString());
     QString sWindowText;
-    if (this->m_callInfo->isGroupCall() && fileInfo->m_sResId>0) {
-        m_textBrowserMessage->addFileMsg( true,fileInfo );
+    if (this->m_callInfo->isGroupCall() && fileInfo->m_sResId>0 &&
+            (fileInfo->m_sSendFrom>0 || fileInfo->m_sSendTo>0)) {
+        /// fileInfo->m_sSendFrom==0 && fileInfo->m_sSendTo==0 是下载资源文件，不处理
+        m_textBrowserMessage->onReceivingFile(m_callInfo->m_bOffLineUser, fileInfo);
+//        m_textBrowserMessage->addFileMsg( true,fileInfo );
 
         CEBString sMemberName;
         theApp->m_ebum.EB_GetMemberNameByUserId(m_callInfo->groupId(),sSendFrom,sMemberName);
@@ -665,7 +600,7 @@ void EbDialogChatBase::onReceivingFile(const CCrFileInfo *fileInfo, QString *sOu
         sWindowText = QString("%1: %2").arg(theLocales.getLocalText("chat-msg-text.dest-send-off-file","Dest Send Off File")).arg(sFileName.c_str());
         m_textBrowserMessage->addLineString(fileInfo->m_nMsgId,sWindowText);
     }
-    else {
+    else if (!m_callInfo->isGroupCall() && (fileInfo->m_sSendFrom>0 || fileInfo->m_sSendTo>0)) {
         /// 对方发送文件：%s
         sWindowText = QString("%1: %2").arg(theLocales.getLocalText("chat-msg-text.dest-send-file","Dest Send File")).arg(sFileName.c_str());
         m_textBrowserMessage->addLineString(fileInfo->m_nMsgId,sWindowText);
@@ -889,7 +824,7 @@ void EbDialogChatBase::onTriggeredActionChatApps()
     bool ok = false;
     const eb::bigint subId = ((QAction*)sender())->data().toLongLong(&ok);
     if (ok && subId>0) {
-        m_widgetChatRight->triggeredApps(subId);
+        m_widgetChatRight->onOpenSubId(subId);
     }
 }
 
@@ -1000,6 +935,13 @@ void EbDialogChatBase::exitChat(bool hangup)
 void EbDialogChatBase::onClickedButtonExitChat()
 {
     exitChat(true);
+}
+
+void EbDialogChatBase::onOpenSubId(eb::bigint subId)
+{
+    if (m_widgetChatRight!=0) {
+        m_widgetChatRight->onOpenSubId(subId);
+    }
 }
 
 bool EbDialogChatBase::onBeforeClickedPushButtonSysMin()

@@ -10,15 +10,14 @@ EbDialogMessageTip::EbDialogMessageTip(QWidget *parent) :
     EbDialogBase(parent),
     ui(new Ui::EbDialogMessageTip)
 {
-    /// 设置窗口图标
-    setWindowIcon(QIcon(QStringLiteral(":/res/mainframe.ico")));
-
     ui->setupUi(this);
 
+#ifdef __MACH__
+    this->setWindowFlags(Qt::Dialog|Qt::FramelessWindowHint);
+#else
     /// 去掉标题栏
-    /// 使用 activateWindow MAC 其实也是一样效果
-//    this->setWindowFlags( Qt::FramelessWindowHint );
     this->setWindowFlags( Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint );
+#endif
     /// 屏蔽 ESC 按键不退出
     this->setFilterEscapeKey(true);
     this->setFilterEnterKey(true);
@@ -46,12 +45,6 @@ EbDialogMessageTip::EbDialogMessageTip(QWidget *parent) :
     connect( ui->pushButtonIgnoreAll, SIGNAL(clicked(bool)), this, SLOT(onClickedIgnoreAll(bool)));
     connect( ui->pushButtonViewAll, SIGNAL(clicked(bool)), this, SLOT(onClickedViewAll(bool)));
 
-//    /// for test
-//    addMsgTip(1,0,"测试提示数据1！");
-//    addMsgTip(0,1,"测试提示数据2！");
-//    addMsgTip(0,2,"测试提示数据3\n第二行数据呢！");
-//    addMsgTip(2,2,"测试提示数&&据4\n第二行数据呢！");
-//    addMsgTip(3,2,"测试提示数&abcd据4\n第二行数据呢！");
 }
 
 EbDialogMessageTip::~EbDialogMessageTip()
@@ -327,7 +320,7 @@ void EbDialogMessageTip::showMsgTip()
     rect.setLeft( rectScreen.width()-const_width-10 );
     rect.setRight( rect.x()+const_width );
 #ifdef __MATH__
-    rect.setBottom( m_nScreenHeight-60 );
+    rect.setBottom( m_nScreenHeight-85 );
 #else
     rect.setBottom( m_nScreenHeight-40 );
 #endif

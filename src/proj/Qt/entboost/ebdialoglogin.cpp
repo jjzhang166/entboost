@@ -7,6 +7,9 @@
 #include "ebdialogregister.h"
 #include "ebdialogconnectsetting.h"
 #include "ebmessagebox.h"
+#ifdef __MACH__
+#include <QMenuBar>
+#endif
 
 //const int const_listwidget_item_height = 24;
 #ifdef WIN32
@@ -33,7 +36,8 @@ EbLoginInfo::pointer EbLoginInfo::create(const mycp::tstring& sAccount, const my
     return EbLoginInfo::pointer(new EbLoginInfo(sAccount, sPassword, safePwd));
 }
 
-
+const QSize const_button_size2(60, 19);
+const int const_button_interval = const_button_size2.width()+9;
 EbDialogLogin::EbDialogLogin(QWidget *parent)
     : EbDialogBase(parent)
     , ui(new Ui::EbDialogLogin)
@@ -52,12 +56,24 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
     const int const_dialog_login_width = theLocales.getLocalInt("login-dialog.window-size.width", 288);
     const int const_dialog_login_height = theLocales.getLocalInt("login-dialog.window-size.height", 588);
     const QSize const_dialog_login_size(const_dialog_login_width,const_dialog_login_height);
-//    const QSize const_dialog_login_size(288,588);
     this->resize(const_dialog_login_size);
+#ifdef __MACH__
+    this->setWindowFlags(Qt::Dialog|Qt::WindowCloseButtonHint|Qt::WindowMinimizeButtonHint|Qt::CustomizeWindowHint);
+#else
     /// 去掉标题栏
-    this->setWindowFlags( Qt::Window|Qt::FramelessWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint);
-    /// 设置位置，显示在上面
+    this->setWindowFlags(Qt::Window|Qt::FramelessWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint);
+#endif
     this->showTitleBackground(190);
+//#ifdef __MACH__
+//    QMenuBar *menuBar = new QMenuBar(0);
+//    QMenu *wnd = menuBar->addMenu( theLocales.getLocalText("menu-bar.window.text", "Window") );
+//    QAction * actionMinimize = wnd->addAction( theLocales.getLocalText("base-dialog.minimize-button.text", "Minimize") );
+//    actionMinimize->setToolTip( theLocales.getLocalText("base-dialog.minimize-button.tooltip", "") );
+//    connect( actionMinimize, SIGNAL(triggered()), this, SLOT(onClickedPushButtonSysMin()) );
+//    QAction * minAction = new QAction(tr("Min"), this);
+//    minAction->setShortcut(QKeySequence(tr("Ctrl+M")));
+//    wnd->addAction(minAction);
+//#endif
 
     updateLocaleInfo();
     /// 屏蔽 ESC 按键不退出
@@ -65,10 +81,8 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
 
     /// 产品名称 & 登录LOGO
     updateProductName();
-    updateEntLogo(theApp->getAppImgPath() + "/entlogo");    // 企业定制LOGO，空或不存在使用系统默认
+    updateEntLogo(theApp->getAppImgPath() + "/entlogo");    /// 企业定制LOGO，空或不存在使用系统默认
 
-//    this->setStyleSheet("QWidget{border-top-left-radius:15px;border-top-right-radius:5px;}");
-//    this->setStyleSheet("QWidget{background-color:gray;border-top-left-radius:15px;border-top-right-radius:5px;}");
     EbIconHelper::Instance()->SetIcon(ui->pushButtonSetting,QChar(0xf0d7),10);
     {
         int x = const_dialog_login_size.width()-this->getSysButtonWidth()-const_sys_button_size.width();
@@ -85,20 +99,13 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         EbIconHelper::Instance()->SetIcon(m_labelAccountIcon,QChar(0xf2c0),11);
         m_labelAccountIcon->setObjectName("IconLabel");
         m_labelAccountIcon->resize(const_edit_icon_size,const_edit_icon_size);
-//        m_labelAccountIcon->setParent(ui->lineEditAccount);
         m_labelAccountIcon->raise();
         m_labelAccountIcon->setCursor( QCursor(Qt::PointingHandCursor) );
-//        m_labelAccountIcon->installEventFilter(this);
         connect( m_labelAccountIcon,SIGNAL(clicked()),this,SLOT(onClickedLabelAccountIcon()) );
         ui->listWidgetLoginRecords->setVisible(false);
         ui->pushButtonDeleteAccount->setVisible(false);
         ui->pushButtonDeleteAccount->setObjectName("DeleteButton");
         EbIconHelper::Instance()->SetIcon(ui->pushButtonDeleteAccount,QChar(0xf00d),10 );
-        /// for test data
-//        for (int i=0; i<10; i++) {
-//            QListWidgetItem * pItem0 = new QListWidgetItem("user1", ui->listWidgetLoginRecords);
-//            ui->listWidgetLoginRecords->insertItem( i, pItem0 );
-//        }
         EbIconHelper::Instance()->SetIcon(ui->labelPasswordIcon,QChar(0xf084),11);
         ui->labelPasswordIcon->setStyleSheet( "QLabel{background-color:rgb(0,0,0,0); color: rgb(128,128,128); border-radius: 0px;}" );
         ui->labelPasswordIcon->resize(const_edit_icon_size,const_edit_icon_size);
@@ -114,7 +121,6 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         ui->lineEditPassword->installEventFilter(this);
         ui->lineEditPassword->setGeometry( const_left_interval, y,const_edit_width, const_common_edit_height );
         ui->labelPasswordIcon->move( const_edit_width-const_edit_icon_size-2,2 );
-//        ui->labelPasswordIcon->move( const_dialog_login_size.width()-const_left_interval-const_edit_icon_size-2,y+2 );
         y += (const_common_edit_height + 10);
         /// 记住密码 & 开机启动
 //        ui->checkBoxSavePwd->setObjectName("CheckBoxSelect");
@@ -149,7 +155,6 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         ui->labelErrorText->setAlignment( Qt::AlignLeft|Qt::AlignTop);
         ui->labelErrorText->setStyleSheet("QLabel{background-color:rgb(0,0,0,0); color: rgb(255,0,64);}");
         setErrorText( "",false );
-//        setErrorText("错误日志测试<br>错误日志测试第二行");
 
         /// 登录按钮
         y += (const_error_text_height+4);
@@ -164,8 +169,6 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         ui->pushButtonConnectSetting->setObjectName("BorderButton");
         x = 10;
         y = height()-30;
-        const QSize const_button_size2(60, 19);
-        const int const_button_interval = const_button_size2.width()+9;
         /// 游客登录
         ui->pushButtonVisitorLogon->setGeometry( x,y,const_button_size2.width(),const_button_size2.height() );
         ui->pushButtonVisitorLogon->setVisible(false);
@@ -178,10 +181,8 @@ EbDialogLogin::EbDialogLogin(QWidget *parent)
         ui->pushButtonForgetPwd->setGeometry( x,y,const_button_size2.width(),const_button_size2.height() );
         ui->pushButtonForgetPwd->setVisible(false);
         x += const_button_interval;
-        // 连接设置
+        /// 连接设置
         ui->pushButtonConnectSetting->setGeometry( x,y,const_button_size2.width(),const_button_size2.height() );
-
-//        refreshSkin();
     }
     /// *** 必须放在 listWidgetLoginRecords->setGeometry 后面；
     QTimer::singleShot( 1, this, SLOT(processDatas()) );
@@ -509,10 +510,10 @@ bool EbDialogLogin::eventFilter(QObject *obj, QEvent *e)
                 break;
             }
         }
-        else if (ui->listWidgetLoginRecords->isEnabled() && e->type() == QEvent::MouseButtonPress) {
+        else if (ui->listWidgetLoginRecords->isEnabled() && e->type()==QEvent::MouseButtonPress) {
             onClickedLabelAccountIcon();
             ui->lineEditAccount->setFocus();
-            return true;
+            return false;
         }
         return false;
     }
@@ -530,6 +531,16 @@ void EbDialogLogin::onAppIdSuccess(QEvent *)
     ui->pushButtonLogon->setEnabled(true);
     ui->pushButtonVisitorLogon->setVisible(theApp->isOpenVisitor()?true:false);
     ui->pushButtonRegister->setVisible(theApp->openRegister()==0?false:true);
+    if (!theApp->isOpenVisitor() && theApp->openRegister()) {
+        /// 优化 “我的注册” 按钮，自动显示在最左边
+        ui->pushButtonRegister->move(ui->pushButtonVisitorLogon->geometry().topLeft());
+    }
+    else if (theApp->isOpenVisitor() && theApp->openRegister()) {
+        /// 优化 “我的注册” 按钮，自动显示在第二个
+        const int x = ui->pushButtonVisitorLogon->geometry().left()+const_button_interval;
+        const int y = ui->pushButtonVisitorLogon->geometry().y();
+        ui->pushButtonRegister->move(x, y);
+    }
     ui->pushButtonForgetPwd->setVisible(theApp->forgetPwdUrl().isEmpty()?false:true);
     theApp->m_ebum.EB_SetMsgReceiver(this);
 }
@@ -1080,8 +1091,15 @@ void EbDialogLogin::onClickedPushButtonForgetPwd(void)
     }
 }
 
+//#include <ebdialogframelist.h>
 void EbDialogLogin::onClickedPushButtonConnectSetting(void)
 {
+//    EbDialogFrameList  * m_pDlgFrameList = new EbDialogFrameList;
+//    m_pDlgFrameList->setModal(false);
+//    m_pDlgFrameList->setWindowModality(Qt::NonModal);
+//    m_pDlgFrameList->show();
+//    return;
+
     EbDialogConnectSetting pDialogConnectSetting;
     const int ret = pDialogConnectSetting.exec();
     if ( ret==QDialog::Accepted && pDialogConnectSetting.isServerModified() ) {

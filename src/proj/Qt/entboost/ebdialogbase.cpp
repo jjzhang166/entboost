@@ -7,7 +7,7 @@
 #include "../../../include/colorconver.h"
 
 EbDialogBase::EbDialogBase(QWidget *parent)
-    : QDialog(parent)
+    : EbDialogType(parent)
     , m_bMousePress(false)
     , m_dialogFlags(EB_DIALOG_FLAG_DRAW_BORDER)
     , m_labelTitleLogo(NULL), m_labelTitleText(NULL)
@@ -103,6 +103,8 @@ int EbDialogBase::titleBackgroundHeight() const
 }
 void EbDialogBase::showPushButtonSysMin(const QString& sTooltip, const QString& objectName)
 {
+#ifdef __MACH__
+#else
     if (m_pushButtonSysMin==NULL) {
         m_pushButtonSysMin = new QPushButton(this);
 //        m_pushButtonSysMin->setVisible(true);
@@ -124,9 +126,12 @@ void EbDialogBase::showPushButtonSysMin(const QString& sTooltip, const QString& 
     m_pushButtonSysMin->setObjectName(objectName);
 //    m_pushButtonSysMin->setStyleSheet(sStyleSheet);
     m_pushButtonSysMin->setToolTip(sTooltip);
+#endif
 }
 void EbDialogBase::showPushButtonSysMax(const QString& sTooltip, const QString& objectName)
 {
+#ifdef __MACH__
+#else
     if (m_pushButtonSysMax==NULL) {
         m_pushButtonSysMax = new QPushButton(this);
 //        m_pushButtonSysMax->setVisible(true);
@@ -145,11 +150,13 @@ void EbDialogBase::showPushButtonSysMax(const QString& sTooltip, const QString& 
     m_pushButtonSysMax->setObjectName(objectName);
 //    m_pushButtonSysMax->setStyleSheet(sStyleSheet);
     m_pushButtonSysMax->setToolTip(sTooltip);
-
+#endif
 }
 
 void EbDialogBase::showPushButtonSysClose(const QString& sTooltip,const QString& objectName)
 {
+#ifdef __MACH__
+#else
     if (m_pushButtonSysClose==NULL) {
         m_pushButtonSysClose = new QPushButton(this);
 //        m_pushButtonSysClose->setVisible(true);
@@ -165,6 +172,7 @@ void EbDialogBase::showPushButtonSysClose(const QString& sTooltip,const QString&
 //        const int x = this->rect().width()-m_pushButtonSysClose->width();
 //        m_pushButtonSysClose->move(x, 0);
 //    }
+#endif
 }
 
 int EbDialogBase::getSysButtonWidth(void) const
@@ -271,7 +279,7 @@ void EbDialogBase::mousePressEvent(QMouseEvent *event)
         /// 窗口移动距离
         move_point = event->globalPos() - this->pos();
     }
-    QDialog::mousePressEvent(event);
+    EbDialogType::mousePressEvent(event);
 }
 
 void EbDialogBase::mouseDoubleClickEvent(QMouseEvent *e)
@@ -280,13 +288,13 @@ void EbDialogBase::mouseDoubleClickEvent(QMouseEvent *e)
         onClickedPushButtonSysMax();
         return;
     }
-    QDialog::mouseDoubleClickEvent(e);
+    EbDialogType::mouseDoubleClickEvent(e);
 }
 
 void EbDialogBase::mouseReleaseEvent(QMouseEvent * e)
 {
     m_bMousePress = false;
-    QDialog::mouseReleaseEvent(e);
+    EbDialogType::mouseReleaseEvent(e);
 }
 
 void EbDialogBase::mouseMoveEvent(QMouseEvent *event)
@@ -295,7 +303,7 @@ void EbDialogBase::mouseMoveEvent(QMouseEvent *event)
         QPoint move_pos = event->globalPos();
         move(move_pos - move_point);
     }
-    QDialog::mouseMoveEvent(event);
+    EbDialogType::mouseMoveEvent(event);
 }
 
 void EbDialogBase::paintEvent(QPaintEvent *event)
@@ -304,7 +312,9 @@ void EbDialogBase::paintEvent(QPaintEvent *event)
         QPainter painter(this);
         /// 绘制边框
         painter.setPen(QColor(GetRValue(theDefaultFlatLine2Color), GetGValue(theDefaultFlatLine2Color), GetBValue(theDefaultFlatLine2Color)));
+#ifndef __MACH__    /// MAC 不画上边框线
         painter.drawLine(0, 0, this->width() - 1, 0);
+#endif
         painter.drawLine(0, 0, 0, this->height() - 1);
         painter.drawLine(this->width() - 1, 0, this->width() - 1, this->height() - 1);
         painter.drawLine(0, this->height() - 1, this->width() - 1, this->height() - 1);
@@ -325,7 +335,7 @@ void EbDialogBase::paintEvent(QPaintEvent *event)
         ////    }
         ///
     }
-    QDialog::paintEvent(event);
+    EbDialogType::paintEvent(event);
 }
 
 void EbDialogBase::keyPressEvent(QKeyEvent * e)
@@ -336,7 +346,7 @@ void EbDialogBase::keyPressEvent(QKeyEvent * e)
     else if ( isFilterEnterKey() && (e->key()==Qt::Key_Enter || e->key()==Qt::Key_Return)) {
         return;
     }
-    QDialog::keyPressEvent(e);
+    EbDialogType::keyPressEvent(e);
 }
 
 void EbDialogBase::resizeEvent(QResizeEvent *e)
@@ -360,7 +370,7 @@ void EbDialogBase::resizeEvent(QResizeEvent *e)
         m_pushButtonSysMin->move(x, 0);
     }
 
-    QDialog::resizeEvent(e);
+    EbDialogType::resizeEvent(e);
 }
 
 void EbDialogBase::setButtonOkEnabled(bool bEnable)
@@ -395,7 +405,11 @@ bool EbDialogBase::isMaximizedEb(void) const
 {
     const QRect& rect = this->rect();
     const QRect& deskRect = theApp->deskRect();
+#ifdef __MACH__
+    return (rect.width()==deskRect.width() && rect.height()+30>deskRect.height())?true:false; /// ?
+#else
     return (rect.width()==deskRect.width() && rect.height()==deskRect.height())?true:false;
+#endif
 }
 
 void EbDialogBase::setMaxRestoreIcon(bool max)

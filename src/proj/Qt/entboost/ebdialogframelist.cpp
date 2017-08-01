@@ -35,8 +35,12 @@ EbDialogFrameList::EbDialogFrameList(QWidget *parent)
     const int const_frame_list_height = theLocales.getLocalInt("frame-list.window-size.height", 668);
     const QSize const_frame_list_size(const_frame_list_width,const_frame_list_height);
     this->resize(const_frame_list_size);
+#ifdef __MACH__
+    this->setWindowFlags(Qt::Dialog|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint|Qt::CustomizeWindowHint);
+#else
     /// 去掉标题栏
-    this->setWindowFlags( Qt::Window|Qt::FramelessWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinMaxButtonsHint);
+    this->setWindowFlags(Qt::Window|Qt::FramelessWindowHint|Qt::WindowSystemMenuHint|Qt::WindowMinMaxButtonsHint);
+#endif
 //    // 显示右上角关闭按钮
 //    this->showPushButtonSysClose( theLocales.getLocalText("base-dialog.close-button.tooltip","Close"),"SysClose2Button" );
 //    this->showPushButtonSysMax( theLocales.getLocalText("base-dialog.maximize-button.tooltip","Maximize"),"SysTrans2Button" );
@@ -119,10 +123,6 @@ void EbDialogFrameList::showFrameList(bool show)
     if (show) {
         this->showNormal();
         this->activateWindow();
-//        if (this->IsIconic())
-//            this->ShowWindow(SW_RESTORE);
-//        else
-//            this->ShowWindow(SW_SHOW);
 //        if (!m_bShrinkageWin)
 //        {
 //            CRect rect;

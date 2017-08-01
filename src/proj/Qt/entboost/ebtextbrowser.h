@@ -20,6 +20,7 @@ public:
     void insertUrl(const QString &url);
     void insertPlainTextEb(const QString &text,const QColor &color);
     void addRichMsg(bool saveHistory, bool receive, const CCrRichInfo *crMsgInfo,EB_STATE_CODE state=EB_STATE_OK, QString* sOutFirstMsg1=0,QString* sOutFirstMsg2=0);
+    void onReceivingFile(bool offLineUser, const CCrFileInfo * fileInfo);
     void addFileMsg(bool receive, const CCrFileInfo *fileInfo);
     void writeMsgDate(time_t msgTime);
     void moveTextBrowserToStart(void);
@@ -29,6 +30,9 @@ public:
     void setMsgReceiptFlag(eb::bigint msgId, int receiptFlag);
     void loadHistoryMsg(int loadLastCount);
     void loadMsgRecord(const char *sql, bool desc);
+    void updateMsgReceiptData(eb::bigint msgId, eb::bigint fromUserId, int ackType, EB_STATE_CODE state);
+signals:
+    void openSubId(eb::bigint subId);
 public slots:
     void onAnchorClicked(const QUrl &url);
     void onDeleteMessage(qint64 msgId);
@@ -44,7 +48,7 @@ protected:
     void getFromToName(bool receive, eb::bigint fromUserId, eb::bigint toUserId, tstring &outFromUserName, tstring &outToUserName);
     void writeTitle(bool writeLeft, eb::bigint msgId, bool aprivate, eb::bigint fromUserId, const tstring &fromName,
                     eb::bigint toUserId, const tstring &toName, time_t msgTime, int nReadFlag, QString *pOutWindowText=0);
-    void writeFileMessage(eb::bigint msgId, eb::bigint resourceId, const QString &filePath, eb::bigint fileSize, QString *pOutMsgText=0);
+    void writeFileMessage(eb::bigint msgId, eb::bigint resourceId, const QString &filePath, eb::bigint fileSize, bool showNameOnly=false, QString *pOutMsgText=0);
     void writeVoiceMessage(const QString &voiceFile, QString *pOutMsgText=0);
     bool writeCardDataMessage( bool receive, eb::bigint msgId, const char *cardData, QString *pOutMsgText=0);
     void addChatMsgBlock(eb::bigint msgId, bool alignLeft);

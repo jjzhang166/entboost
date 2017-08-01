@@ -13,7 +13,6 @@ EbDialogPopTip::EbDialogPopTip(TipType type, QWidget *parent) :
     m_workView->setOpenLinkInNewTabAddUrlEnable(true);
     this->resize(250, 180);
 
-    /// 去掉标题栏
     this->setWindowFlags(Qt::FramelessWindowHint|Qt::WindowStaysOnTopHint);
     this->setDoubleClickMaxEnable(true);
     this->showTitleBackground(32);
@@ -48,7 +47,7 @@ EbDialogPopTip::EbDialogPopTip(TipType type, QWidget *parent) :
         m_pushButtonOk->setToolTip(theLocales.getLocalText("pop-tip-dialog.2.button.tooltip",""));
         const QRect &rectScreen = theApp->screenRect();
 #ifdef __MATH__
-        this->move(rectScreen.width()-width()-5, rectScreen.height()-height()-60);  /// 显示在右下角
+        this->move(rectScreen.width()-width()-5, rectScreen.height()-height()-85);  /// 显示在右下角
 #else
         this->move(rectScreen.width()-width()-5, rectScreen.height()-height()-40);  /// 显示在右下角
 #endif

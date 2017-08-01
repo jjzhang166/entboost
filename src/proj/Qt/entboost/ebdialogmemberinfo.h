@@ -25,6 +25,8 @@ public slots:
 //    virtual void open(void);
     virtual int exec(void);
     virtual void accept(void);
+    virtual void resizeEvent(QResizeEvent *e);
+    virtual void onClickedButtonDefaultMember(void);
 
     void onClickedLabelUserHead(void);
     void onSelectedHeadImage(qint64 resourceId, const QString &resourceFile);

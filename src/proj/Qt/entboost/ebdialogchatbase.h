@@ -50,7 +50,6 @@ public:
     void onRemoveGroup(const EB_GroupInfo *groupInfo);
     void onRemoveMember(const EB_GroupInfo *groupInfo, mycp::bigint memberId, mycp::bigint memberUserId);
     void onMsgReceipt(const CCrRichInfo *crMsgInfo, int nAckType);
-    void updateMsgReceiptData(eb::bigint msgId, eb::bigint fromUserId, int ackType, EB_STATE_CODE nState);
 
     void onSendingFile(const CCrFileInfo *fileInfo);
     bool onSentFile(const CCrFileInfo *fileInfo);
@@ -81,6 +80,7 @@ public slots:
     void onClickedButtonChatApps(void);
     void exitChat(bool hangup);
     void onClickedButtonExitChat(void);
+    void onOpenSubId(eb::bigint subId);
 signals:
     void clickedClose(void);
 protected:

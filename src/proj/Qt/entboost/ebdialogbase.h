@@ -3,6 +3,7 @@
 #define EBDIALOGBASE_H
 
 #include <QDialog>
+//#include <QMainWindow>
 //#include <QPushButton>
 #include <QMouseEvent>
 #include <QLabel>
@@ -15,7 +16,13 @@ const QSize const_sys_button_size(24,22);
 const int const_sys_button_right_interval = 0;      /// 关闭按钮右键间隔，默认 0 像素
 const QSize const_okcancel_button_size(81,32);
 
-class EbDialogBase : public QDialog
+//#ifdef __MACH__
+//#define EbDialogType QMainWindow
+//#else
+#define EbDialogType QDialog
+//#endif
+
+class EbDialogBase : public EbDialogType
 {
     Q_OBJECT
 

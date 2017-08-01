@@ -77,7 +77,7 @@ void EbWidgetUserList::onExitUser(eb::bigint userId, bool exitGroup)
 
 int EbWidgetUserList::onMemberInfo(const EB_MemberInfo *memberInfo, bool bChangeLineState)
 {
-    if (memberInfo==NULL) {
+    if (memberInfo==0 || memberInfo->m_sGroupCode!=m_callInfo->groupId()) {
         return -1;
     }
     int nResult = 0;

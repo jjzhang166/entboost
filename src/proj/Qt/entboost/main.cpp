@@ -133,10 +133,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    EbDialogLogin pDlgLogin;
-    const int nret = pDlgLogin.exec();
-    if (nret==QDialog::Rejected) {
-        return 0;
+    {
+        EbDialogLogin pDlgLogin;
+        const int nret = pDlgLogin.exec();
+        if (nret==QDialog::Rejected) {
+            return 0;
+        }
     }
 
     /// 登录成功
@@ -150,9 +152,7 @@ int main(int argc, char *argv[])
         m_sCefCachePath += "/visitor";
     }
     else {
-        char lpszBuffer[24];
-        sprintf(lpszBuffer,"/%lld", theApp->logonUserId() );
-        m_sCefCachePath += lpszBuffer;
+        m_sCefCachePath += QString::number(theApp->logonUserId());
     }
     checkCreateDir(m_sCefCachePath);
 //    qputenv(“QTWEBENGINE_REMOTE_DEBUGGING”, 9000);

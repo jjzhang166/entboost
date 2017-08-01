@@ -216,7 +216,7 @@ void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, IEB_MemberInfo* pEBEmploye
 	}
 }
 #else
-void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemberInfo, SORT_ITEMS_FLAG nSortItems)
+void CDlgMyGroup::SetMemberInfo(const CTreeItemInfo::pointer &hGroupItem, const EB_MemberInfo* pMemberInfo, SORT_ITEMS_FLAG nSortItems)
 {
 	if (hGroupItem != NULL && pMemberInfo != NULL && pMemberInfo->m_sMemberCode>0)
 	{
@@ -228,7 +228,7 @@ void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemb
 		CTreeItemInfo::pointer pEmpItemInfo;
 		if (!m_pEmpItemInfo.find(pMemberInfo->m_sMemberCode, pEmpItemInfo))
 		{
-			HTREEITEM hEmpItem = m_treeDepartment.InsertItem(sText, hGroupItem);
+			HTREEITEM hEmpItem = m_treeDepartment.InsertItem(sText, hGroupItem->m_hItem);
 			pEmpItemInfo = CTreeItemInfo::create(CTreeItemInfo::ITEM_TYPE_MEMBER,hEmpItem);
 			m_pEmpItemInfo.insert(pMemberInfo->m_sMemberCode, pEmpItemInfo);
 			m_treeDepartment.SetItemData(hEmpItem, (DWORD)pEmpItemInfo.get());
@@ -257,7 +257,8 @@ void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemb
 		else
 			pEmpItemInfo->m_nExtData |= CTreeItemInfo::ITEM_EXT_DATA_FORBID_SPEECH;
 
-		if (theApp.IsEnterpriseCreateUserId(pMemberInfo->m_nMemberUserId))
+
+		if (hGroupItem->m_nSubType<=EB_GROUP_TYPE_PROJECT && theApp.IsEnterpriseCreateUserId(pMemberInfo->m_nMemberUserId))
 			pEmpItemInfo->m_nSubType = 11;
 		else if (theEBAppClient.EB_IsGroupCreator(pMemberInfo->m_sGroupCode, pMemberInfo->m_nMemberUserId))
 			pEmpItemInfo->m_nSubType = 10;
@@ -274,7 +275,7 @@ void CDlgMyGroup::SetMemberInfo(HTREEITEM hGroupItem, const EB_MemberInfo* pMemb
 		//m_treeDepartment.SelectItem(pEmpItemInfo->m_hItem);
 		// ?? 这里要实现，状况改变
 		if (nSortItems==ENABLE_SORT)
-			m_treeDepartment.Sort(hGroupItem, CPOPApp::TreeCmpFunc);
+			m_treeDepartment.Sort(hGroupItem->m_hItem, CPOPApp::TreeCmpFunc);
 	}
 }
 #endif
@@ -441,7 +442,7 @@ void CDlgMyGroup::MyDepartmentInfo(const EB_GroupInfo* pGroupInfo)
 	{
 		const EB_MemberInfo& pMemberInfo = pOutMemberInfoList[i];
 		if (pMemberInfo.m_sMemberCode==0) continue;
-		SetMemberInfo(pDepItemInfo->m_hItem, &pMemberInfo,DISABLE_SORT);
+		SetMemberInfo(pDepItemInfo, &pMemberInfo,DISABLE_SORT);
 	}
 	if ( !pOutMemberInfoList.empty() ) {
 		m_treeDepartment.Sort(pDepItemInfo->m_hItem, CPOPApp::TreeCmpFunc);
@@ -528,7 +529,7 @@ void CDlgMyGroup::MyDepMemberInfo(const EB_MemberInfo* pMemberInfo, bool bChange
 	// 已经加载成员
 	if (pDepItemInfo->m_dwItemData==0)
 		pDepItemInfo->m_dwItemData = 1;
-	SetMemberInfo(pDepItemInfo->m_hItem, pMemberInfo);
+	SetMemberInfo(pDepItemInfo, pMemberInfo);
 	if (bChangeLineState)
 	{
 		CEBString sGroupName;
