@@ -43,36 +43,29 @@ DEFINES += _QT_USES_WEBENGINE_
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 win32 {
-#INCLUDEPATH += F:/THIRDPARTY/bodb/inc
 INCLUDEPATH += "F:/THIRDPARTY/zlib-1.2.8"
 INCLUDEPATH += F:/THIRDPARTY/boost_1_62_0
 INCLUDEPATH += "F:/THIRDPARTY/sqlite-3081002"
-#INCLUDEPATH += D:/openssl/include
 INCLUDEPATH += F:/THIRDPARTY/openssl-1.0.2k/inc32
-INCLUDEPATH += "D:/dev/mycp/src"
-INCLUDEPATH += "D:/dev/mycp/src/ThirdParty"
-#INCLUDEPATH += "F:/THIRDPARTY/cef_binary_3.2623.1395.g3034273_windows32"
-#INCLUDEPATH += "F:/THIRDPARTY/zlib-1.2.11"
+INCLUDEPATH += "../../../mycp"
+INCLUDEPATH += "../../../mycp/ThirdParty"
 INCLUDEPATH += "../../../libchatroom"
 INCLUDEPATH += "../../../libpopusermanager"
 INCLUDEPATH += "../../../include"
 
     Release {
-LIBS += -L"D:/dev/mycp/src/build" -lCGCLibQt -lCGCClassQt
+LIBS += -L"../../../mycp/build" -lCGCLibQt -lCGCClassQt
 LIBS += -L"F:/THIRDPARTY/boost_1_62_0/stage/lib" -llibboost_system-vc140-mt-1_62 -llibboost_thread-vc140-mt-1_62 -llibboost_filesystem-vc140-mt-1_62
 LIBS += -lWs2_32 -lshlwapi
-#LIBS += -lWs2_32 -lshlwapi -lWinmm
-LIBS += -L"../build" -lebcm
-LIBS += -L"../build" -lebum
+LIBS += -L"../build" -lebcm -lebum
 LIBS += -L"F:/THIRDPARTY/sqlite-3081002/lib" -lsqlite3s
 LIBS += -L"F:/THIRDPARTY/zlib-1.2.8/contrib/vstudio/vc14/lib" -lzlibstat
     }
     Debug {
-LIBS += -L"D:/dev/mycp/src/build" -lCGCLibQtd -lCGCClassQtd
+LIBS += -L"../../../mycp/build" -lCGCLibQtd -lCGCClassQtd
 LIBS += -L"F:/THIRDPARTY/boost_1_62_0/stage/lib" -llibboost_system-vc140-mt-gd-1_62 -llibboost_thread-vc140-mt-gd-1_62 -llibboost_filesystem-vc140-mt-gd-1_62
 LIBS += -lWs2_32 -lshlwapi
-LIBS += -L"../build" -lebcmd
-LIBS += -L"../build" -lebumd
+LIBS += -L"../build" -lebcmd -lebumd
 LIBS += -L"F:/THIRDPARTY/sqlite-3081002/lib" -lsqlite3sd
 LIBS += -L"F:/THIRDPARTY/zlib-1.2.8/contrib/vstudio/vc14/lib" -lzlibstatd
     }
@@ -80,25 +73,23 @@ LIBS += -L"F:/THIRDPARTY/openssl-1.0.2k/vc2015" -llibeay32 -lssleay32
 }
 else:unix: {
 INCLUDEPATH += "/Users/akee/src/boost_1_62_0"
-INCLUDEPATH += "/Users/akee/src/mycp/src"
-INCLUDEPATH += "/Users/akee/src/mycp/src/ThirdParty"
 #INCLUDEPATH += "/usr/local/opt/zlib/include"
 INCLUDEPATH += "/usr/local/include/sqlite3"
+INCLUDEPATH += "../../../mycp"
+INCLUDEPATH += "../../../mycp/ThirdParty"
 INCLUDEPATH += "../../../libchatroom"
 INCLUDEPATH += "../../../libpopusermanager"
 INCLUDEPATH += "../../../include"
 
 CONFIG(debug,debug|release) {
-LIBS += "/Users/akee/src/mycp/build/libCGCClassQtd.a"
-LIBS += "/Users/akee/src/mycp/build/libCGCLibQtd.a"
-LIBS += -L"../build" -lebcmd
-LIBS += -L"../build" -lebumd
+LIBS += "../../../mycp/build/libCGCClassQtd.a"
+LIBS += "../../../mycp/build/libCGCLibQtd.a"
+LIBS += -L"../build" -lebcmd -lebumd
 }
 else {
-LIBS += "/Users/akee/src/mycp/build/libCGCClassQt.a"
-LIBS += "/Users/akee/src/mycp/build/libCGCLibQt.a"
-LIBS += -L"../build" -lebcm
-LIBS += -L"../build" -lebum
+LIBS += "../../../mycp/build/libCGCClassQt.a"
+LIBS += "../../../mycp/build/libCGCLibQt.a"
+LIBS += -L"../build" -lebcm -lebum
 }
 LIBS += "/Users/akee/src/boost_1_62_0/stage/lib/libboost_system.a"
 LIBS += "/Users/akee/src/boost_1_62_0/stage/lib/libboost_thread.a"
